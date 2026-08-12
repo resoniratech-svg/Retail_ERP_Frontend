@@ -6,6 +6,19 @@ import { Plus, Search, Download, Edit, Trash2, X, Package } from 'lucide-react';
 import { Button, Badge, Card } from '@qatar-erp/ui';
 
 const ARABIC_DICTIONARY: Record<string, string> = {
+  // Retail & Groceries
+  biscuit: 'بسكويت',
+  biscuits: 'بسكويت',
+  cookie: 'كوكيز',
+  cookies: 'كوكيز',
+  wafer: 'وافر',
+  cake: 'كيك',
+  chocolate: 'شوكولاتة',
+  chips: 'شيبس',
+  crisps: 'شيبس',
+  snack: 'وجبة خفيفة',
+  candy: 'حلوى',
+  sweets: 'حلويات',
   milk: 'حليب',
   fresh: 'طازج',
   full: 'كامل',
@@ -50,6 +63,89 @@ const ARABIC_DICTIONARY: Record<string, string> = {
   eggs: 'بيض',
   yogurt: 'زبادي',
   laban: 'لبن',
+  soap: 'صابون',
+  shampoo: 'شامبو',
+  tissue: 'مناديل',
+  paper: 'ورق',
+  cleaner: 'منظف',
+  flour: 'طحين',
+  salt: 'ملح',
+  pepper: 'فلفل',
+  sauce: 'صلصة',
+  ketchup: 'كاتشب',
+  mayo: 'مايونيز',
+  mayonnaise: 'مايونيز',
+  tuna: 'تونا',
+  pasta: 'معكرونة',
+  macaroni: 'معكرونة',
+  noodles: 'نودلز',
+  honey: 'عسل',
+  jam: 'مربى',
+  olive: 'زيتون',
+  vinegar: 'خل',
+};
+
+// Phonetic English to Arabic Transliteration Engine
+const phoneticTransliterate = (englishWord: string): string => {
+  let str = englishWord.toLowerCase();
+  
+  // Specific words override
+  if (str === 'biscuit') return 'بسكويت';
+  if (str === 'biscuits') return 'بسكويت';
+
+  // Replace common phoneme clusters
+  str = str
+    .replace(/tion/g, 'شن')
+    .replace(/kh/g, 'خ')
+    .replace(/gh/g, 'غ')
+    .replace(/sh/g, 'ش')
+    .replace(/ch/g, 'تش')
+    .replace(/th/g, 'ث')
+    .replace(/ph/g, 'ف')
+    .replace(/ee/g, 'ي')
+    .replace(/oo/g, 'و')
+    .replace(/ou/g, 'و')
+    .replace(/au/g, 'و')
+    .replace(/ck/g, 'ك')
+    .replace(/qu/g, 'كو');
+
+  // Single character mapping
+  const charMap: Record<string, string> = {
+    a: 'ا',
+    b: 'ب',
+    c: 'ك',
+    d: 'د',
+    e: 'ي',
+    f: 'ف',
+    g: 'ج',
+    h: 'ه',
+    i: 'ي',
+    j: 'ج',
+    k: 'ك',
+    l: 'ل',
+    m: 'م',
+    n: 'ن',
+    o: 'و',
+    p: 'ب',
+    q: 'ق',
+    r: 'ر',
+    s: 'س',
+    t: 'ت',
+    u: 'و',
+    v: 'ف',
+    w: 'و',
+    x: 'كس',
+    y: 'ي',
+    z: 'ز',
+  };
+
+  let arabicStr = '';
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    arabicStr += charMap[char] || char;
+  }
+
+  return arabicStr;
 };
 
 const autoTranslateToArabic = (englishText: string): string => {
@@ -64,7 +160,8 @@ const autoTranslateToArabic = (englishText: string): string => {
     if (/^\d+(l|ml|g|kg)$/i.test(w)) {
       return w.toLowerCase().replace('l', ' لتر').replace('ml', ' مل').replace('kg', ' كجم').replace('g', ' جم');
     }
-    return w;
+    // Fallback to phonetic Arabic transliteration
+    return phoneticTransliterate(cleanWord);
   });
   return translatedWords.join(' ');
 };
@@ -382,13 +479,13 @@ export const ProductsPage: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Product Name (Arabic)</label>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Auto-translated from English</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Auto-transliterated into Arabic</span>
                 </div>
                 <input
                   type="text"
                   value={formData.nameAr}
                   onChange={(e) => handleArabicNameChange(e.target.value)}
-                  placeholder="مثال: حليب المراعي طازج 1 لتر"
+                  placeholder="مثال: بسكويت"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-arabic"
                 />
               </div>

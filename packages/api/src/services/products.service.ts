@@ -88,6 +88,31 @@ export const productsService = {
     return Promise.resolve(updatedProduct);
   },
 
+  async deductStock(items: Array<{ id?: string; barcode?: string; sku?: string; quantity: number }>): Promise<boolean> {
+    const products = getStoredProducts();
+    let hasChanges = false;
+
+    const updated = products.map((p) => {
+      const soldItem = items.find(
+        (i) =>
+          (i.id && i.id === p.id) ||
+          (i.barcode && i.barcode.toLowerCase() === p.barcode.toLowerCase()) ||
+          (i.sku && i.sku.toLowerCase() === p.sku.toLowerCase())
+      );
+      if (soldItem && soldItem.quantity > 0) {
+        hasChanges = true;
+        const newStock = Math.max(0, p.stockQuantity - soldItem.quantity);
+        return { ...p, stockQuantity: newStock, updatedAt: new Date().toISOString() };
+      }
+      return p;
+    });
+
+    if (hasChanges) {
+      saveStoredProducts(updated);
+    }
+    return Promise.resolve(true);
+  },
+
   async deleteProduct(id: string): Promise<boolean> {
     const products = getStoredProducts();
     const updated = products.filter((p) => p.id !== id);

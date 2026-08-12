@@ -113,7 +113,15 @@ export const POSLayout: React.FC = () => {
     }
   };
 
-  const handleCompleteSale = () => {
+  const handleCompleteSale = async () => {
+    const itemsToDeduct = cart.map((c) => ({
+      id: c.product.id,
+      barcode: c.product.barcode,
+      sku: c.product.sku,
+      quantity: c.quantity,
+    }));
+    await productsService.deductStock(itemsToDeduct);
+
     syncManager.enqueueTransaction({ cart, grandTotal, date: new Date().toISOString() });
     setPendingSync(syncManager.getPendingCount());
     setCart([]);

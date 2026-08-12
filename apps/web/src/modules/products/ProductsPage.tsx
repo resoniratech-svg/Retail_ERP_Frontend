@@ -5,6 +5,30 @@ import { Product } from '@qatar-erp/types';
 import { Plus, Search, Download, Edit, Trash2, X, Package } from 'lucide-react';
 import { Button, Badge, Card } from '@qatar-erp/ui';
 
+const CATEGORY_STORAGE_KEY = 'qatar_erp_categories';
+
+const DEFAULT_CATEGORIES = [
+  { name: 'Dairy & Eggs', nameAr: 'الألبان والبيض' },
+  { name: 'Beverages', nameAr: 'المشروبات' },
+  { name: 'Rice & Grains', nameAr: 'الأرز والحبوب' },
+  { name: 'Dates & Dried Fruits', nameAr: 'التمر والفواكه المجففة' },
+];
+
+const loadAvailableCategories = (): Array<{ name: string; nameAr?: string }> => {
+  try {
+    const stored = localStorage.getItem(CATEGORY_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((c: any) => ({ name: c.name, nameAr: c.nameAr }));
+      }
+    }
+  } catch (e) {
+    console.error('Failed to parse categories from localStorage:', e);
+  }
+  return DEFAULT_CATEGORIES;
+};
+
 const ARABIC_DICTIONARY: Record<string, string> = {
   // Retail & Groceries
   biscuit: 'بسكويت',
@@ -70,7 +94,7 @@ const ARABIC_DICTIONARY: Record<string, string> = {
   cleaner: 'منظف',
   flour: 'طحين',
   salt: 'ملح',
-  pepper: 'فلفل',
+  pepper: 'ففل',
   sauce: 'صلصة',
   ketchup: 'كاتشب',
   mayo: 'مايونيز',
@@ -168,6 +192,7 @@ const autoTranslateToArabic = (englishText: string): string => {
 
 export const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categoriesList, setCategoriesList] = useState<Array<{ name: string; nameAr?: string }>>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -192,20 +217,30 @@ export const ProductsPage: React.FC = () => {
     setProducts(productsService.getProductsSync());
   };
 
+  const refreshCategories = () => {
+    const available = loadAvailableCategories();
+    setCategoriesList(available);
+  };
+
   useEffect(() => {
     loadProducts();
+    refreshCategories();
     const handleUpdate = () => loadProducts();
     window.addEventListener('qatar_products_updated', handleUpdate);
     return () => window.removeEventListener('qatar_products_updated', handleUpdate);
   }, []);
 
   const handleOpenAddModal = () => {
+    const available = loadAvailableCategories();
+    setCategoriesList(available);
+    const initialCategory = available.length > 0 ? available[0].name : 'Dairy & Eggs';
+
     setFormData({
       sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
       barcode: `62510${Math.floor(10000000 + Math.random() * 90000000)}`,
       name: '',
       nameAr: '',
-      categoryName: 'Dairy & Eggs',
+      categoryName: initialCategory,
       retailPrice: '12.50',
       stockQuantity: '100',
       unit: 'Pcs',
@@ -216,13 +251,16 @@ export const ProductsPage: React.FC = () => {
   };
 
   const handleOpenEditModal = (prod: Product) => {
+    const available = loadAvailableCategories();
+    setCategoriesList(available);
+
     setEditingProduct(prod);
     setFormData({
       sku: prod.sku,
       barcode: prod.barcode,
       name: prod.name,
       nameAr: prod.nameAr || '',
-      categoryName: prod.categoryName || 'Dairy & Eggs',
+      categoryName: prod.categoryName || (available[0]?.name ?? 'Dairy & Eggs'),
       retailPrice: prod.retailPrice.toString(),
       stockQuantity: prod.stockQuantity.toString(),
       unit: prod.unit || 'Pcs',
@@ -335,10 +373,11 @@ export const ProductsPage: React.FC = () => {
             className="px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
           >
             <option value="">All Categories</option>
-            <option value="dairy">Dairy & Eggs</option>
-            <option value="beverages">Beverages</option>
-            <option value="rice">Rice & Grains</option>
-            <option value="dates">Dates & Dried Fruits</option>
+            {categoriesList.map((cat) => (
+              <option key={cat.name} value={cat.name.toLowerCase()}>
+                {cat.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -496,12 +535,13 @@ export const ProductsPage: React.FC = () => {
                   <select
                     value={formData.categoryName}
                     onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
                   >
-                    <option value="Dairy & Eggs">Dairy & Eggs</option>
-                    <option value="Beverages">Beverages</option>
-                    <option value="Rice & Grains">Rice & Grains</option>
-                    <option value="Dates & Dried Fruits">Dates & Dried Fruits</option>
+                    {categoriesList.map((cat) => (
+                      <option key={cat.name} value={cat.name}>
+                        {cat.name} {cat.nameAr ? `(${cat.nameAr})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>

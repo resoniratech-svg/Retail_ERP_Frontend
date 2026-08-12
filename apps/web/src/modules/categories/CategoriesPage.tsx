@@ -11,24 +11,116 @@ const INITIAL_CATEGORIES: CategoryItem[] = [
 ];
 
 const CATEGORY_ARABIC_MAP: Record<string, string> = {
-  dairy: 'الألبان والبيض',
-  eggs: 'البيض',
+  drink: 'مشروبات',
+  drinks: 'مشروبات',
+  beverage: 'المشروبات',
   beverages: 'المشروبات',
-  drinks: 'المشروبات',
+  dairy: 'الألبان',
+  egg: 'البيض',
+  eggs: 'البيض',
   rice: 'الأرز',
+  grain: 'الحبوب',
   grains: 'الحبوب',
   bakery: 'المخبوزات',
+  bread: 'الخبز',
   frozen: 'المجمدات',
   meat: 'اللحوم',
+  poultry: 'الدواجن',
   seafood: 'الأغذية البحرية',
+  fish: 'الأسماك',
+  fruit: 'الفواكه',
   fruits: 'الفواكه',
+  vegetable: 'الخضروات',
   vegetables: 'الخضروات',
-  snacks: 'المأكولات الخفيفة',
+  snack: 'الوجبات الخفيفة',
+  snacks: 'الوجبات الخفيفة',
+  sweet: 'الحلويات',
   sweets: 'الحلويات',
+  candy: 'الحلوى',
+  chocolate: 'الشوكولاتة',
+  biscuit: 'البسكويت',
+  biscuits: 'البسكويت',
+  cookie: 'الكوكيز',
+  cookies: 'الكوكيز',
   canned: 'المعلبات',
   beauty: 'العناية الشخصية',
+  cosmetics: 'مستحضرات التجميل',
   household: 'المستلزمات المنزلية',
   cleaning: 'المنظفات',
+  cleaner: 'منظفات',
+  detergent: 'منظفات الغسيل',
+  soap: 'الصابون',
+  shampoo: 'الشامبو',
+  paper: 'الورقيات',
+  tissue: 'المناديل',
+  water: 'المياه',
+  juice: 'العصائر',
+  tea: 'الشاي',
+  coffee: 'القهوة',
+  oil: 'الزيوت',
+  spice: 'البهارات',
+  spices: 'البهارات',
+  sauce: 'الصلصات',
+};
+
+// Phonetic English to Arabic Transliteration Engine
+const phoneticTransliterate = (englishWord: string): string => {
+  let str = englishWord.toLowerCase();
+  
+  if (str === 'drink') return 'مشروب';
+  if (str === 'drinks') return 'مشروبات';
+
+  str = str
+    .replace(/tion/g, 'شن')
+    .replace(/kh/g, 'خ')
+    .replace(/gh/g, 'غ')
+    .replace(/sh/g, 'ش')
+    .replace(/ch/g, 'تش')
+    .replace(/th/g, 'ث')
+    .replace(/ph/g, 'ف')
+    .replace(/ee/g, 'ي')
+    .replace(/oo/g, 'و')
+    .replace(/ou/g, 'و')
+    .replace(/au/g, 'و')
+    .replace(/ck/g, 'ك')
+    .replace(/qu/g, 'كو');
+
+  const charMap: Record<string, string> = {
+    a: 'ا',
+    b: 'ب',
+    c: 'ك',
+    d: 'د',
+    e: 'ي',
+    f: 'ف',
+    g: 'ج',
+    h: 'ه',
+    i: 'ي',
+    j: 'ج',
+    k: 'ك',
+    l: 'ل',
+    m: 'م',
+    n: 'ن',
+    o: 'و',
+    p: 'ب',
+    q: 'ق',
+    r: 'ر',
+    s: 'س',
+    t: 'ت',
+    u: 'و',
+    v: 'ف',
+    w: 'و',
+    x: 'كس',
+    y: 'ي',
+    z: 'ز',
+  };
+
+  let arabicStr = '';
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    arabicStr += charMap[char] || char;
+  }
+
+  return arabicStr;
 };
 
 const autoTranslateCategoryAr = (englishName: string): string => {
@@ -37,7 +129,13 @@ const autoTranslateCategoryAr = (englishName: string): string => {
   if (CATEGORY_ARABIC_MAP[clean]) return CATEGORY_ARABIC_MAP[clean];
 
   const words = clean.split(/\s+/);
-  const translated = words.map((w) => CATEGORY_ARABIC_MAP[w] || w);
+  const translated = words.map((w) => {
+    const cleanWord = w.replace(/[^a-z]/g, '');
+    if (CATEGORY_ARABIC_MAP[cleanWord]) {
+      return CATEGORY_ARABIC_MAP[cleanWord];
+    }
+    return phoneticTransliterate(cleanWord);
+  });
   return translated.join(' ');
 };
 
@@ -247,7 +345,7 @@ export const CategoriesPage: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Category Name (Arabic)</label>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Auto-translated</span>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Auto-translated into Arabic</span>
                 </div>
                 <input
                   type="text"

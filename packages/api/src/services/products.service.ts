@@ -57,6 +57,7 @@ export const productsService = {
       categoryName: productData.categoryName || 'General',
       costPrice: productData.costPrice || 0,
       retailPrice: productData.retailPrice || 0,
+      discount: productData.discount || 0,
       vatRate: productData.vatRate || 0,
       stockQuantity: productData.stockQuantity || 0,
       minStockLevel: productData.minStockLevel || 5,

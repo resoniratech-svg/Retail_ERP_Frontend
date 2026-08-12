@@ -11,6 +11,7 @@ export interface Product {
   brandName?: string;
   costPrice: number;
   retailPrice: number;
+  discount?: number; // Discount amount in QAR
   vatRate: number; // e.g. 0 or 0.05
   stockQuantity: number;
   minStockLevel: number;

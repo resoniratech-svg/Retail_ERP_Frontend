@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { productsService } from '@qatar-erp/api';
 import { formatQAR } from '@qatar-erp/utils';
 import { Product } from '@qatar-erp/types';
-import { Plus, Search, Download, Edit, Trash2, X, Package } from 'lucide-react';
+import { Plus, Search, Download, Edit, Trash2, X, Package, Tag } from 'lucide-react';
 import { Button, Badge, Card } from '@qatar-erp/ui';
 
 const CATEGORY_STORAGE_KEY = 'qatar_erp_categories';
@@ -94,7 +94,7 @@ const ARABIC_DICTIONARY: Record<string, string> = {
   cleaner: 'منظف',
   flour: 'طحين',
   salt: 'ملح',
-  pepper: 'ففل',
+  pepper: 'فلفل',
   sauce: 'صلصة',
   ketchup: 'كاتشب',
   mayo: 'مايونيز',
@@ -113,11 +113,9 @@ const ARABIC_DICTIONARY: Record<string, string> = {
 const phoneticTransliterate = (englishWord: string): string => {
   let str = englishWord.toLowerCase();
   
-  // Specific words override
   if (str === 'biscuit') return 'بسكويت';
   if (str === 'biscuits') return 'بسكويت';
 
-  // Replace common phoneme clusters
   str = str
     .replace(/tion/g, 'شن')
     .replace(/kh/g, 'خ')
@@ -133,7 +131,6 @@ const phoneticTransliterate = (englishWord: string): string => {
     .replace(/ck/g, 'ك')
     .replace(/qu/g, 'كو');
 
-  // Single character mapping
   const charMap: Record<string, string> = {
     a: 'ا',
     b: 'ب',
@@ -180,11 +177,9 @@ const autoTranslateToArabic = (englishText: string): string => {
     if (ARABIC_DICTIONARY[cleanWord]) {
       return ARABIC_DICTIONARY[cleanWord];
     }
-    // Convert units like 1L, 500ml, 5kg
     if (/^\d+(l|ml|g|kg)$/i.test(w)) {
       return w.toLowerCase().replace('l', ' لتر').replace('ml', ' مل').replace('kg', ' كجم').replace('g', ' جم');
     }
-    // Fallback to phonetic Arabic transliteration
     return phoneticTransliterate(cleanWord);
   });
   return translatedWords.join(' ');
@@ -209,6 +204,7 @@ export const ProductsPage: React.FC = () => {
     nameAr: '',
     categoryName: 'Dairy & Eggs',
     retailPrice: '',
+    discount: '',
     stockQuantity: '',
     unit: 'Pcs',
   });
@@ -242,6 +238,7 @@ export const ProductsPage: React.FC = () => {
       nameAr: '',
       categoryName: initialCategory,
       retailPrice: '12.50',
+      discount: '0.00',
       stockQuantity: '100',
       unit: 'Pcs',
     });
@@ -262,6 +259,7 @@ export const ProductsPage: React.FC = () => {
       nameAr: prod.nameAr || '',
       categoryName: prod.categoryName || (available[0]?.name ?? 'Dairy & Eggs'),
       retailPrice: prod.retailPrice.toString(),
+      discount: (prod.discount || 0).toString(),
       stockQuantity: prod.stockQuantity.toString(),
       unit: prod.unit || 'Pcs',
     });
@@ -304,6 +302,7 @@ export const ProductsPage: React.FC = () => {
         nameAr: formData.nameAr,
         categoryName: formData.categoryName,
         retailPrice: parseFloat(formData.retailPrice) || 0,
+        discount: parseFloat(formData.discount) || 0,
         stockQuantity: parseInt(formData.stockQuantity, 10) || 0,
         unit: formData.unit,
       });
@@ -315,6 +314,7 @@ export const ProductsPage: React.FC = () => {
         nameAr: formData.nameAr,
         categoryName: formData.categoryName,
         retailPrice: parseFloat(formData.retailPrice) || 0,
+        discount: parseFloat(formData.discount) || 0,
         costPrice: (parseFloat(formData.retailPrice) || 0) * 0.7,
         stockQuantity: parseInt(formData.stockQuantity, 10) || 0,
         minStockLevel: 10,
@@ -405,58 +405,71 @@ export const ProductsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100">{product.sku}</p>
-                    <p className="text-slate-400">{product.barcode}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-slate-900 dark:text-slate-100">{product.name}</p>
-                    {product.nameAr && <p className="text-xs text-slate-500 font-arabic">{product.nameAr}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
-                    {product.categoryName || 'General'}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold">
-                    <span
-                      className={
-                        product.stockQuantity < product.minStockLevel
-                          ? 'text-rose-600 dark:text-rose-400'
-                          : 'text-slate-800 dark:text-slate-200'
-                      }
-                    >
-                      {product.stockQuantity} {product.unit}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
-                    {formatQAR(product.retailPrice)}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <Badge variant={product.isActive ? 'success' : 'neutral'}>
-                      {product.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handleOpenEditModal(product)}
-                        className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400 transition-colors"
-                        title="Edit Product"
+              {filteredProducts.map((product) => {
+                const hasDiscount = product.discount && product.discount > 0;
+                const finalPrice = hasDiscount ? Math.max(0, product.retailPrice - product.discount!) : product.retailPrice;
+
+                return (
+                  <tr key={product.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="px-4 py-3 font-mono text-xs">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{product.sku}</p>
+                      <p className="text-slate-400">{product.barcode}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{product.name}</p>
+                      {product.nameAr && <p className="text-xs text-slate-500 font-arabic">{product.nameAr}</p>}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
+                      {product.categoryName || 'General'}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold">
+                      <span
+                        className={
+                          product.stockQuantity < product.minStockLevel
+                            ? 'text-rose-600 dark:text-rose-400'
+                            : 'text-slate-800 dark:text-slate-200'
+                        }
                       >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-950 rounded text-rose-600 transition-colors"
-                        title="Delete Product"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {product.stockQuantity} {product.unit}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <p className="font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatQAR(finalPrice)}
+                      </p>
+                      {hasDiscount && (
+                        <div className="flex items-center justify-end gap-1 text-[10px]">
+                          <span className="line-through text-slate-400">{formatQAR(product.retailPrice)}</span>
+                          <span className="text-amber-600 dark:text-amber-400 font-bold">(-{formatQAR(product.discount!)})</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <Badge variant={product.isActive ? 'success' : 'neutral'}>
+                        {product.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleOpenEditModal(product)}
+                          className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400 transition-colors"
+                          title="Edit Product"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="p-1.5 hover:bg-rose-100 dark:hover:bg-rose-950 rounded text-rose-600 transition-colors"
+                          title="Delete Product"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -559,7 +572,7 @@ export const ProductsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Retail Price (QAR)</label>
                   <input
@@ -569,6 +582,17 @@ export const ProductsPage: React.FC = () => {
                     onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold"
                     required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Discount (QAR)</label>
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={formData.discount}
+                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 font-bold"
                   />
                 </div>
                 <div>

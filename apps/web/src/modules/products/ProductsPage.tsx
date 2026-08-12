@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { MOCK_PRODUCTS } from '@qatar-erp/api';
+import React, { useState, useEffect } from 'react';
+import { productsService } from '@qatar-erp/api';
 import { formatQAR } from '@qatar-erp/utils';
-import { Plus, Search, Download, MoreVertical, Edit, Trash2, X, Package } from 'lucide-react';
-import { Button, Input, Badge, Card, Modal } from '@qatar-erp/ui';
+import { Product } from '@qatar-erp/types';
+import { Plus, Search, Download, Edit, Trash2, X, Package } from 'lucide-react';
+import { Button, Badge, Card } from '@qatar-erp/ui';
 
 export const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -25,6 +25,17 @@ export const ProductsPage: React.FC = () => {
     stockQuantity: '',
     unit: 'Pcs',
   });
+
+  const loadProducts = () => {
+    setProducts(productsService.getProductsSync());
+  };
+
+  useEffect(() => {
+    loadProducts();
+    const handleUpdate = () => loadProducts();
+    window.addEventListener('qatar_products_updated', handleUpdate);
+    return () => window.removeEventListener('qatar_products_updated', handleUpdate);
+  }, []);
 
   const handleOpenAddModal = () => {
     setFormData({
@@ -41,7 +52,7 @@ export const ProductsPage: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleOpenEditModal = (prod: any) => {
+  const handleOpenEditModal = (prod: Product) => {
     setEditingProduct(prod);
     setFormData({
       sku: prod.sku,
@@ -56,58 +67,43 @@ export const ProductsPage: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleDeleteProduct = (id: string) => {
+  const handleDeleteProduct = async (id: string) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      await productsService.deleteProduct(id);
+      loadProducts();
     }
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (editingProduct) {
-      // Update existing
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...p,
-                sku: formData.sku,
-                barcode: formData.barcode,
-                name: formData.name,
-                nameAr: formData.nameAr,
-                categoryName: formData.categoryName,
-                retailPrice: parseFloat(formData.retailPrice) || 0,
-                stockQuantity: parseInt(formData.stockQuantity, 10) || 0,
-                unit: formData.unit,
-              }
-            : p
-        )
-      );
-    } else {
-      // Add new
-      const newProd = {
-        id: `prod-${Date.now()}`,
+      await productsService.updateProduct(editingProduct.id, {
         sku: formData.sku,
         barcode: formData.barcode,
         name: formData.name,
         nameAr: formData.nameAr,
-        categoryId: 'cat-01',
+        categoryName: formData.categoryName,
+        retailPrice: parseFloat(formData.retailPrice) || 0,
+        stockQuantity: parseInt(formData.stockQuantity, 10) || 0,
+        unit: formData.unit,
+      });
+    } else {
+      await productsService.createProduct({
+        sku: formData.sku,
+        barcode: formData.barcode,
+        name: formData.name,
+        nameAr: formData.nameAr,
         categoryName: formData.categoryName,
         retailPrice: parseFloat(formData.retailPrice) || 0,
         costPrice: (parseFloat(formData.retailPrice) || 0) * 0.7,
-        vatRate: 0,
         stockQuantity: parseInt(formData.stockQuantity, 10) || 0,
         minStockLevel: 10,
         unit: formData.unit,
-        taxRate: 0,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setProducts((prev) => [newProd, ...prev]);
+      });
     }
 
+    loadProducts();
     setIsAddModalOpen(false);
   };
 

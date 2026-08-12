@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatQAR } from '@qatar-erp/utils';
+import { productsService } from '@qatar-erp/api';
 import {
   ShoppingBag, RotateCcw, DollarSign, Lock, RefreshCw, Search, CreditCard, Wifi, WifiOff, ArrowLeft
 } from 'lucide-react';
@@ -49,29 +50,64 @@ export const POSLayout: React.FC = () => {
 
   const grandTotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
 
+  const processBarcodeSearch = async (term: string) => {
+    if (!term.trim()) return;
+
+    // Search by barcode / SKU / name in productsService (localStorage)
+    const product = await productsService.getProductByBarcode(term);
+    
+    if (product) {
+      // Product found in localStorage store!
+      setCart((prev) => [
+        ...prev,
+        {
+          id: `item-${Date.now()}`,
+          barcode: product.barcode,
+          name: product.name,
+          description: product.categoryName || 'General Item',
+          qty: 1,
+          unitPrice: product.retailPrice,
+          tax: 0.00,
+          discount: 0.00,
+          lineTotal: product.retailPrice,
+        },
+      ]);
+    } else {
+      // Search partial match in localStorage products
+      const allProducts = productsService.getProductsSync();
+      const match = allProducts.find(
+        (p) =>
+          p.name.toLowerCase().includes(term.toLowerCase()) ||
+          p.sku.toLowerCase().includes(term.toLowerCase())
+      );
+
+      if (match) {
+        setCart((prev) => [
+          ...prev,
+          {
+            id: `item-${Date.now()}`,
+            barcode: match.barcode,
+            name: match.name,
+            description: match.categoryName || 'General Item',
+            qty: 1,
+            unitPrice: match.retailPrice,
+            tax: 0.00,
+            discount: 0.00,
+            lineTotal: match.retailPrice,
+          },
+        ]);
+      } else {
+        alert(`Product with Barcode / SKU "${term}" not found! Add it in Products master catalog first.`);
+      }
+    }
+    setBarcodeInput('');
+  };
+
   const handleKeypadClick = (val: string) => {
     if (val === 'Clear') {
       setBarcodeInput('');
     } else if (val === 'Enter') {
-      if (barcodeInput === '6251034000012') {
-        setCart([
-          ...cart,
-          {
-            id: `item-${Date.now()}`,
-            barcode: '6251034000012',
-            name: 'Rayyan Water 500ml',
-            description: 'Pack of 24',
-            qty: 1,
-            unitPrice: 18.00,
-            tax: 0.00,
-            discount: 0.00,
-            lineTotal: 18.00,
-          },
-        ]);
-        setBarcodeInput('');
-      } else {
-        setBarcodeInput('');
-      }
+      processBarcodeSearch(barcodeInput);
     } else {
       setBarcodeInput((prev) => prev + val);
     }
@@ -99,179 +135,197 @@ export const POSLayout: React.FC = () => {
             <ShoppingBag className="w-4 h-4" />
             <span>POS Sale</span>
           </button>
-          <button
-            onClick={() => setIsHoldOpen(true)}
-            className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 border border-slate-700"
-          >
+          <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 border border-slate-700">
             <RotateCcw className="w-4 h-4 text-amber-400" />
-            <span>Recall Invoice</span>
-          </button>
-          <button
-            onClick={() => setIsCashDropOpen(true)}
-            className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 border border-slate-700"
-          >
-            <DollarSign className="w-4 h-4 text-sky-400" />
-            <span>Cash Drop</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 border border-slate-700">
-            <Lock className="w-4 h-4 text-purple-400" />
-            <span>Open Drawer</span>
-          </button>
-          <button className="flex items-center gap-2 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-200 border border-slate-700">
-            <RefreshCw className="w-4 h-4 text-rose-400" />
-            <span>Sale / Return</span>
+            <span>Return Mode</span>
           </button>
         </div>
 
-        {/* Offline Status Pill & Cashier Info */}
-        <div className="flex items-center gap-3">
+        {/* STATUS & OFFLINE PILL */}
+        <div className="flex items-center gap-4 text-xs font-medium">
           <button
-            onClick={() => setIsOnline(!isOnline)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-              isOnline
-                ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800'
-                : 'bg-amber-950/80 text-amber-400 border-amber-800'
+            onClick={() => setIsCashDropOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-sky-400 font-bold"
+          >
+            <DollarSign className="w-4 h-4" />
+            <span>Cash Drop / Safe</span>
+          </button>
+
+          <button
+            onClick={() => setIsHoldOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 text-amber-400 font-bold"
+          >
+            <Lock className="w-4 h-4" />
+            <span>Recall Invoices</span>
+          </button>
+
+          <div
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+              isOnline ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'
             }`}
           >
             {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
             <span>{isOnline ? 'Online - Synced' : `Offline (${pendingSync} Pending)`}</span>
-          </button>
-
-          <div className="text-right">
-            <p className="text-xs font-bold text-emerald-400 leading-none">REG-01 ({user?.branchName || 'Doha Main Branch'})</p>
-            <p className="text-[11px] text-slate-400">Cashier: {user ? `${user.firstName} ${user.lastName}` : 'Ahmed Al-Mansoori'}</p>
           </div>
+
+          <span className="text-slate-400">Cashier: <strong className="text-white">{user?.firstName || 'Ahmed'}</strong></span>
         </div>
       </header>
 
-      {/* MAIN SPLIT AREA */}
+      {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT SIDE: TAX INVOICE / CART TABLE */}
-        <div className="flex-1 flex flex-col border-r border-slate-800 bg-slate-900/50">
-          <div className="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">TAX INVOICE</span>
-            <span className="text-xs text-slate-400 font-mono">Invoice #: QTR-2026-0891</span>
+        {/* LEFT: CART TABLE */}
+        <div className="flex-1 flex flex-col bg-slate-900 border-r border-slate-800">
+          <div className="p-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">Tax Invoice Items</h2>
+            <button
+              onClick={() => setCart([])}
+              className="text-xs font-semibold text-rose-400 hover:text-rose-300"
+            >
+              Clear Cart
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900 text-slate-400 font-semibold uppercase sticky top-0 border-b border-slate-800">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-slate-950/50 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
                 <tr>
-                  <th className="p-3">Barcode</th>
-                  <th className="p-3">Product</th>
-                  <th className="p-3">Description</th>
+                  <th className="p-3">Item Details</th>
                   <th className="p-3 text-center">Qty</th>
                   <th className="p-3 text-right">Price</th>
-                  <th className="p-3 text-right">Tax</th>
-                  <th className="p-3 text-right">Discount</th>
-                  <th className="p-3 text-right">Line Total</th>
+                  <th className="p-3 text-right">Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
-                {cart.map((row) => (
-                  <tr key={row.id} className="hover:bg-slate-800/40">
-                    <td className="p-3 text-slate-400">{row.barcode}</td>
-                    <td className="p-3 font-semibold text-white font-sans">{row.name}</td>
-                    <td className="p-3 text-slate-400 font-sans">{row.description || '-'}</td>
-                    <td className="p-3 text-center font-bold text-emerald-400 text-sm">{row.qty}</td>
-                    <td className="p-3 text-right">{formatQAR(row.unitPrice)}</td>
-                    <td className="p-3 text-right">{formatQAR(row.tax)}</td>
-                    <td className="p-3 text-right">{formatQAR(row.discount)}</td>
-                    <td className="p-3 text-right font-bold text-white text-sm">{formatQAR(row.lineTotal)}</td>
+                {cart.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-800/40">
+                    <td className="p-3 font-sans">
+                      <p className="font-bold text-white text-sm">{item.name}</p>
+                      <p className="text-[11px] text-slate-400 font-mono">{item.barcode}</p>
+                    </td>
+                    <td className="p-3 text-center font-bold text-sm">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() =>
+                            setCart(
+                              cart
+                                .map((c) => (c.id === item.id ? { ...c, qty: c.qty - 1, lineTotal: (c.qty - 1) * c.unitPrice } : c))
+                                .filter((c) => c.qty > 0)
+                            )
+                          }
+                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold"
+                        >
+                          -
+                        </button>
+                        <span>{item.qty}</span>
+                        <button
+                          onClick={() =>
+                            setCart(
+                              cart.map((c) => (c.id === item.id ? { ...c, qty: c.qty + 1, lineTotal: (c.qty + 1) * c.unitPrice } : c))
+                            )
+                          }
+                          className="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-3 text-right font-semibold">{formatQAR(item.unitPrice)}</td>
+                    <td className="p-3 text-right font-bold text-emerald-400 text-sm">{formatQAR(item.lineTotal)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {/* TOTAL BANNER */}
+          <div className="h-20 bg-slate-950 border-t border-slate-800 p-4 flex items-center justify-between">
+            <div>
+              <span className="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Payable Amount</span>
+              <p className="text-xs text-slate-500">Includes 0% Qatar VAT</p>
+            </div>
+            <div className="text-right">
+              <span className="text-3xl font-black text-emerald-400 tracking-tight font-mono">{formatQAR(grandTotal)}</span>
+            </div>
+          </div>
         </div>
 
-        {/* RIGHT SIDE: BARCODE SCANNER & TOUCH KEYPAD */}
-        <div className="w-[380px] bg-slate-900 flex flex-col p-4 gap-4 border-l border-slate-800">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-slate-400">Scan Barcode / Product Search</label>
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-3 text-slate-400" />
-              <input
-                type="text"
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                placeholder="Scan barcode or type..."
-                className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-lg font-mono text-emerald-400 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
+        {/* RIGHT: TOUCH NUMERIC KEYPAD & BARCODE INPUT */}
+        <div className="w-[420px] bg-slate-950 p-4 flex flex-col justify-between">
+          <div className="flex flex-col gap-3">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-400">Barcode / Item Search</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  value={barcodeInput}
+                  onChange={(e) => setBarcodeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      processBarcodeSearch(barcodeInput);
+                    }
+                  }}
+                  placeholder="Scan barcode or type SKU..."
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <button
+                onClick={() => processBarcodeSearch(barcodeInput)}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs"
+              >
+                Find
+              </button>
+            </div>
+
+            {/* NUMERIC TOUCH KEYPAD GRID */}
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {['7', '8', '9', '4', '5', '6', '1', '2', '3', 'Clear', '0', 'Enter'].map((key) => (
+                <button
+                  key={key}
+                  onClick={() => handleKeypadClick(key)}
+                  className={`h-14 rounded-xl text-lg font-bold transition-colors flex items-center justify-center ${
+                    key === 'Enter'
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white col-span-1'
+                      : key === 'Clear'
+                      ? 'bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800'
+                      : 'bg-slate-900 hover:bg-slate-800 text-white border border-slate-800'
+                  }`}
+                >
+                  {key}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex-1 grid grid-cols-3 gap-2">
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '.'].map((key) => (
-              <button
-                key={key}
-                onClick={() => handleKeypadClick(key)}
-                className="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 rounded-xl text-2xl font-bold text-white flex items-center justify-center shadow-sm border border-slate-700"
-              >
-                {key}
-              </button>
-            ))}
+          {/* BOTTOM ACTIONS & CHECKOUT */}
+          <div className="flex flex-col gap-2 mt-4">
             <button
-              onClick={() => handleKeypadClick('Clear')}
-              className="col-span-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-sm uppercase py-3 border border-rose-500"
+              onClick={() => setIsPaymentOpen(true)}
+              disabled={cart.length === 0}
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black text-lg rounded-xl shadow-lg flex items-center justify-center gap-2 uppercase tracking-wide"
             >
-              Clear
-            </button>
-            <button
-              onClick={() => handleKeypadClick('Enter')}
-              className="col-span-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-base uppercase py-3 border border-emerald-500"
-            >
-              Enter
+              <CreditCard className="w-5 h-5" />
+              <span>Checkout / Payment ({formatQAR(grandTotal)})</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* BOTTOM ACTION BAR */}
-      <div className="h-16 bg-slate-900 border-t border-slate-800 px-4 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setCart([])} className="px-4 py-2 bg-rose-950/80 hover:bg-rose-900 text-rose-300 font-bold rounded-lg text-xs border border-rose-800">
-            Clear Cart
-          </button>
-          <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg text-xs border border-slate-700">
-            Remove Item
-          </button>
-          <button onClick={() => setIsHoldOpen(true)} className="px-4 py-2 bg-amber-950/80 hover:bg-amber-900 text-amber-300 font-medium rounded-lg text-xs border border-amber-800">
-            Hold Invoice
-          </button>
-          <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg text-xs border border-slate-700">
-            Apply Discount
-          </button>
-        </div>
-
-        {/* TOTAL DISPLAY BANNER */}
-        <div className="flex items-center gap-4 bg-emerald-950/80 border border-emerald-500/50 px-6 py-2 rounded-xl">
-          <div className="text-right">
-            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">GRAND TOTAL</span>
-            <span className="text-2xl font-black text-emerald-300 font-mono tracking-tight">{formatQAR(grandTotal)}</span>
-          </div>
-          <button
-            onClick={() => setIsPaymentOpen(true)}
-            disabled={cart.length === 0}
-            className="px-6 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-black text-sm rounded-lg uppercase shadow-lg flex items-center gap-2"
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>PAY NOW</span>
-          </button>
-        </div>
-      </div>
-
+      {/* MODALS */}
       <PaymentModal
         isOpen={isPaymentOpen}
         onClose={() => setIsPaymentOpen(false)}
         grandTotal={grandTotal}
         onCompleteSale={handleCompleteSale}
       />
+
       <HoldRecallModal
         isOpen={isHoldOpen}
         onClose={() => setIsHoldOpen(false)}
-        onRecallInvoice={(inv) => console.log('Recalled invoice:', inv)}
+        onRecallInvoice={() => setIsHoldOpen(false)}
       />
+
       <CashDropModal
         isOpen={isCashDropOpen}
         onClose={() => setIsCashDropOpen(false)}

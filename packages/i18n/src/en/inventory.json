@@ -1,0 +1,20 @@
+{
+  "inventory": "Inventory",
+  "products": "Products",
+  "categories": "Categories",
+  "brands": "Brands",
+  "stock": "Stock Overview",
+  "warehouses": "Warehouses",
+  "stockTransfers": "Stock Transfers",
+  "stockAdjustments": "Stock Adjustments",
+  "sku": "SKU",
+  "barcode": "Barcode",
+  "unitPrice": "Unit Price (QAR)",
+  "costPrice": "Cost Price (QAR)",
+  "quantityOnHand": "Quantity On Hand",
+  "minStockLevel": "Min Stock Level",
+  "addCategory": "Add Category",
+  "addWarehouse": "Add Warehouse",
+  "newTransfer": "New Transfer Request",
+  "newAdjustment": "New Adjustment Entry"
+}

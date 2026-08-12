@@ -1,0 +1,20 @@
+{
+  "inventory": "المخزون",
+  "products": "المنتجات",
+  "categories": "الفئات",
+  "brands": "العلامات التجارية",
+  "stock": "نظرة عامة على المخزون",
+  "warehouses": "المستودعات",
+  "stockTransfers": "تحويلات المخزون",
+  "stockAdjustments": "تعديلات المخزون",
+  "sku": "رمز المنتج",
+  "barcode": "البارکود",
+  "unitPrice": "سعر الوحدة (ر.ق)",
+  "costPrice": "سعر التكلفة (ر.ق)",
+  "quantityOnHand": "الكمية المتوفرة",
+  "minStockLevel": "الحد الأدنى للمخزون",
+  "addCategory": "إضافة فئة",
+  "addWarehouse": "إضافة مستودع",
+  "newTransfer": "طلب تحويل جديد",
+  "newAdjustment": "قيد تعديل جديد"
+}

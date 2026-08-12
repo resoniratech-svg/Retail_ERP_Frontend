@@ -1,0 +1,23 @@
+{
+  "posSale": "بيع نقطة البيع",
+  "recallInvoice": "استدعاء الفاتورة",
+  "cashDrop": "إيداع نقدي",
+  "openDrawer": "فتح الصندوق",
+  "saleReturn": "مبيعات / إرجاع",
+  "taxInvoice": "فاتورة ضريبية",
+  "scanBarcode": "مسح البارکود / البحث عن منتج...",
+  "barcode": "البارکود",
+  "product": "المنتج",
+  "description": "الوصف",
+  "qty": "الكمية",
+  "price": "السعر",
+  "tax": "الضريبة",
+  "discount": "الخصم",
+  "total": "الإجمالي",
+  "clear": "إلغاء",
+  "remove": "حذف",
+  "hold": "تعليق",
+  "changePrice": "تغيير السعر",
+  "delivery": "التوصيل",
+  "totalAmount": "الإجمالي"
+}

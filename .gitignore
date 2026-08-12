@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.turbo/
+.vite/
+*.log
+.env
+.env.local
+out/
+release/
+*.sqlite
+*.db

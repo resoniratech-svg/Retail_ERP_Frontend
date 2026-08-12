@@ -1,0 +1,23 @@
+{
+  "posSale": "POS Sale",
+  "recallInvoice": "Recall Invoice",
+  "cashDrop": "Cash Drop",
+  "openDrawer": "Open Drawer",
+  "saleReturn": "Sale / Return",
+  "taxInvoice": "TAX INVOICE",
+  "scanBarcode": "Scan Barcode / Search Product...",
+  "barcode": "Barcode",
+  "product": "Product",
+  "description": "Description",
+  "qty": "Qty",
+  "price": "Price",
+  "tax": "Tax",
+  "discount": "Discount",
+  "total": "Total",
+  "clear": "Clear",
+  "remove": "Remove",
+  "hold": "Hold",
+  "changePrice": "Change Price",
+  "delivery": "Delivery",
+  "totalAmount": "TOTAL"
+}

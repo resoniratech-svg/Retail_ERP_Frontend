@@ -1,0 +1,22 @@
+{
+  "name": "qatar-retail-erp-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Qatar Retail ERP & POS Frontend Monorepo",
+  "packageManager": "pnpm@9.7.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.12",
+    "typescript": "^5.5.4",
+    "prettier": "^3.3.3",
+    "eslint": "^9.9.0",
+    "vite": "^5.4.1",
+    "vitest": "^2.0.5"
+  }
+}

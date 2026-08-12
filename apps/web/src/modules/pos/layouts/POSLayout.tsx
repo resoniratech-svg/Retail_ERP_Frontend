@@ -115,10 +115,10 @@ export const POSLayout: React.FC = () => {
 
   const handleCompleteSale = async () => {
     const itemsToDeduct = cart.map((c) => ({
-      id: c.product.id,
-      barcode: c.product.barcode,
-      sku: c.product.sku,
-      quantity: c.quantity,
+      id: c.id,
+      barcode: c.barcode,
+      sku: c.barcode,
+      quantity: c.qty,
     }));
     await productsService.deductStock(itemsToDeduct);
 

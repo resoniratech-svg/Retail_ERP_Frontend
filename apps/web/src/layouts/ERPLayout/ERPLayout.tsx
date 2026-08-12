@@ -3,7 +3,6 @@ import { ERPTopHeader } from './components/ERPTopHeader';
 import { MainModuleNavigation } from './components/MainModuleNavigation';
 import { ERPModuleRibbon } from './components/ERPModuleRibbon';
 import { WorkspaceTabs, TabItem } from './components/WorkspaceTabs';
-import { RightActionToolbar } from './components/RightActionToolbar';
 import { ERPStatusBar } from './components/ERPStatusBar';
 import { ERP_TOP_MODULES, TopModuleItem } from './config/moduleNavigation';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -71,10 +70,9 @@ export const ERPLayout: React.FC<{ children?: React.ReactNode }> = ({ children }
         onCloseTab={handleCloseTab}
       />
 
-      {/* 5. MAIN WORKSPACE WITH RIGHT ACTION BAR */}
+      {/* 5. MAIN WORKSPACE AREA */}
       <div className="flex-1 flex overflow-hidden bg-white">
         <main className="flex-1 overflow-y-auto p-4 bg-slate-50">{children}</main>
-        <RightActionToolbar />
       </div>
 
       {/* 6. BOTTOM STATUS BAR */}

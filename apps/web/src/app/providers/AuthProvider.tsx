@@ -15,19 +15,7 @@ export interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>({
-    id: 'user-001',
-    username: 'admin',
-    email: 'admin@qatar-erp.qa',
-    firstName: 'Ahmed',
-    lastName: 'Al-Mansouri',
-    role: UserRole.SUPER_ADMIN,
-    permissions: ['*:*'],
-    branchId: 'br-doha-01',
-    branchName: 'Doha Main Branch',
-    companyId: 'comp-qatar-01',
-    isActive: true,
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
@@ -35,14 +23,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await new Promise((r) => setTimeout(r, 400));
     setUser({
       id: 'user-001',
-      username: credentials.username || 'cashier',
-      email: 'user@qatar-erp.qa',
-      firstName: 'Cashier',
-      lastName: 'Staff',
-      role: UserRole.CASHIER,
-      permissions: ['pos:sale', 'pos:cart', 'product:view'],
+      username: credentials.username || 'admin',
+      email: 'admin@qatar-erp.qa',
+      firstName: 'Ahmed',
+      lastName: 'Al-Mansouri',
+      role: UserRole.SUPER_ADMIN,
+      permissions: ['*:*'],
       branchId: 'br-doha-01',
       branchName: 'Doha Main Branch',
+      companyId: 'comp-qatar-01',
       isActive: true,
     });
     setIsLoading(false);

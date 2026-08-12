@@ -129,6 +129,10 @@ export const POSLayout: React.FC = () => {
     }
   };
 
+  const handleRemoveItem = (id: string) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const handleCompleteSale = async () => {
     const itemsToDeduct = cart.map((c) => ({
       id: c.id,
@@ -225,6 +229,7 @@ export const POSLayout: React.FC = () => {
                     <th className="py-2 text-center">QTY</th>
                     <th className="py-2 text-right">Price</th>
                     <th className="py-2 text-right">Total</th>
+                    <th className="py-2 text-center w-12">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800">
@@ -282,6 +287,15 @@ export const POSLayout: React.FC = () => {
                       </td>
                       <td className="py-3 text-right font-mono font-bold text-emerald-400">
                         {formatQAR(row.lineTotal)}
+                      </td>
+                      <td className="py-3 text-center">
+                        <button
+                          onClick={() => handleRemoveItem(row.id)}
+                          className="p-1.5 hover:bg-rose-950/80 rounded text-rose-400 hover:text-rose-300 transition-colors"
+                          title="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}

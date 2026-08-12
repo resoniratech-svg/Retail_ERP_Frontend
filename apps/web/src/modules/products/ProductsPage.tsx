@@ -5,6 +5,70 @@ import { Product } from '@qatar-erp/types';
 import { Plus, Search, Download, Edit, Trash2, X, Package } from 'lucide-react';
 import { Button, Badge, Card } from '@qatar-erp/ui';
 
+const ARABIC_DICTIONARY: Record<string, string> = {
+  milk: 'حليب',
+  fresh: 'طازج',
+  full: 'كامل',
+  cream: 'الدسم',
+  low: 'قليل',
+  fat: 'الدسم',
+  water: 'ماء',
+  natural: 'طبيعي',
+  rice: 'أرز',
+  basmati: 'بسمتي',
+  juice: 'عصير',
+  orange: 'برتقال',
+  apple: 'تفاح',
+  banana: 'موز',
+  bread: 'خبز',
+  cheese: 'جبن',
+  butter: 'زبدة',
+  sugar: 'سكر',
+  oil: 'زيت',
+  tea: 'شاي',
+  coffee: 'قهوة',
+  chicken: 'دجاج',
+  meat: 'لحم',
+  fish: 'سمك',
+  dates: 'تمر',
+  khudri: 'خضري',
+  premium: 'فاخر',
+  original: 'أصلي',
+  can: 'علبة',
+  bottle: 'زجاجة',
+  pack: 'عبوة',
+  box: 'كرتون',
+  almarai: 'المراعي',
+  rayyan: 'الريان',
+  khabari: 'خباري',
+  pepsi: 'بيبسي',
+  coca: 'كوكاكولا',
+  cola: 'كولا',
+  red: 'ريد',
+  bull: 'بول',
+  egg: 'بيض',
+  eggs: 'بيض',
+  yogurt: 'زبادي',
+  laban: 'لبن',
+};
+
+const autoTranslateToArabic = (englishText: string): string => {
+  if (!englishText) return '';
+  const words = englishText.trim().split(/\s+/);
+  const translatedWords = words.map((w) => {
+    const cleanWord = w.toLowerCase().replace(/[^a-z]/g, '');
+    if (ARABIC_DICTIONARY[cleanWord]) {
+      return ARABIC_DICTIONARY[cleanWord];
+    }
+    // Convert units like 1L, 500ml, 5kg
+    if (/^\d+(l|ml|g|kg)$/i.test(w)) {
+      return w.toLowerCase().replace('l', ' لتر').replace('ml', ' مل').replace('kg', ' كجم').replace('g', ' جم');
+    }
+    return w;
+  });
+  return translatedWords.join(' ');
+};
+
 export const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,6 +77,7 @@ export const ProductsPage: React.FC = () => {
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isManualArabicEdit, setIsManualArabicEdit] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -49,6 +114,7 @@ export const ProductsPage: React.FC = () => {
       unit: 'Pcs',
     });
     setEditingProduct(null);
+    setIsManualArabicEdit(false);
     setIsAddModalOpen(true);
   };
 
@@ -64,7 +130,25 @@ export const ProductsPage: React.FC = () => {
       stockQuantity: prod.stockQuantity.toString(),
       unit: prod.unit || 'Pcs',
     });
+    setIsManualArabicEdit(true);
     setIsAddModalOpen(true);
+  };
+
+  const handleEnglishNameChange = (val: string) => {
+    const updatedAr = !isManualArabicEdit ? autoTranslateToArabic(val) : formData.nameAr;
+    setFormData({
+      ...formData,
+      name: val,
+      nameAr: updatedAr,
+    });
+  };
+
+  const handleArabicNameChange = (val: string) => {
+    setIsManualArabicEdit(true);
+    setFormData({
+      ...formData,
+      nameAr: val,
+    });
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -288,7 +372,7 @@ export const ProductsPage: React.FC = () => {
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => handleEnglishNameChange(e.target.value)}
                   placeholder="e.g. Almarai Fresh Milk 1L"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   required
@@ -296,11 +380,14 @@ export const ProductsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Product Name (Arabic)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">Product Name (Arabic)</label>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Auto-translated from English</span>
+                </div>
                 <input
                   type="text"
                   value={formData.nameAr}
-                  onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
+                  onChange={(e) => handleArabicNameChange(e.target.value)}
                   placeholder="مثال: حليب المراعي طازج 1 لتر"
                   className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-arabic"
                 />

@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
-import { Card, Button, Badge } from '@qatar-erp/ui';
+import React, { useState, useEffect } from 'react';
+import { Card, Button } from '@qatar-erp/ui';
 import { Plus, Tag, Edit, Trash2, X } from 'lucide-react';
+
+const CATEGORY_STORAGE_KEY = 'qatar_erp_categories';
+
+const INITIAL_CATEGORIES: CategoryItem[] = [
+  { id: 'cat-1', code: 'CAT-DAIRY', name: 'Dairy & Eggs', nameAr: 'الألبان والبيض' },
+  { id: 'cat-2', code: 'CAT-BEV', name: 'Beverages', nameAr: 'المشروبات' },
+  { id: 'cat-3', code: 'CAT-RICE', name: 'Rice & Grains', nameAr: 'الأرز والحبوب' },
+];
 
 const CATEGORY_ARABIC_MAP: Record<string, string> = {
   dairy: 'الألبان والبيض',
@@ -38,16 +46,10 @@ export interface CategoryItem {
   code: string;
   name: string;
   nameAr: string;
-  items: number;
 }
 
 export const CategoriesPage: React.FC = () => {
-  const [categories, setCategories] = useState<CategoryItem[]>([
-    { id: 'cat-1', code: 'CAT-DAIRY', name: 'Dairy & Eggs', nameAr: 'الألبان والبيض', items: 42 },
-    { id: 'cat-2', code: 'CAT-BEV', name: 'Beverages', nameAr: 'المشروبات', items: 128 },
-    { id: 'cat-3', code: 'CAT-RICE', name: 'Rice & Grains', nameAr: 'الأرز والحبوب', items: 35 },
-  ]);
-
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
   const [isManualArEdit, setIsManualArEdit] = useState(false);
@@ -57,6 +59,31 @@ export const CategoriesPage: React.FC = () => {
     name: '',
     nameAr: '',
   });
+
+  const getStoredCategories = (): CategoryItem[] => {
+    try {
+      const stored = localStorage.getItem(CATEGORY_STORAGE_KEY);
+      if (!stored) {
+        localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(INITIAL_CATEGORIES));
+        return INITIAL_CATEGORIES;
+      }
+      return JSON.parse(stored);
+    } catch {
+      return INITIAL_CATEGORIES;
+    }
+  };
+
+  const saveCategoriesToStorage = (items: CategoryItem[]) => {
+    try {
+      localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      console.error('Failed to save categories to localStorage:', e);
+    }
+  };
+
+  useEffect(() => {
+    setCategories(getStoredCategories());
+  }, []);
 
   const handleOpenAddModal = () => {
     setFormData({
@@ -91,16 +118,19 @@ export const CategoriesPage: React.FC = () => {
 
   const handleDeleteCategory = (id: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
-      setCategories((prev) => prev.filter((c) => c.id !== id));
+      const updated = categories.filter((c) => c.id !== id);
+      setCategories(updated);
+      saveCategoriesToStorage(updated);
     }
   };
 
   const handleSaveCategory = (e: React.FormEvent) => {
     e.preventDefault();
 
+    let updated: CategoryItem[];
     if (editingCategory) {
-      setCategories((prev) =>
-        prev.map((c) => (c.id === editingCategory.id ? { ...c, code: formData.code, name: formData.name, nameAr: formData.nameAr } : c))
+      updated = categories.map((c) =>
+        c.id === editingCategory.id ? { ...c, code: formData.code, name: formData.name, nameAr: formData.nameAr } : c
       );
     } else {
       const newCat: CategoryItem = {
@@ -108,11 +138,12 @@ export const CategoriesPage: React.FC = () => {
         code: formData.code,
         name: formData.name,
         nameAr: formData.nameAr,
-        items: 0,
       };
-      setCategories((prev) => [newCat, ...prev]);
+      updated = [newCat, ...categories];
     }
 
+    setCategories(updated);
+    saveCategoriesToStorage(updated);
     setIsAddModalOpen(false);
   };
 
@@ -139,7 +170,6 @@ export const CategoriesPage: React.FC = () => {
               <th className="p-3">Category Code</th>
               <th className="p-3">English Name</th>
               <th className="p-3">Arabic Name</th>
-              <th className="p-3 text-right">Items Count</th>
               <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
@@ -149,7 +179,6 @@ export const CategoriesPage: React.FC = () => {
                 <td className="p-3 font-mono text-xs font-bold text-slate-900 dark:text-white">{c.code}</td>
                 <td className="p-3 font-medium text-slate-900 dark:text-white">{c.name}</td>
                 <td className="p-3 font-arabic text-slate-600 dark:text-slate-300">{c.nameAr}</td>
-                <td className="p-3 text-right font-bold text-emerald-600">{c.items} SKU</td>
                 <td className="p-3 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <button

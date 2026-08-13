@@ -22,6 +22,8 @@ import { AccountingPage } from '../../modules/accounting/AccountingPage';
 import { HRPage } from '../../modules/hr/HRPage';
 import { POSPage } from '../../modules/pos/POSPage';
 import { GenericModulePage } from '../../modules/common/GenericModulePage';
+import { PurchaseOrdersPage } from '../../modules/inventory/PurchaseOrdersPage';
+import { GRNPage } from '../../modules/inventory/GRNPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -78,7 +80,8 @@ export const AppRouter: React.FC = () => {
                   <Route path="/suppliers" element={<GenericModulePage title="Suppliers" subtitle="Vendor registry & payment terms" entityName="Supplier" items={[{ id: '1', code: 'SUP-01', name: 'Almarai Food Qatar W.L.L', status: 'ACTIVE' }]} />} />
                   <Route path="/loyalty" element={<GenericModulePage title="Loyalty Program" subtitle="Qatar points tiers" entityName="Loyalty Tier" items={[{ id: '1', code: 'LOY-GOLD', name: 'Gold Customer Tier (2x Points)', status: 'ACTIVE' }]} />} />
                   <Route path="/promotions" element={<GenericModulePage title="Promotions" subtitle="Discount campaigns" entityName="Promotion" items={[{ id: '1', code: 'PRO-RAMADAN', name: 'Ramadan Special Offer 15%', amount: 15.00, status: 'ACTIVE' }]} />} />
-                  <Route path="/purchasing" element={<GenericModulePage title="Purchasing & POs" subtitle="Purchase Orders & GRN" entityName="PO" items={[{ id: '1', code: 'PO-2026-001', name: 'PO - Almarai Foods Qatar', amount: 85000.00, status: 'APPROVED' }]} />} />
+                  <Route path="/purchasing" element={<PurchaseOrdersPage />} />
+                  <Route path="/grn" element={<GRNPage />} />
                   <Route path="/trading" element={<GenericModulePage title="Trading & B2B" subtitle="Wholesale Quotations" entityName="Quotation" items={[{ id: '1', code: 'QT-2026-44', name: 'B2B Offer - Doha Hotel Group', amount: 120000.00, status: 'CONFIRMED' }]} />} />
                   <Route path="/sales" element={<GenericModulePage title="Sales Orders" subtitle="Sales invoices" entityName="Sales Order" items={[{ id: '1', code: 'SO-991', name: 'Retail Order - Walk-in POS', amount: 245.50, status: 'COMPLETED' }]} />} />
                   <Route path="/payments" element={<GenericModulePage title="Payments" subtitle="Payment receipts" entityName="Payment" items={[{ id: '1', code: 'PAY-881', name: 'Bank Transfer - Doha Hypermarket', amount: 32500.00, status: 'CLEARED' }]} />} />

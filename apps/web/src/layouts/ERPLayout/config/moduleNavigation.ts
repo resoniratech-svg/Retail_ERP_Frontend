@@ -83,7 +83,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         titleAr: 'الشراء والمخازن',
         actions: [
           { id: 'inv-po', label: 'Purchase Orders', labelAr: 'أوامر الشراء', iconName: 'FileText', route: '/purchasing' },
-          { id: 'inv-grn', label: 'GRN Receipts', labelAr: 'استلام البضائع', iconName: 'Inbox', route: '/purchasing' },
+          { id: 'inv-grn', label: 'GRN Receipts', labelAr: 'استلام البضائع', iconName: 'Inbox', route: '/grn' },
           { id: 'inv-stock', label: 'Stock Overview', labelAr: 'نظرة المخزون', iconName: 'Box', route: '/stock' },
           { id: 'inv-wh', label: 'Warehouses', labelAr: 'المستودعات', iconName: 'Warehouse', route: '/warehouses' },
           { id: 'inv-trf', label: 'Stock Transfers', labelAr: 'التحويلات المخزنية', iconName: 'Repeat', route: '/stock-transfers' },

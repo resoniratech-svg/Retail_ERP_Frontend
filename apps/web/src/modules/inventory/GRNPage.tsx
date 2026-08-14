@@ -379,7 +379,7 @@ export const GRNPage: React.FC = () => {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">GRN Receipts</h1>
+          <h1 className="text-2xl font-bold tracking-tight">GRN</h1>
           <p className="text-sm text-slate-500">Manage and track goods received from suppliers</p>
         </div>
         <Button variant="primary" onClick={handleOpenCreate} className="flex items-center gap-2 font-bold">

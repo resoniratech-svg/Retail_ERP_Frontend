@@ -17,6 +17,7 @@ import { InventoryPage } from '../../modules/inventory/InventoryPage';
 import { StockPage } from '../../modules/stock/StockPage';
 import { WarehousesPage } from '../../modules/warehouses/WarehousesPage';
 import { StockTransfersPage } from '../../modules/stock-transfers/StockTransfersPage';
+import { StockRequisitionsPage } from '../../modules/stock/StockRequisitionsPage';
 import { CustomersPage } from '../../modules/customers/CustomersPage';
 import { AccountingPage } from '../../modules/accounting/AccountingPage';
 import { HRPage } from '../../modules/hr/HRPage';
@@ -25,7 +26,63 @@ import { LeaveApplicationsPage } from '../../modules/hr/LeaveApplicationsPage';
 import { POSPage } from '../../modules/pos/POSPage';
 import { GenericModulePage } from '../../modules/common/GenericModulePage';
 import { PurchaseOrdersPage } from '../../modules/inventory/PurchaseOrdersPage';
+import { PurchasePage } from '../../modules/inventory/PurchasePage';
+import { PurchaseReturnPage } from '../../modules/inventory/PurchaseReturnPage';
+import { StockTakingPage } from '../../modules/stock/StockTakingPage';
+import { StockAdjustmentsPage } from '../../modules/stock/StockAdjustmentsPage';
+import { StockAdjustmentVerificationPage } from '../../modules/stock/StockAdjustmentVerificationPage';
+import { WastagePage } from '../../modules/inventory/WastagePage';
 import { GRNPage } from '../../modules/inventory/GRNPage';
+import { GRTNPage } from '../../modules/inventory/GRTNPage';
+import { ConsignmentPage } from '../../modules/inventory/ConsignmentPage';
+import { ConsignmentReturnPage } from '../../modules/inventory/ConsignmentReturnPage';
+import { ProductConversionsPage } from '../../modules/inventory/ProductConversionsPage';
+import { ProductionRequestPage } from '../../modules/inventory/ProductionRequestPage';
+import { ProductionPlanPage } from '../../modules/inventory/ProductionPlanPage';
+import { ProductionPage } from '../../modules/inventory/ProductionPage';
+import { InternalConsumptionsPage } from '../../modules/inventory/InternalConsumptionsPage';
+import { CustomerPriceListPage } from '../../modules/inventory/CustomerPriceListPage';
+import { QuotationsPage } from '../../modules/trading/QuotationsPage';
+import { SalesOrdersPage } from '../../modules/trading/SalesOrdersPage';
+import { SalesInvoicesPage } from '../../modules/trading/SalesInvoicesPage';
+import { SalesReturnPage } from '../../modules/trading/SalesReturnPage';
+import { JobOrdersPage } from '../../modules/trading/JobOrdersPage';
+import { DeliveryReceiptsPage } from '../../modules/trading/DeliveryReceiptsPage';
+import { RoutesPage } from '../../modules/trading/RoutesPage';
+import { LoadingConfirmationPage } from '../../modules/trading/LoadingConfirmationPage';
+import { PickListPage } from '../../modules/trading/PickListPage';
+import { CouponMasterPage } from '../../modules/trading/CouponMasterPage';
+import { PrintedCouponsPage } from '../../modules/trading/PrintedCouponsPage';
+import { SaleSessionsPage } from '../../modules/trading/SaleSessionsPage';
+import { FleetPage } from '../../modules/trading/FleetPage';
+import { StockOnLoadReloadPage } from '../../modules/trading/StockOnLoadReloadPage';
+import { StockOffLoadPage } from '../../modules/trading/StockOffLoadPage';
+import { VanStockPage } from '../../modules/trading/VanStockPage';
+import { SaleStockReportsPage } from '../../modules/trading/SaleStockReportsPage';
+import { VanDiscountOTPPage } from '../../modules/trading/VanDiscountOTPPage';
+import { VanRouteTrackPage } from '../../modules/trading/VanRouteTrackPage';
+import { VanAssetPage } from '../../modules/trading/VanAssetPage';
+
+import { TaxesPage } from '../../modules/reports/TaxesPage';
+import { LogsPage } from '../../modules/reports/LogsPage';
+import { AllReportsPage } from '../../modules/reports/AllReportsPage';
+import { CustomReportsPage } from '../../modules/reports/CustomReportsPage';
+import { SalesReportsPage } from '../../modules/reports/SalesReportsPage';
+import { SalesPage } from '../../modules/reports/SalesPage';
+import { SalesProfitPage } from '../../modules/reports/SalesProfitPage';
+import { DaySummaryPage } from '../../modules/reports/DaySummaryPage';
+import { HourlyReportPage } from '../../modules/reports/HourlyReportPage';
+import { CashDropPayoutPage } from '../../modules/reports/CashDropPayoutPage';
+import { DiscountsPage } from '../../modules/reports/DiscountsPage';
+import { POSReturnPage } from '../../modules/reports/POSReturnPage';
+import { CreditNotePage } from '../../modules/reports/CreditNotePage';
+import { MISReportPage } from '../../modules/reports/MISReportPage';
+import { ProductionReportPage } from '../../modules/reports/ProductionReportPage';
+import { ProductWiseCommissionReportPage } from '../../modules/reports/ProductWiseCommissionReportPage';
+import { WholesaleReportsPage } from '../../modules/reports/WholesaleReportsPage';
+import { PurchaseReportsPage } from '../../modules/reports/PurchaseReportsPage';
+import { LocationSaleReturnReportPage } from '../../modules/reports/LocationSaleReturnReportPage';
+import { LocationPurchaseReturnReportPage } from '../../modules/reports/LocationPurchaseReturnReportPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -64,6 +121,7 @@ export const AppRouter: React.FC = () => {
                   <Route path="/stock" element={<StockPage />} />
                   <Route path="/warehouses" element={<WarehousesPage />} />
                   <Route path="/stock-transfers" element={<StockTransfersPage />} />
+                  <Route path="/stock-requisitions" element={<StockRequisitionsPage />} />
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/accounting" element={<AccountingPage />} />
                   <Route path="/hr" element={<HRPage />} />
@@ -98,19 +156,69 @@ export const AppRouter: React.FC = () => {
                   <Route path="/promotions" element={<GenericModulePage title="Promotions" subtitle="Discount campaigns" entityName="Promotion" items={[{ id: '1', code: 'PRO-RAMADAN', name: 'Ramadan Special Offer 15%', amount: 15.00, status: 'ACTIVE' }]} />} />
                   <Route path="/purchasing" element={<PurchaseOrdersPage />} />
                   <Route path="/grn" element={<GRNPage />} />
-                  <Route path="/trading" element={<GenericModulePage title="Trading & B2B" subtitle="Wholesale Quotations" entityName="Quotation" items={[{ id: '1', code: 'QT-2026-44', name: 'B2B Offer - Doha Hotel Group', amount: 120000.00, status: 'CONFIRMED' }]} />} />
-                  <Route path="/sales" element={<GenericModulePage title="Sales Orders" subtitle="Sales invoices" entityName="Sales Order" items={[{ id: '1', code: 'SO-991', name: 'Retail Order - Walk-in POS', amount: 245.50, status: 'COMPLETED' }]} />} />
+                  <Route path="/grtn" element={<GRTNPage />} />
+                  <Route path="/purchase" element={<PurchasePage />} />
+                  <Route path="/purchase-returns" element={<PurchaseReturnPage />} />
+                  <Route path="/consignment" element={<ConsignmentPage />} />
+                  <Route path="/consignment-return" element={<ConsignmentReturnPage />} />
+                  <Route path="/stock-taking" element={<StockTakingPage />} />
+                  <Route path="/stock-adjustments" element={<StockAdjustmentsPage />} />
+                  <Route path="/stock-adjustment-verification" element={<StockAdjustmentVerificationPage />} />
+                  <Route path="/wastage" element={<WastagePage />} />
+                  <Route path="/product-conversions" element={<ProductConversionsPage />} />
+                  <Route path="/production-requests" element={<ProductionRequestPage />} />
+                  <Route path="/production-plans" element={<ProductionPlanPage />} />
+                  <Route path="/production" element={<ProductionPage />} />
+                  <Route path="/internal-consumptions" element={<InternalConsumptionsPage />} />
+                  <Route path="/customer-price-list" element={<CustomerPriceListPage />} />
+                  <Route path="/trading" element={<QuotationsPage />} />
+                  <Route path="/sales" element={<SalesOrdersPage />} />
+                  <Route path="/sales-invoices" element={<SalesInvoicesPage />} />
                   <Route path="/payments" element={<GenericModulePage title="Payments" subtitle="Payment receipts" entityName="Payment" items={[{ id: '1', code: 'PAY-881', name: 'Bank Transfer - Doha Hypermarket', amount: 32500.00, status: 'CLEARED' }]} />} />
-                  <Route path="/returns" element={<GenericModulePage title="Returns & RMA" subtitle="Customer return credit" entityName="RMA" items={[{ id: '1', code: 'RMA-12', name: 'Customer Refund Voucher', amount: 45.00, status: 'ISSUED' }]} />} />
+                  <Route path="/returns" element={<SalesReturnPage />} />
+                  <Route path="/job-orders" element={<JobOrdersPage />} />
+                  <Route path="/delivery-receipts" element={<DeliveryReceiptsPage />} />
+                  <Route path="/routes" element={<RoutesPage />} />
+                  <Route path="/loading-confirmation" element={<LoadingConfirmationPage />} />
+                  <Route path="/pick-list" element={<PickListPage />} />
+                  <Route path="/coupon-master" element={<CouponMasterPage />} />
+                  <Route path="/printed-coupons" element={<PrintedCouponsPage />} />
+                  <Route path="/sale-sessions" element={<SaleSessionsPage />} />
+                  <Route path="/fleet" element={<FleetPage />} />
+                  <Route path="/stock-onload-reload" element={<StockOnLoadReloadPage />} />
+                  <Route path="/stock-offload" element={<StockOffLoadPage />} />
+                  <Route path="/van-stock" element={<VanStockPage />} />
+                  <Route path="/sale-stock-reports" element={<SaleStockReportsPage />} />
+                  <Route path="/van-discount-otp" element={<VanDiscountOTPPage />} />
+                  <Route path="/van-route-track" element={<VanRouteTrackPage />} />
+                  <Route path="/van-asset" element={<VanAssetPage />} />
 
                   {/* ERP Operations & Admin */}
                   <Route path="/stock-adjustments" element={<GenericModulePage title="Stock Adjustments" subtitle="Stock take count & shrinkage" entityName="Adjustment" items={[{ id: '1', code: 'ADJ-88', name: 'Damaged Goods Write-off', amount: 350.00, status: 'APPROVED' }]} />} />
                   <Route path="/attendance" element={<GenericModulePage title="Attendance" subtitle="Biometric timecards" entityName="Timecard" items={[{ id: '1', code: 'ATT-001', name: 'Ahmed Al-Mansouri - Check-in 08:00', status: 'PRESENT' }]} />} />
                   <Route path="/payroll" element={<GenericModulePage title="Payroll & WPS" subtitle="Qatar WPS Salary Generator" entityName="Payroll Run" items={[{ id: '1', code: 'PAY-2026-08', name: 'Monthly WPS Salary Sheet August 2026', amount: 185000.00, status: 'PROCESSED' }]} />} />
                   <Route path="/assets" element={<GenericModulePage title="Asset Management" subtitle="Fixed Assets" entityName="Asset" items={[{ id: '1', code: 'AST-01', name: 'Thermal Receipt Printer POS-01', amount: 1200.00, status: 'ACTIVE' }]} />} />
-                  <Route path="/reports" element={<GenericModulePage title="Reports Center" subtitle="Qatar VAT & Sales Reports" entityName="Report" items={[{ id: '1', code: 'REP-VAT', name: 'Qatar VAT Tax Summary Q3 2026', status: 'READY' }]} />} />
+                  <Route path="/audit" element={<LogsPage />} />
+                  <Route path="/reports/taxes" element={<TaxesPage />} />
+                  <Route path="/reports/all" element={<AllReportsPage />} />
+                  <Route path="/reports/custom" element={<CustomReportsPage />} />
+                  <Route path="/reports/sales-reports" element={<SalesReportsPage />} />
+                  <Route path="/reports/sales" element={<SalesPage />} />
+                  <Route path="/reports/sales-profit" element={<SalesProfitPage />} />
+                  <Route path="/reports/day-summary" element={<DaySummaryPage />} />
+                  <Route path="/reports/hourly" element={<HourlyReportPage />} />
+                  <Route path="/reports/cash-drop-payout" element={<CashDropPayoutPage />} />
+                  <Route path="/reports/discounts" element={<DiscountsPage />} />
+                  <Route path="/reports/pos-return" element={<POSReturnPage />} />
+                  <Route path="/reports/credit-note" element={<CreditNotePage />} />
+                  <Route path="/reports/mis" element={<MISReportPage />} />
+                  <Route path="/reports/production" element={<ProductionReportPage />} />
+                  <Route path="/reports/product-wise-commission" element={<ProductWiseCommissionReportPage />} />
+                  <Route path="/reports/wholesale" element={<WholesaleReportsPage />} />
+                  <Route path="/reports/purchase-reports" element={<PurchaseReportsPage />} />
+                  <Route path="/reports/location-sale-return" element={<LocationSaleReturnReportPage />} />
+                  <Route path="/reports/location-purchase-return" element={<LocationPurchaseReturnReportPage />} />
                   <Route path="/notifications" element={<GenericModulePage title="Notifications Inbox" subtitle="System alerts" entityName="Notification" items={[{ id: '1', code: 'NTF-01', name: 'Low Stock Warning: Rayyan Water 500ml', status: 'UNREAD' }]} />} />
-                  <Route path="/audit" element={<GenericModulePage title="Audit Logs" subtitle="Security audit trail" entityName="Audit Log" items={[{ id: '1', code: 'LOG-889', name: 'User admin updated product cost price', status: 'LOGGED' }]} />} />
                   <Route path="/approvals" element={<GenericModulePage title="Approvals Queue" subtitle="Authorization requests" entityName="Approval" items={[{ id: '1', code: 'APP-102', name: 'Approval Request: PO > QAR 50,000', amount: 85000.00, status: 'PENDING' }]} />} />
                   <Route path="/token-management" element={<GenericModulePage title="Token Management" subtitle="API Integration Keys" entityName="API Token" items={[{ id: '1', code: 'TKN-KEY', name: 'POS Hardware Integration Secret Token', status: 'ACTIVE' }]} />} />
 

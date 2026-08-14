@@ -18,6 +18,16 @@ export interface Employee {
   isActive: boolean;
 }
 
+const DEFAULT_DEPARTMENTS = [
+  'Retail Sales',
+  'Management',
+  'Accounting',
+  'Inventory & Logistics',
+  'HR & Administration',
+  'Security & Maintenance',
+  'Bakery & Fresh Food',
+];
+
 const INITIAL_EMPLOYEES: Employee[] = [
   {
     id: 'emp-01',
@@ -97,6 +107,7 @@ export const HRPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [isManualDeptInput, setIsManualDeptInput] = useState(false);
 
   const [formData, setFormData] = useState({
     empNo: '',
@@ -113,6 +124,11 @@ export const HRPage: React.FC = () => {
     setEmployees(loadStoredEmployees());
   }, []);
 
+  // Collect all unique departments from employees list + default list
+  const availableDepartments = Array.from(
+    new Set([...DEFAULT_DEPARTMENTS, ...employees.map((e) => e.dept).filter(Boolean)])
+  );
+
   const handleOpenAddModal = () => {
     setEditingEmployee(null);
     setFormData({
@@ -125,6 +141,7 @@ export const HRPage: React.FC = () => {
       qid: `2900${Math.floor(1000000 + Math.random() * 9000000)}`,
       salary: '6000',
     });
+    setIsManualDeptInput(false);
     setIsModalOpen(true);
   };
 
@@ -140,6 +157,8 @@ export const HRPage: React.FC = () => {
       qid: emp.qid,
       salary: emp.salary.toString(),
     });
+    const isCustom = !availableDepartments.includes(emp.dept);
+    setIsManualDeptInput(isCustom);
     setIsModalOpen(true);
   };
 
@@ -159,6 +178,11 @@ export const HRPage: React.FC = () => {
       return;
     }
 
+    if (!formData.dept.trim()) {
+      alert('Please select or enter a department name.');
+      return;
+    }
+
     let updated: Employee[];
     if (editingEmployee) {
       updated = employees.map((emp) =>
@@ -167,7 +191,7 @@ export const HRPage: React.FC = () => {
               ...emp,
               empNo: formData.empNo,
               name: formData.name,
-              dept: formData.dept,
+              dept: formData.dept.trim(),
               role: formData.role,
               phone: formData.phone,
               accountNo: formData.accountNo,
@@ -181,7 +205,7 @@ export const HRPage: React.FC = () => {
         id: `emp-${Date.now()}`,
         empNo: formData.empNo,
         name: formData.name,
-        dept: formData.dept,
+        dept: formData.dept.trim(),
         role: formData.role,
         phone: formData.phone,
         accountNo: formData.accountNo,
@@ -372,21 +396,61 @@ export const HRPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Department
-                  </label>
-                  <select
-                    value={formData.dept}
-                    onChange={(e) => setFormData({ ...formData, dept: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
-                  >
-                    <option value="Retail Sales">Retail Sales</option>
-                    <option value="Management">Management</option>
-                    <option value="Accounting">Accounting</option>
-                    <option value="Inventory & Logistics">Inventory & Logistics</option>
-                    <option value="HR & Administration">HR & Administration</option>
-                  </select>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400">
+                      Department
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsManualDeptInput(!isManualDeptInput);
+                        if (!isManualDeptInput) {
+                          setFormData({ ...formData, dept: '' });
+                        } else {
+                          setFormData({ ...formData, dept: availableDepartments[0] || 'Retail Sales' });
+                        }
+                      }}
+                      className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline font-bold"
+                    >
+                      {isManualDeptInput ? '← Select Dropdown' : '+ Manual Type'}
+                    </button>
+                  </div>
+
+                  {!isManualDeptInput ? (
+                    <select
+                      value={formData.dept}
+                      onChange={(e) => {
+                        if (e.target.value === '__custom__') {
+                          setIsManualDeptInput(true);
+                          setFormData({ ...formData, dept: '' });
+                        } else {
+                          setFormData({ ...formData, dept: e.target.value });
+                        }
+                      }}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
+                    >
+                      {availableDepartments.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                      <option value="__custom__" className="font-bold text-emerald-600">
+                        + Type Custom Department...
+                      </option>
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      placeholder="Type custom department..."
+                      value={formData.dept}
+                      onChange={(e) => setFormData({ ...formData, dept: e.target.value })}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-emerald-500 dark:border-emerald-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold focus:outline-none"
+                      required
+                      autoFocus
+                    />
+                  )}
                 </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                     Designation / Role

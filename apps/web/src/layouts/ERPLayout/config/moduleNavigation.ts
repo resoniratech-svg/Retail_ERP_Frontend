@@ -50,23 +50,68 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
     defaultRoute: '/products',
     ribbonGroups: [
       {
-        title: 'Catalog Masters',
+        title: 'Product Masters',
         titleAr: 'سجلات المنتجات',
         actions: [
           { id: 'reg-prod', label: 'Product', labelAr: 'المنتجات', iconName: 'Package', route: '/products' },
           { id: 'reg-barcode', label: 'Barcode', labelAr: 'الباركود', iconName: 'Barcode', route: '/products' },
+          { id: 'reg-quick-barcode', label: 'Quick Barcode', labelAr: 'باركود سريع', iconName: 'Printer', route: '/batch-barcode' },
+          { id: 'reg-price-update', label: 'Price Update', labelAr: 'تحديث الأسعار', iconName: 'TrendingUp', route: '/price-updates' },
+        ],
+      },
+      {
+        title: 'Category Hierarchy',
+        titleAr: 'هيكل الفئات',
+        actions: [
+          { id: 'reg-dept', label: 'Department', labelAr: 'الأقسام الرئيسية', iconName: 'Grid', route: '/categories' },
+          { id: 'reg-subdept', label: 'Sub Department', labelAr: 'الأقسام الفرعية', iconName: 'Layers', route: '/subdepartments' },
           { id: 'reg-cat', label: 'Category', labelAr: 'الفئات', iconName: 'Tag', route: '/categories' },
+          { id: 'reg-subcat', label: 'SubCategory', labelAr: 'الفئات الفرعية', iconName: 'ListFilter', route: '/subcategories' },
           { id: 'reg-brand', label: 'Brands', labelAr: 'العلامات التجارية', iconName: 'Award', route: '/brands' },
         ],
       },
       {
-        title: 'Entities',
-        titleAr: 'الكيانات والجهات',
+        title: 'Access & Security',
+        titleAr: 'الصلاحيات والفروع',
         actions: [
-          { id: 'reg-cust', label: 'Customer', labelAr: 'العملاء', iconName: 'Users', route: '/customers' },
-          { id: 'reg-vendor', label: 'Vendors', labelAr: 'الموردين', iconName: 'Truck', route: '/suppliers' },
+          { id: 'reg-roles', label: 'Roles', labelAr: 'الأدوار والصلاحيات', iconName: 'Shield', route: '/roles-permissions' },
+          { id: 'reg-loc-access', label: 'Location Access', labelAr: 'صلاحيات الفروع', iconName: 'Lock', route: '/branches' },
+        ],
+      },
+      {
+        title: 'Directory Masters',
+        titleAr: 'سجل الكيانات',
+        actions: [
           { id: 'reg-emp', label: 'Employees', labelAr: 'الموظفين', iconName: 'UserCheck', route: '/hr' },
+          { id: 'reg-vendor', label: 'Vendors', labelAr: 'الموردين', iconName: 'Truck', route: '/suppliers' },
+          { id: 'reg-cust', label: 'Customer', labelAr: 'العملاء', iconName: 'Users', route: '/customers' },
+        ],
+      },
+      {
+        title: 'Geography & Delivery',
+        titleAr: 'المناطق والتوصيل',
+        actions: [
+          { id: 'reg-areas', label: 'Areas', labelAr: 'المناطق الجغرافية', iconName: 'Map', route: '/areas' },
           { id: 'reg-loc', label: 'Location', labelAr: 'الفروع والأنشطة', iconName: 'MapPin', route: '/branches' },
+          { id: 'reg-del-agents', label: 'DeliveryAgents', labelAr: 'مندوبي التوصيل', iconName: 'Navigation', route: '/delivery-agents' },
+        ],
+      },
+      {
+        title: 'Shifts & Production',
+        titleAr: 'الورديات والإنتاج',
+        actions: [
+          { id: 'reg-work-shift', label: 'Work Shift', labelAr: 'وردية العمل', iconName: 'Clock', route: '/shift-master' },
+          { id: 'reg-shift-assign', label: 'Work Shift Assignment', labelAr: 'تعيين الورديات', iconName: 'Calendar', route: '/shift-assignment' },
+          { id: 'reg-cust-biz-type', label: 'Customer Business Type', labelAr: 'نوع نشاط العميل', iconName: 'Briefcase', route: '/customer-types' },
+          { id: 'reg-prod-mat', label: 'Production Material', labelAr: 'مواد الإنتاج', iconName: 'Boxes', route: '/production-material' },
+        ],
+      },
+      {
+        title: 'Taxes & Units',
+        titleAr: 'الضرائب ووحدات القياس',
+        actions: [
+          { id: 'reg-taxes', label: 'Taxes', labelAr: 'الضرائب', iconName: 'Percent', route: '/taxes' },
+          { id: 'reg-units', label: 'Units', labelAr: 'وحدات القياس', iconName: 'Scale', route: '/units' },
         ],
       },
     ],
@@ -118,13 +163,37 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
     defaultRoute: '/hr',
     ribbonGroups: [
       {
-        title: 'Personnel & Payroll',
-        titleAr: 'الموظفين والرواتب',
+        title: 'Job Masters & Allowances',
+        titleAr: 'الوظائف والبدلات',
+        actions: [
+          { id: 'hr-allow-cat', label: 'Allowance Categories', labelAr: 'فئات البدلات', iconName: 'DollarSign', route: '/allowance-categories' },
+          { id: 'hr-job-dept', label: 'Job Departments', labelAr: 'أقسام الوظائف', iconName: 'Briefcase', route: '/job-departments' },
+          { id: 'hr-job-desig', label: 'Job Designations', labelAr: 'المسميات الوظيفية', iconName: 'Award', route: '/job-designations' },
+        ],
+      },
+      {
+        title: 'Payroll Operations',
+        titleAr: 'مسير الرواتب',
+        actions: [
+          { id: 'hr-payroll', label: 'Generate Payroll', labelAr: 'مسير الرواتب', iconName: 'DollarSign', route: '/payroll' },
+        ],
+      },
+      {
+        title: 'Leave Management',
+        titleAr: 'إدارة الإجازات',
+        actions: [
+          { id: 'hr-leave-type', label: 'Leave Type', labelAr: 'أنواع الإجازات', iconName: 'Calendar', route: '/leave-types' },
+          { id: 'hr-leave-app', label: 'Leave Application', labelAr: 'طلب إجازة', iconName: 'FileText', route: '/leave' },
+          { id: 'hr-leave-rep', label: 'Leave Report', labelAr: 'تقرير الإجازات', iconName: 'PieChart', route: '/leave-report' },
+        ],
+      },
+      {
+        title: 'Personnel & Attendance',
+        titleAr: 'الموظفين والحضور',
         actions: [
           { id: 'hr-emp', label: 'Employee Register', labelAr: 'سجل الموظفين', iconName: 'Users', route: '/hr' },
-          { id: 'hr-payroll', label: 'Generate Payroll', labelAr: 'مسير الرواتب', iconName: 'DollarSign', route: '/payroll' },
+          { id: 'hr-emp-status', label: 'Employee Status', labelAr: 'حالة الموظف', iconName: 'UserCheck', route: '/hr' },
           { id: 'hr-att', label: 'Attendance Log', labelAr: 'سجل الحضور', iconName: 'Clock', route: '/attendance' },
-          { id: 'hr-leave', label: 'Leave Requests', labelAr: 'طلبات الإجازة', iconName: 'Calendar', route: '/leave' },
         ],
       },
     ],

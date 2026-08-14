@@ -20,6 +20,8 @@ import { StockTransfersPage } from '../../modules/stock-transfers/StockTransfers
 import { CustomersPage } from '../../modules/customers/CustomersPage';
 import { AccountingPage } from '../../modules/accounting/AccountingPage';
 import { HRPage } from '../../modules/hr/HRPage';
+import { LeaveTypesPage } from '../../modules/hr/LeaveTypesPage';
+import { LeaveApplicationsPage } from '../../modules/hr/LeaveApplicationsPage';
 import { POSPage } from '../../modules/pos/POSPage';
 import { GenericModulePage } from '../../modules/common/GenericModulePage';
 import { PurchaseOrdersPage } from '../../modules/inventory/PurchaseOrdersPage';
@@ -39,16 +41,6 @@ export const AppRouter: React.FC = () => {
       <Routes>
         {/* Public Login Route */}
         <Route path="/auth" element={<AuthPage />} />
-
-        {/* Standalone POS Route (Protected) */}
-        <Route
-          path="/pos"
-          element={
-            <ProtectedRoute>
-              <POSPage />
-            </ProtectedRoute>
-          }
-        />
 
         {/* Web ERP Layout Routes (Protected) */}
         <Route
@@ -75,6 +67,30 @@ export const AppRouter: React.FC = () => {
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/accounting" element={<AccountingPage />} />
                   <Route path="/hr" element={<HRPage />} />
+                  <Route path="/leave-types" element={<LeaveTypesPage />} />
+                  <Route path="/leave" element={<LeaveApplicationsPage />} />
+                  <Route path="/pos" element={<POSPage />} />
+
+                  {/* Catalog & Register masters extensions */}
+                  <Route path="/colors" element={<GenericModulePage title="Product Colors" subtitle="Color master attributes" entityName="Color" items={[{ id: '1', code: 'CLR-RED', name: 'Standard Red', status: 'ACTIVE' }]} />} />
+                  <Route path="/subcategories" element={<GenericModulePage title="Sub Categories" subtitle="Secondary category hierarchy" entityName="Sub Category" items={[{ id: '1', code: 'SUB-BEV', name: 'Carbonated Drinks', status: 'ACTIVE' }]} />} />
+                  <Route path="/subdepartments" element={<GenericModulePage title="Sub Departments" subtitle="Secondary department division" entityName="Sub Department" items={[{ id: '1', code: 'SDEP-RET', name: 'Fresh Counter Sales', status: 'ACTIVE' }]} />} />
+                  <Route path="/batch-barcode" element={<GenericModulePage title="Batch Barcode Printing" subtitle="Print shelf & item barcodes" entityName="Barcode Batch" items={[{ id: '1', code: 'BAR-001', name: 'Milk & Beverage Shelf Labels Batch', status: 'PRINTED' }]} />} />
+                  <Route path="/price-updates" element={<GenericModulePage title="Price Updates Register" subtitle="Bulk cost & retail price overrides" entityName="Price Change Log" items={[{ id: '1', code: 'PRC-991', name: 'Almarai Retail Price Adjustment', amount: 7.50, status: 'EFFECTIVE' }]} />} />
+                  <Route path="/shift-master" element={<GenericModulePage title="Work Shift Master" subtitle="Cashier & store shift scheduling" entityName="Shift Schedule" items={[{ id: '1', code: 'SHF-MORNING', name: 'Morning Cashier Shift (07:00 - 15:00)', status: 'ACTIVE' }]} />} />
+                  <Route path="/shift-assignment" element={<GenericModulePage title="Work Shift Assignment" subtitle="Employee shift roster" entityName="Shift Roster" items={[{ id: '1', code: 'ROST-01', name: 'Tariq Mahmood - Morning Shift', status: 'ASSIGNED' }]} />} />
+                  <Route path="/areas" element={<GenericModulePage title="Geographical Areas" subtitle="Delivery zones & delivery areas" entityName="Area Zone" items={[{ id: '1', code: 'AREA-DOH', name: 'Doha West Bay & Pearl Zone', status: 'ACTIVE' }]} />} />
+                  <Route path="/delivery-agents" element={<GenericModulePage title="Delivery Agents" subtitle="Store drivers & delivery fleet" entityName="Delivery Agent" items={[{ id: '1', code: 'DRV-01', name: 'Kassim Express Driver', status: 'ACTIVE' }]} />} />
+                  <Route path="/customer-types" element={<GenericModulePage title="Customer Business Types" subtitle="Retail, Wholesale, & Hotel tiers" entityName="Business Type" items={[{ id: '1', code: 'BIZ-HTL', name: 'Hotel & Hospitality Corporate', status: 'ACTIVE' }]} />} />
+                  <Route path="/production-material" element={<GenericModulePage title="Production Material" subtitle="Bakery & kitchen raw ingredients" entityName="Material" items={[{ id: '1', code: 'MAT-FLOUR', name: 'Wheat Flour 25kg Bag', amount: 45.00, status: 'ACTIVE' }]} />} />
+                  <Route path="/taxes" element={<GenericModulePage title="Tax Setup & Rates" subtitle="Qatar VAT 0% & 5% Tax Rules" entityName="Tax Rate" items={[{ id: '1', code: 'VAT-0', name: 'Qatar Zero VAT (Essential Food)', amount: 0.00, status: 'ACTIVE' }]} />} />
+                  <Route path="/units" element={<GenericModulePage title="Units of Measure" subtitle="Pcs, Kg, Box, Pack definitions" entityName="Unit" items={[{ id: '1', code: 'UOM-PCS', name: 'Pieces (Pcs)', status: 'ACTIVE' }, { id: '2', code: 'UOM-KG', name: 'Kilograms (Kg)', status: 'ACTIVE' }]} />} />
+
+                  {/* HR & Job Masters Extensions */}
+                  <Route path="/allowance-categories" element={<GenericModulePage title="Allowance Categories" subtitle="Housing, Transport, & Food Allowances" entityName="Allowance Category" items={[{ id: '1', code: 'ALL-HOU', name: 'Housing Allowance (Qatar Standard)', amount: 2500.00, status: 'ACTIVE' }, { id: '2', code: 'ALL-TRN', name: 'Transport Allowance', amount: 800.00, status: 'ACTIVE' }]} />} />
+                  <Route path="/job-departments" element={<GenericModulePage title="Job Departments" subtitle="HR Department Structure" entityName="Job Department" items={[{ id: '1', code: 'DEPT-SALES', name: 'Retail Sales & POS Operations', status: 'ACTIVE' }, { id: '2', code: 'DEPT-ACCT', name: 'Accounting & Finance', status: 'ACTIVE' }, { id: '3', code: 'DEPT-LOG', name: 'Logistics & Warehouse', status: 'ACTIVE' }]} />} />
+                  <Route path="/job-designations" element={<GenericModulePage title="Job Designations" subtitle="Employee Roles & Positions" entityName="Job Designation" items={[{ id: '1', code: 'DES-CASH', name: 'Senior Cashier', status: 'ACTIVE' }, { id: '2', code: 'DES-MGR', name: 'Store Operations Manager', status: 'ACTIVE' }, { id: '3', code: 'DES-ACCT', name: 'Staff Accountant', status: 'ACTIVE' }]} />} />
+                  <Route path="/leave-report" element={<GenericModulePage title="Leave Audit Reports" subtitle="Staff leave balance & usage" entityName="Leave Audit" items={[{ id: '1', code: 'LVR-2026', name: 'Annual Staff Leave Summary August 2026', status: 'COMPLETED' }]} />} />
 
                   {/* CRM, Commerce & Enterprise */}
                   <Route path="/suppliers" element={<GenericModulePage title="Suppliers" subtitle="Vendor registry & payment terms" entityName="Supplier" items={[{ id: '1', code: 'SUP-01', name: 'Almarai Food Qatar W.L.L', status: 'ACTIVE' }]} />} />
@@ -90,7 +106,6 @@ export const AppRouter: React.FC = () => {
                   {/* ERP Operations & Admin */}
                   <Route path="/stock-adjustments" element={<GenericModulePage title="Stock Adjustments" subtitle="Stock take count & shrinkage" entityName="Adjustment" items={[{ id: '1', code: 'ADJ-88', name: 'Damaged Goods Write-off', amount: 350.00, status: 'APPROVED' }]} />} />
                   <Route path="/attendance" element={<GenericModulePage title="Attendance" subtitle="Biometric timecards" entityName="Timecard" items={[{ id: '1', code: 'ATT-001', name: 'Ahmed Al-Mansouri - Check-in 08:00', status: 'PRESENT' }]} />} />
-                  <Route path="/leave" element={<GenericModulePage title="Leave Management" subtitle="Annual leave requests" entityName="Leave Request" items={[{ id: '1', code: 'LEV-04', name: 'Annual Leave - Tariq Mahmood', status: 'APPROVED' }]} />} />
                   <Route path="/payroll" element={<GenericModulePage title="Payroll & WPS" subtitle="Qatar WPS Salary Generator" entityName="Payroll Run" items={[{ id: '1', code: 'PAY-2026-08', name: 'Monthly WPS Salary Sheet August 2026', amount: 185000.00, status: 'PROCESSED' }]} />} />
                   <Route path="/assets" element={<GenericModulePage title="Asset Management" subtitle="Fixed Assets" entityName="Asset" items={[{ id: '1', code: 'AST-01', name: 'Thermal Receipt Printer POS-01', amount: 1200.00, status: 'ACTIVE' }]} />} />
                   <Route path="/reports" element={<GenericModulePage title="Reports Center" subtitle="Qatar VAT & Sales Reports" entityName="Report" items={[{ id: '1', code: 'REP-VAT', name: 'Qatar VAT Tax Summary Q3 2026', status: 'READY' }]} />} />

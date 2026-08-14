@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge } from '@qatar-erp/ui';
 import { formatQAR } from '@qatar-erp/utils';
-import { Plus, UserCheck, X, Edit, Trash2, Users, Calendar, CreditCard, Building2 } from 'lucide-react';
+import { Plus, UserCheck, X, Edit, Trash2, Users, CreditCard, Phone, Landmark } from 'lucide-react';
 
 const STORAGE_KEY = 'qatar_erp_employees';
 
@@ -11,8 +11,9 @@ export interface Employee {
   name: string;
   dept: string;
   role: string;
+  phone: string;
+  accountNo: string;
   qid: string;
-  qidExpiry: string;
   salary: number;
   isActive: boolean;
 }
@@ -24,8 +25,9 @@ const INITIAL_EMPLOYEES: Employee[] = [
     name: 'Ahmed Al-Mansouri',
     dept: 'Management',
     role: 'General Manager',
+    phone: '+974 5512 3456',
+    accountNo: 'QA55 QNBA 0000 0001 2345 67',
     qid: '28439201923',
-    qidExpiry: '2027-05-15',
     salary: 22000,
     isActive: true,
   },
@@ -35,8 +37,9 @@ const INITIAL_EMPLOYEES: Employee[] = [
     name: 'Tariq Mahmood',
     dept: 'Retail Sales',
     role: 'Lead Cashier',
+    phone: '+974 6623 9876',
+    accountNo: 'QA88 CBQK 0000 0008 9012 34',
     qid: '29104820194',
-    qidExpiry: '2026-11-20',
     salary: 6500,
     isActive: true,
   },
@@ -46,8 +49,9 @@ const INITIAL_EMPLOYEES: Employee[] = [
     name: 'Fatima Al-Kuwari',
     dept: 'Accounting',
     role: 'Senior Accountant',
+    phone: '+974 3345 7890',
+    accountNo: 'QA12 QIBK 0000 0003 4567 89',
     qid: '29503920183',
-    qidExpiry: '2028-01-10',
     salary: 14000,
     isActive: true,
   },
@@ -60,7 +64,22 @@ const loadStoredEmployees = (): Employee[] => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_EMPLOYEES));
       return INITIAL_EMPLOYEES;
     }
-    return JSON.parse(raw) as Employee[];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((e: any) => ({
+        id: e.id || `emp-${Date.now()}`,
+        empNo: e.empNo || 'EMP-QTR-000',
+        name: e.name || '',
+        dept: e.dept || 'Retail Sales',
+        role: e.role || 'Staff',
+        phone: e.phone || '+974 5500 0000',
+        accountNo: e.accountNo || 'QA00 QNBA 0000 0000 0000 00',
+        qid: e.qid || '29000000000',
+        salary: e.salary || 0,
+        isActive: e.isActive !== false,
+      }));
+    }
+    return INITIAL_EMPLOYEES;
   } catch (e) {
     return INITIAL_EMPLOYEES;
   }
@@ -84,8 +103,9 @@ export const HRPage: React.FC = () => {
     name: '',
     dept: 'Retail Sales',
     role: 'Cashier',
+    phone: '',
+    accountNo: '',
     qid: '',
-    qidExpiry: '',
     salary: '',
   });
 
@@ -100,8 +120,9 @@ export const HRPage: React.FC = () => {
       name: '',
       dept: 'Retail Sales',
       role: 'Cashier',
+      phone: '+974 ',
+      accountNo: `QA${Math.floor(10 + Math.random() * 89)} QNBA 0000 000${Math.floor(100 + Math.random() * 899)} ${Math.floor(1000 + Math.random() * 8999)} ${Math.floor(10 + Math.random() * 89)}`,
       qid: `2900${Math.floor(1000000 + Math.random() * 9000000)}`,
-      qidExpiry: '2027-12-31',
       salary: '6000',
     });
     setIsModalOpen(true);
@@ -114,8 +135,9 @@ export const HRPage: React.FC = () => {
       name: emp.name,
       dept: emp.dept,
       role: emp.role,
+      phone: emp.phone || '+974 ',
+      accountNo: emp.accountNo || '',
       qid: emp.qid,
-      qidExpiry: emp.qidExpiry,
       salary: emp.salary.toString(),
     });
     setIsModalOpen(true);
@@ -147,8 +169,9 @@ export const HRPage: React.FC = () => {
               name: formData.name,
               dept: formData.dept,
               role: formData.role,
+              phone: formData.phone,
+              accountNo: formData.accountNo,
               qid: formData.qid,
-              qidExpiry: formData.qidExpiry,
               salary: parseFloat(formData.salary) || 0,
             }
           : emp
@@ -160,8 +183,9 @@ export const HRPage: React.FC = () => {
         name: formData.name,
         dept: formData.dept,
         role: formData.role,
+        phone: formData.phone,
+        accountNo: formData.accountNo,
         qid: formData.qid,
-        qidExpiry: formData.qidExpiry,
         salary: parseFloat(formData.salary) || 0,
         isActive: true,
       };
@@ -182,7 +206,7 @@ export const HRPage: React.FC = () => {
             Employee Directory (HR)
           </h1>
           <p className="text-sm text-slate-500">
-            Staff records, Qatar QID ID expiry alerts, and WPS salary structures.
+            Staff records, phone contacts, WPS salary structures, and bank accounts.
           </p>
         </div>
         <Button
@@ -208,7 +232,7 @@ export const HRPage: React.FC = () => {
         </Card>
         <Card className="p-4 border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Monthly Payroll</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase">Monthly WPS Payroll</p>
             <p className="text-2xl font-black text-emerald-600">
               {formatQAR(employees.reduce((sum, e) => sum + e.salary, 0))}
             </p>
@@ -219,11 +243,11 @@ export const HRPage: React.FC = () => {
         </Card>
         <Card className="p-4 border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase">Active QID Compliant</p>
-            <p className="text-2xl font-black text-slate-900 dark:text-white">100%</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase">Bank Accounts Configured</p>
+            <p className="text-2xl font-black text-indigo-600">{employees.length} / {employees.length}</p>
           </div>
           <div className="p-3 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 rounded-xl">
-            <CreditCard className="w-6 h-6" />
+            <Landmark className="w-6 h-6" />
           </div>
         </Card>
       </div>
@@ -237,8 +261,9 @@ export const HRPage: React.FC = () => {
                 <th className="p-3">Emp #</th>
                 <th className="p-3">Full Name</th>
                 <th className="p-3">Department & Role</th>
+                <th className="p-3">Phone Number</th>
                 <th className="p-3">Qatar ID (QID)</th>
-                <th className="p-3">QID Expiry</th>
+                <th className="p-3">Bank Account No (IBAN)</th>
                 <th className="p-3 text-right">Basic Salary</th>
                 <th className="p-3 text-center">Actions</th>
               </tr>
@@ -256,11 +281,20 @@ export const HRPage: React.FC = () => {
                     <p className="font-semibold text-slate-800 dark:text-slate-200">{e.dept}</p>
                     <p className="text-slate-400">{e.role || 'Staff'}</p>
                   </td>
+                  <td className="p-3 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{e.phone}</span>
+                    </div>
+                  </td>
                   <td className="p-3 font-mono text-xs text-slate-600 dark:text-slate-300">
                     {e.qid}
                   </td>
-                  <td className="p-3 text-xs">
-                    <Badge variant="info">{e.qidExpiry}</Badge>
+                  <td className="p-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-1.5">
+                      <Landmark className="w-3.5 h-3.5 text-sky-500" />
+                      <span>{e.accountNo}</span>
+                    </div>
                   </td>
                   <td className="p-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
                     {formatQAR(e.salary)}
@@ -359,7 +393,7 @@ export const HRPage: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Lead Cashier"
+                    placeholder="e.g. Cashier"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
@@ -383,16 +417,31 @@ export const HRPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    QID Expiry Date
+                    Phone Number
                   </label>
                   <input
-                    type="date"
-                    value={formData.qidExpiry}
-                    onChange={(e) => setFormData({ ...formData, qidExpiry: e.target.value })}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    type="text"
+                    placeholder="+974 5512 3456"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
                     required
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  Employee Account Number (WPS IBAN)
+                </label>
+                <input
+                  type="text"
+                  placeholder="QA55 QNBA 0000 0001 2345 67"
+                  value={formData.accountNo}
+                  onChange={(e) => setFormData({ ...formData, accountNo: e.target.value })}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono"
+                  required
+                />
               </div>
 
               <div>

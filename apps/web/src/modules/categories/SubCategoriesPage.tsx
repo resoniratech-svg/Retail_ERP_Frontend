@@ -1,151 +1,174 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '@qatar-erp/ui';
-import { Plus, Tag, Edit, Trash2, X, Search, ArrowUpDown, Layers, Grid } from 'lucide-react';
+import { Plus, ListFilter, Edit, Trash2, X, Search, Layers } from 'lucide-react';
 
-const CATEGORY_STORAGE_KEY = 'qatar_erp_categories';
+const SUBCATEGORY_STORAGE_KEY = 'qatar_erp_subcategories';
 
-export interface CategoryItem {
+export interface SubCategoryItem {
   id: string;
   code: string;
   department: string;
   subDepartment: string;
+  category: string;
   name: string;
   nameAr?: string;
-  sortOrder?: number;
 }
 
-const INITIAL_CATEGORIES: CategoryItem[] = [
-  { id: 'cat-1', code: 'CAT-DAIRY', department: 'Fresh Food', subDepartment: 'Dairy Counter', name: 'Dairy & Eggs', nameAr: 'الألبان والبيض', sortOrder: 1 },
-  { id: 'cat-2', code: 'CAT-BEV', department: 'Beverages', subDepartment: 'Soft Drinks & Water', name: 'Beverages', nameAr: 'المشروبات', sortOrder: 2 },
-  { id: 'cat-3', code: 'CAT-RICE', department: 'Grocery', subDepartment: 'Grains & Staples', name: 'Rice & Grains', nameAr: 'الأرز والحبوب', sortOrder: 3 },
-  { id: 'cat-4', code: 'CAT-DATES', department: 'Fresh Food', subDepartment: 'Dates & Fruits', name: 'Dates & Dried Fruits', nameAr: 'التمر والفواكه المجففة', sortOrder: 4 },
+const INITIAL_SUBCATEGORIES: SubCategoryItem[] = [
+  {
+    id: 'subcat-1',
+    code: 'SUBCAT-MILK',
+    department: 'Fresh Food',
+    subDepartment: 'Dairy Counter',
+    category: 'Dairy & Eggs',
+    name: 'Full Cream Milk',
+    nameAr: 'حليب كامل الدسم',
+  },
+  {
+    id: 'subcat-2',
+    code: 'SUBCAT-WAT',
+    department: 'Beverages',
+    subDepartment: 'Soft Drinks & Water',
+    category: 'Beverages',
+    name: 'Mineral Water 500ml',
+    nameAr: 'مياه معدنية 500 مل',
+  },
+  {
+    id: 'subcat-3',
+    code: 'SUBCAT-RICE',
+    department: 'Grocery',
+    subDepartment: 'Grains & Staples',
+    category: 'Rice & Grains',
+    name: 'Basmati Rice Premium',
+    nameAr: 'أرز بسمتي فاخر',
+  },
 ];
 
-export const CategoriesPage: React.FC = () => {
-  const [categories, setCategories] = useState<CategoryItem[]>([]);
+export const SubCategoriesPage: React.FC = () => {
+  const [subCategories, setSubCategories] = useState<SubCategoryItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [editingSubCategory, setEditingSubCategory] = useState<SubCategoryItem | null>(null);
 
   const [formData, setFormData] = useState({
     code: '',
     department: 'Fresh Food',
     subDepartment: 'Dairy Counter',
+    category: 'Dairy & Eggs',
     name: '',
     nameAr: '',
   });
 
-  const getStoredCategories = (): CategoryItem[] => {
+  const getStoredSubCategories = (): SubCategoryItem[] => {
     try {
-      const stored = localStorage.getItem(CATEGORY_STORAGE_KEY);
+      const stored = localStorage.getItem(SUBCATEGORY_STORAGE_KEY);
       if (!stored) {
-        localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(INITIAL_CATEGORIES));
-        return INITIAL_CATEGORIES;
+        localStorage.setItem(SUBCATEGORY_STORAGE_KEY, JSON.stringify(INITIAL_SUBCATEGORIES));
+        return INITIAL_SUBCATEGORIES;
       }
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((c: any) => ({
-          ...c,
-          department: c.department || 'Fresh Food',
-          subDepartment: c.subDepartment || 'Dairy Counter',
-        }));
+        return parsed as SubCategoryItem[];
       }
-      return INITIAL_CATEGORIES;
+      return INITIAL_SUBCATEGORIES;
     } catch {
-      return INITIAL_CATEGORIES;
+      return INITIAL_SUBCATEGORIES;
     }
   };
 
-  const saveCategoriesToStorage = (items: CategoryItem[]) => {
+  const saveSubCategoriesToStorage = (items: SubCategoryItem[]) => {
     try {
-      localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(items));
-      window.dispatchEvent(new Event('qatar_categories_updated'));
+      localStorage.setItem(SUBCATEGORY_STORAGE_KEY, JSON.stringify(items));
     } catch (e) {
-      console.error('Failed to save categories to localStorage:', e);
+      console.error('Failed to save subcategories to localStorage:', e);
     }
   };
 
   useEffect(() => {
-    setCategories(getStoredCategories());
+    setSubCategories(getStoredSubCategories());
   }, []);
 
   const handleOpenAddModal = () => {
     setFormData({
-      code: `CAT-${Math.floor(100 + Math.random() * 900)}`,
+      code: `SUBCAT-${Math.floor(100 + Math.random() * 900)}`,
       department: 'Fresh Food',
       subDepartment: 'Dairy Counter',
+      category: 'Dairy & Eggs',
       name: '',
       nameAr: '',
     });
-    setEditingCategory(null);
+    setEditingSubCategory(null);
     setIsAddModalOpen(true);
   };
 
-  const handleOpenEditModal = (cat: CategoryItem) => {
-    setEditingCategory(cat);
+  const handleOpenEditModal = (subCat: SubCategoryItem) => {
+    setEditingSubCategory(subCat);
     setFormData({
-      code: cat.code,
-      department: cat.department,
-      subDepartment: cat.subDepartment,
-      name: cat.name,
-      nameAr: cat.nameAr || '',
+      code: subCat.code,
+      department: subCat.department,
+      subDepartment: subCat.subDepartment,
+      category: subCat.category,
+      name: subCat.name,
+      nameAr: subCat.nameAr || '',
     });
     setIsAddModalOpen(true);
   };
 
-  const handleDeleteCategory = (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      const updated = categories.filter((c) => c.id !== id);
-      setCategories(updated);
-      saveCategoriesToStorage(updated);
+  const handleDeleteSubCategory = (id: string) => {
+    if (confirm('Are you sure you want to delete this subcategory?')) {
+      const updated = subCategories.filter((c) => c.id !== id);
+      setSubCategories(updated);
+      saveSubCategoriesToStorage(updated);
     }
   };
 
-  const handleSaveCategory = (e: React.FormEvent) => {
+  const handleSaveSubCategory = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      alert('Please enter Category Name.');
+      alert('Please enter Sub Category Name.');
       return;
     }
 
-    let updated: CategoryItem[];
-    if (editingCategory) {
-      updated = categories.map((c) =>
-        c.id === editingCategory.id
+    let updated: SubCategoryItem[];
+    if (editingSubCategory) {
+      updated = subCategories.map((c) =>
+        c.id === editingSubCategory.id
           ? {
               ...c,
               code: formData.code,
               department: formData.department,
               subDepartment: formData.subDepartment,
+              category: formData.category,
               name: formData.name,
               nameAr: formData.nameAr,
             }
           : c
       );
     } else {
-      const newCat: CategoryItem = {
-        id: `cat-${Date.now()}`,
+      const newSubCat: SubCategoryItem = {
+        id: `subcat-${Date.now()}`,
         code: formData.code,
         department: formData.department,
         subDepartment: formData.subDepartment,
+        category: formData.category,
         name: formData.name,
         nameAr: formData.nameAr,
-        sortOrder: categories.length + 1,
       };
-      updated = [newCat, ...categories];
+      updated = [newSubCat, ...subCategories];
     }
 
-    setCategories(updated);
-    saveCategoriesToStorage(updated);
+    setSubCategories(updated);
+    saveSubCategoriesToStorage(updated);
     setIsAddModalOpen(false);
   };
 
-  const filteredCategories = categories.filter((c) => {
+  const filteredSubCategories = subCategories.filter((c) => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     return (
       c.name.toLowerCase().includes(q) ||
+      c.category.toLowerCase().includes(q) ||
       c.department.toLowerCase().includes(q) ||
       c.subDepartment.toLowerCase().includes(q) ||
       c.code.toLowerCase().includes(q)
@@ -154,33 +177,23 @@ export const CategoriesPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 font-sans text-xs">
-      {/* 1. TOP TITLE BAR WITH SORT ORDER ACTION (Matching Image 1 Top) */}
+      {/* 1. TOP TITLE BAR (Matching Image 2 Top) */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-white flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
-          <Tag className="w-5 h-5 text-emerald-400" />
-          <h1 className="text-sm font-bold">Categories - DART POS</h1>
+          <ListFilter className="w-5 h-5 text-emerald-400" />
+          <h1 className="text-sm font-bold">SubCategories - DART POS</h1>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => alert('🔄 Categories sort order updated!')}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg border border-slate-700"
-          >
-            <ArrowUpDown className="w-3.5 h-3.5 text-sky-400" />
-            <span>Sort Order</span>
-          </button>
-
-          <button
-            onClick={handleOpenAddModal}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Category</span>
-          </button>
-        </div>
+        <button
+          onClick={handleOpenAddModal}
+          className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          <span>+ Add SubCategory</span>
+        </button>
       </div>
 
-      {/* 2. SEARCH BAR (Matching Image 1 Search Bar) */}
+      {/* 2. SEARCH BAR (Matching Image 2 Search Bar) */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 w-full md:w-96">
           <div className="relative flex-1">
@@ -202,35 +215,37 @@ export const CategoriesPage: React.FC = () => {
         </div>
 
         <span className="text-xs font-bold text-slate-700">
-          Total Categories: <strong className="text-emerald-600">{filteredCategories.length}</strong>
+          Total SubCategories: <strong className="text-emerald-600">{filteredSubCategories.length}</strong>
         </span>
       </div>
 
-      {/* 3. DART POS CATEGORIES DATA TABLE (All 3 Columns from Image 1) */}
+      {/* 3. DART POS SUBCATEGORIES DATA TABLE (All 4 Columns from Image 2) */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto max-h-[60vh]">
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10">
               <tr>
-                <th className="py-2.5 px-4 w-1/3">Department</th>
-                <th className="py-2.5 px-4 w-1/3">Sub Department</th>
-                <th className="py-2.5 px-4 w-1/3">Category Name</th>
+                <th className="py-2.5 px-4 w-1/4">Department</th>
+                <th className="py-2.5 px-4 w-1/4">Sub Department</th>
+                <th className="py-2.5 px-4 w-1/4">Category</th>
+                <th className="py-2.5 px-4 w-1/4">Sub Category Name</th>
                 <th className="py-2.5 px-4 text-center sticky right-0 bg-slate-100">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-medium">
-              {filteredCategories.length === 0 ? (
+              {filteredSubCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-slate-500">
-                    <Tag className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
-                    <p className="font-bold text-sm">No Categories Found</p>
+                  <td colSpan={5} className="py-8 text-center text-slate-500">
+                    <ListFilter className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
+                    <p className="font-bold text-sm">No SubCategories Found</p>
                   </td>
                 </tr>
               ) : (
-                filteredCategories.map((c) => (
+                filteredSubCategories.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-2.5 px-4 font-bold text-slate-900">{c.department}</td>
                     <td className="py-2.5 px-4 text-slate-700 font-semibold">{c.subDepartment}</td>
+                    <td className="py-2.5 px-4 font-semibold text-slate-800">{c.category}</td>
                     <td className="py-2.5 px-4 font-bold text-slate-900">
                       <span>{c.name}</span>
                       {c.nameAr && <span className="text-slate-400 font-arabic text-[11px] ml-2">({c.nameAr})</span>}
@@ -240,14 +255,14 @@ export const CategoriesPage: React.FC = () => {
                         <button
                           onClick={() => handleOpenEditModal(c)}
                           className="p-1 hover:bg-slate-100 text-blue-600 rounded"
-                          title="Edit Category"
+                          title="Edit SubCategory"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDeleteCategory(c.id)}
+                          onClick={() => handleDeleteSubCategory(c.id)}
                           className="p-1 hover:bg-rose-50 text-rose-600 rounded"
-                          title="Delete Category"
+                          title="Delete SubCategory"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -261,21 +276,21 @@ export const CategoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. ADD / EDIT CATEGORY MODAL */}
+      {/* 4. ADD / EDIT SUBCATEGORY MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden">
             <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-emerald-400" />
-                <h2 className="text-sm font-bold">{editingCategory ? 'Edit Category' : 'New Category - DART POS'}</h2>
+                <ListFilter className="w-4 h-4 text-emerald-400" />
+                <h2 className="text-sm font-bold">{editingSubCategory ? 'Edit SubCategory' : 'New SubCategory - DART POS'}</h2>
               </div>
               <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveCategory} className="p-5 space-y-4 text-xs">
+            <form onSubmit={handleSaveSubCategory} className="p-5 space-y-4 text-xs">
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Department *</label>
                 <select
@@ -305,10 +320,24 @@ export const CategoriesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Category Name (English) *</label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Category *</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded font-semibold bg-white"
+                >
+                  <option value="Dairy & Eggs">Dairy & Eggs</option>
+                  <option value="Beverages">Beverages</option>
+                  <option value="Rice & Grains">Rice & Grains</option>
+                  <option value="Dates & Dried Fruits">Dates & Dried Fruits</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Sub Category Name (English) *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Milk & Eggs"
+                  placeholder="e.g. Full Cream Milk"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded font-bold text-slate-900"
@@ -317,10 +346,10 @@ export const CategoriesPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Category Name (Arabic)</label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Sub Category Name (Arabic)</label>
                 <input
                   type="text"
-                  placeholder="مثال: الألبان والبيض"
+                  placeholder="مثال: حليب كامل الدسم"
                   value={formData.nameAr}
                   onChange={(e) => setFormData({ ...formData, nameAr: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded font-arabic text-slate-900"
@@ -339,7 +368,7 @@ export const CategoriesPage: React.FC = () => {
                   type="submit"
                   className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm"
                 >
-                  {editingCategory ? 'Update Category' : 'Save Category'}
+                  {editingSubCategory ? 'Update SubCategory' : 'Save SubCategory'}
                 </button>
               </div>
             </form>
@@ -350,4 +379,4 @@ export const CategoriesPage: React.FC = () => {
   );
 };
 
-export default CategoriesPage;
+export default SubCategoriesPage;

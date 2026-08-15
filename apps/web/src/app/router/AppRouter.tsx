@@ -11,7 +11,9 @@ import { UsersPage } from '../../modules/users/UsersPage';
 import { RolesPermissionsPage } from '../../modules/roles-permissions/RolesPermissionsPage';
 import { ControlPanelPage } from '../../modules/control-panel/ControlPanelPage';
 import { ProductsPage } from '../../modules/products/ProductsPage';
+import { BatchBarcodePage } from '../../modules/products/BatchBarcodePage';
 import { CategoriesPage } from '../../modules/categories/CategoriesPage';
+import { SubCategoriesPage } from '../../modules/categories/SubCategoriesPage';
 import { BrandsPage } from '../../modules/brands/BrandsPage';
 import { InventoryPage } from '../../modules/inventory/InventoryPage';
 import { StockPage } from '../../modules/stock/StockPage';
@@ -19,11 +21,13 @@ import { WarehousesPage } from '../../modules/warehouses/WarehousesPage';
 import { StockTransfersPage } from '../../modules/stock-transfers/StockTransfersPage';
 import { StockRequisitionsPage } from '../../modules/stock/StockRequisitionsPage';
 import { CustomersPage } from '../../modules/customers/CustomersPage';
+import { VendorsPage } from '../../modules/vendors/VendorsPage';
 import { AccountingPage } from '../../modules/accounting/AccountingPage';
 import { HRPage } from '../../modules/hr/HRPage';
 import { LeaveTypesPage } from '../../modules/hr/LeaveTypesPage';
 import { LeaveApplicationsPage } from '../../modules/hr/LeaveApplicationsPage';
 import { POSPage } from '../../modules/pos/POSPage';
+import { TokenManagementPage } from '../../modules/token-management/TokenManagementPage';
 import { GenericModulePage } from '../../modules/common/GenericModulePage';
 import { PurchaseOrdersPage } from '../../modules/inventory/PurchaseOrdersPage';
 import { PurchasePage } from '../../modules/inventory/PurchasePage';
@@ -115,6 +119,7 @@ export const AppRouter: React.FC = () => {
                   <Route path="/roles-permissions" element={<RolesPermissionsPage />} />
                   <Route path="/control-panel" element={<ControlPanelPage />} />
                   <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/batch-barcode" element={<BatchBarcodePage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/brands" element={<BrandsPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
@@ -123,6 +128,8 @@ export const AppRouter: React.FC = () => {
                   <Route path="/stock-transfers" element={<StockTransfersPage />} />
                   <Route path="/stock-requisitions" element={<StockRequisitionsPage />} />
                   <Route path="/customers" element={<CustomersPage />} />
+                  <Route path="/suppliers" element={<VendorsPage />} />
+                  <Route path="/vendors" element={<VendorsPage />} />
                   <Route path="/accounting" element={<AccountingPage />} />
                   <Route path="/hr" element={<HRPage />} />
                   <Route path="/leave-types" element={<LeaveTypesPage />} />
@@ -131,7 +138,7 @@ export const AppRouter: React.FC = () => {
 
                   {/* Catalog & Register masters extensions */}
                   <Route path="/colors" element={<GenericModulePage title="Product Colors" subtitle="Color master attributes" entityName="Color" items={[{ id: '1', code: 'CLR-RED', name: 'Standard Red', status: 'ACTIVE' }]} />} />
-                  <Route path="/subcategories" element={<GenericModulePage title="Sub Categories" subtitle="Secondary category hierarchy" entityName="Sub Category" items={[{ id: '1', code: 'SUB-BEV', name: 'Carbonated Drinks', status: 'ACTIVE' }]} />} />
+                  <Route path="/subcategories" element={<SubCategoriesPage />} />
                   <Route path="/subdepartments" element={<GenericModulePage title="Sub Departments" subtitle="Secondary department division" entityName="Sub Department" items={[{ id: '1', code: 'SDEP-RET', name: 'Fresh Counter Sales', status: 'ACTIVE' }]} />} />
                   <Route path="/batch-barcode" element={<GenericModulePage title="Batch Barcode Printing" subtitle="Print shelf & item barcodes" entityName="Barcode Batch" items={[{ id: '1', code: 'BAR-001', name: 'Milk & Beverage Shelf Labels Batch', status: 'PRINTED' }]} />} />
                   <Route path="/price-updates" element={<GenericModulePage title="Price Updates Register" subtitle="Bulk cost & retail price overrides" entityName="Price Change Log" items={[{ id: '1', code: 'PRC-991', name: 'Almarai Retail Price Adjustment', amount: 7.50, status: 'EFFECTIVE' }]} />} />
@@ -220,7 +227,10 @@ export const AppRouter: React.FC = () => {
                   <Route path="/reports/location-purchase-return" element={<LocationPurchaseReturnReportPage />} />
                   <Route path="/notifications" element={<GenericModulePage title="Notifications Inbox" subtitle="System alerts" entityName="Notification" items={[{ id: '1', code: 'NTF-01', name: 'Low Stock Warning: Rayyan Water 500ml', status: 'UNREAD' }]} />} />
                   <Route path="/approvals" element={<GenericModulePage title="Approvals Queue" subtitle="Authorization requests" entityName="Approval" items={[{ id: '1', code: 'APP-102', name: 'Approval Request: PO > QAR 50,000', amount: 85000.00, status: 'PENDING' }]} />} />
-                  <Route path="/token-management" element={<GenericModulePage title="Token Management" subtitle="API Integration Keys" entityName="API Token" items={[{ id: '1', code: 'TKN-KEY', name: 'POS Hardware Integration Secret Token', status: 'ACTIVE' }]} />} />
+                  <Route path="/token-management" element={<TokenManagementPage />} />
+                  <Route path="/token-actions" element={<TokenManagementPage />} />
+                  <Route path="/announcement-config" element={<TokenManagementPage />} />
+                  <Route path="/token-reports" element={<TokenManagementPage />} />
 
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

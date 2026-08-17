@@ -52,6 +52,18 @@ interface PurchaseReturn {
   approvedBy?: string;
   processedDate?: string;
   processedBy?: string;
+  
+  // DART POS Alignment Fields
+  fullReference?: string;
+  paymode?: string;
+  discountPercentage?: number;
+  discountAmount?: number;
+  taxAdjustment?: number;
+  netTotal?: number;
+  isPosted?: boolean;
+  emailStatus?: string;
+  modifiedBy?: string;
+  modifiedDate?: string;
 }
 
 const DEFAULT_RETURNS: PurchaseReturn[] = [
@@ -416,26 +428,64 @@ export const PurchaseReturnPage: React.FC = () => {
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-100 dark:bg-slate-800 uppercase text-[11px] font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
             <tr>
-              <th className="p-4 whitespace-nowrap">Return #</th>
-              <th className="p-4 whitespace-nowrap">Purchase / Invoice</th>
-              <th className="p-4 whitespace-nowrap">Supplier</th>
-              <th className="p-4 whitespace-nowrap">Return Date</th>
-              <th className="p-4 whitespace-nowrap">Warehouse</th>
-              <th className="p-4 text-right whitespace-nowrap">Return Value</th>
-              <th className="p-4 text-center whitespace-nowrap">Status</th>
+              <th className="p-4 whitespace-nowrap">Refno</th>
+              <th className="p-4 whitespace-nowrap">Full Ref No</th>
+              <th className="p-4 whitespace-nowrap">Vendor</th>
+              <th className="p-4 whitespace-nowrap">Invoice No</th>
+              <th className="p-4 whitespace-nowrap">Invoice Date</th>
+              <th className="p-4 whitespace-nowrap">Returned Date</th>
+              <th className="p-4 whitespace-nowrap">Location</th>
+              <th className="p-4 whitespace-nowrap">Paymode</th>
+              <th className="p-4 text-right whitespace-nowrap">Total</th>
+              <th className="p-4 text-right whitespace-nowrap">Discount P</th>
+              <th className="p-4 text-right whitespace-nowrap">Discount</th>
+              <th className="p-4 text-right whitespace-nowrap">Sub Total</th>
+              <th className="p-4 text-right whitespace-nowrap">TAX</th>
+              <th className="p-4 text-right whitespace-nowrap">Tax Adj</th>
+              <th className="p-4 text-right whitespace-nowrap">Net Total</th>
+              <th className="p-4 text-center whitespace-nowrap">Is Posted</th>
+              <th className="p-4 text-center whitespace-nowrap">Email Status</th>
+              <th className="p-4 whitespace-nowrap">Created By</th>
+              <th className="p-4 whitespace-nowrap">Created Date</th>
+              <th className="p-4 whitespace-nowrap">Modified By</th>
+              <th className="p-4 whitespace-nowrap">Modified Date</th>
               <th className="p-4 text-center whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
-            {filteredReturns.length > 0 ? filteredReturns.map((r) => (
+            {filteredReturns.length > 0 ? filteredReturns.map((r) => {
+              const isPosted = r.isPosted || r.status === 'PROCESSED';
+              const total = r.totalValue || r.subtotal + r.taxAmount || 0;
+              const discPct = r.discountPercentage || 0;
+              const discAmt = r.discountAmount || 0;
+              const subTot = r.subtotal || 0;
+              const taxAmt = r.taxAmount || 0;
+              const taxAdj = r.taxAdjustment || 0;
+              const netTot = r.netTotal !== undefined ? r.netTotal : total;
+              
+              return (
               <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <td className="p-4 font-mono font-bold text-xs">{r.returnNo}</td>
-                <td className="p-4 font-mono text-xs">{r.purchaseInvoiceNo || '-'}</td>
+                <td className="p-4 text-xs">{r.fullReference || '—'}</td>
                 <td className="p-4 font-medium">{r.supplierName}</td>
+                <td className="p-4 font-mono text-xs">{r.purchaseInvoiceNo || '—'}</td>
+                <td className="p-4 text-xs">{r.createdDate ? new Date(r.createdDate).toLocaleDateString() : '—'}</td>
                 <td className="p-4 text-xs">{r.returnDate}</td>
-                <td className="p-4 text-xs">{r.warehouseName}</td>
-                <td className="p-4 text-right font-bold text-slate-700">${r.totalValue.toFixed(2)}</td>
-                <td className="p-4 text-center">{getStatusBadge(r.status)}</td>
+                <td className="p-4 text-xs text-slate-600">{r.warehouseName}</td>
+                <td className="p-4 text-xs">{r.paymode || '—'}</td>
+                <td className="p-4 text-right text-slate-600 text-xs">{total.toFixed(2)}</td>
+                <td className="p-4 text-right text-slate-600 text-xs">{discPct.toFixed(2)}</td>
+                <td className="p-4 text-right text-rose-600 text-xs">{discAmt.toFixed(2)}</td>
+                <td className="p-4 text-right font-medium text-slate-700 text-xs">{subTot.toFixed(2)}</td>
+                <td className="p-4 text-right text-slate-600 text-xs">{taxAmt.toFixed(2)}</td>
+                <td className="p-4 text-right text-slate-600 text-xs">{taxAdj.toFixed(2)}</td>
+                <td className="p-4 text-right font-bold text-emerald-600 text-xs">{netTot.toFixed(2)}</td>
+                <td className="p-4 text-center text-xs">{isPosted ? 'Yes' : 'No'}</td>
+                <td className="p-4 text-center text-xs">{r.emailStatus || '—'}</td>
+                <td className="p-4 text-xs">{r.createdBy}</td>
+                <td className="p-4 text-xs">{r.createdDate ? new Date(r.createdDate).toLocaleDateString() : '—'}</td>
+                <td className="p-4 text-xs">{r.modifiedBy || '—'}</td>
+                <td className="p-4 text-xs">{r.modifiedDate ? new Date(r.modifiedDate).toLocaleDateString() : '—'}</td>
                 <td className="p-4">
                   <div className="flex items-center justify-center gap-1">
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" onClick={() => { setActiveReturn(r); setIsViewModalOpen(true); }} title="View Details">
@@ -480,9 +530,10 @@ export const PurchaseReturnPage: React.FC = () => {
                   </div>
                 </td>
               </tr>
-            )) : (
+            );
+            }) : (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-slate-500">
+                <td colSpan={22} className="p-8 text-center text-slate-500">
                   No purchase returns found.
                 </td>
               </tr>

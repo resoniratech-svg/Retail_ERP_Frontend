@@ -23,6 +23,27 @@ import { StockRequisitionsPage } from '../../modules/stock/StockRequisitionsPage
 import { CustomersPage } from '../../modules/customers/CustomersPage';
 import { VendorsPage } from '../../modules/vendors/VendorsPage';
 import { AccountingPage } from '../../modules/accounting/AccountingPage';
+import { PaymentVouchersPage } from '../../modules/accounting/PaymentVouchersPage';
+import { PnLReportsPage } from '../../modules/accounting/PnLReportsPage';
+import { AccountGroupsPage } from '../../modules/accounting/AccountGroupsPage';
+import { LedgerGroupsPage } from '../../modules/accounting/LedgerGroupsPage';
+import { CostCentersPage } from '../../modules/accounting/CostCentersPage';
+import { LedgersPage } from '../../modules/accounting/LedgersPage';
+import { JournalVouchersPage } from '../../modules/accounting/JournalVouchersPage';
+import { MultiplePaymentVouchersPage } from '../../modules/accounting/MultiplePaymentVouchersPage';
+import { AdvanceReceiptsPage } from '../../modules/accounting/AdvanceReceiptsPage';
+import { ReceiptVouchersPage } from '../../modules/accounting/ReceiptVouchersPage';
+import { ContraVouchersPage } from '../../modules/accounting/ContraVouchersPage';
+import { OtherPaymentsPage } from '../../modules/accounting/OtherPaymentsPage';
+import { OtherReceiptsPage } from '../../modules/accounting/OtherReceiptsPage';
+import { BankReconciliationPage } from '../../modules/accounting/BankReconciliationPage';
+import { CreditMemoPage } from '../../modules/accounting/CreditMemoPage';
+import { DeferredExpensesPage } from '../../modules/accounting/DeferredExpensesPage';
+import { DepreciationEntryPage } from '../../modules/accounting/DepreciationEntryPage';
+import { RebateCalculationPage } from '../../modules/accounting/RebateCalculationPage';
+import { InterCostCenterTransfersPage } from '../../modules/accounting/InterCostCenterTransfersPage';
+import { ExpensesPage } from '../../modules/accounting/ExpensesPage';
+import { OtherPurchasesPage } from '../../modules/accounting/OtherPurchasesPage';
 import { HRPage } from '../../modules/hr/HRPage';
 import { LeaveTypesPage } from '../../modules/hr/LeaveTypesPage';
 import { LeaveApplicationsPage } from '../../modules/hr/LeaveApplicationsPage';
@@ -181,7 +202,27 @@ export const AppRouter: React.FC = () => {
                   <Route path="/trading" element={<QuotationsPage />} />
                   <Route path="/sales" element={<SalesOrdersPage />} />
                   <Route path="/sales-invoices" element={<SalesInvoicesPage />} />
-                  <Route path="/payments" element={<GenericModulePage title="Payments" subtitle="Payment receipts" entityName="Payment" items={[{ id: '1', code: 'PAY-881', name: 'Bank Transfer - Doha Hypermarket', amount: 32500.00, status: 'CLEARED' }]} />} />
+                  <Route path="/payments" element={<PaymentVouchersPage />} />
+                  <Route path="/accounting/account-groups" element={<AccountGroupsPage />} />
+                  <Route path="/accounting/ledger-groups" element={<LedgerGroupsPage />} />
+                  <Route path="/accounting/cost-centers" element={<CostCentersPage />} />
+                  <Route path="/accounting/ledgers" element={<LedgersPage />} />
+                  <Route path="/accounting/journal-vouchers" element={<JournalVouchersPage />} />
+                  <Route path="/accounting/multiple-payment-vouchers" element={<MultiplePaymentVouchersPage />} />
+                  <Route path="/accounting/advance-receipts" element={<AdvanceReceiptsPage />} />
+                  <Route path="/accounting/receipt-vouchers" element={<ReceiptVouchersPage />} />
+                  <Route path="/accounting/contra-vouchers" element={<ContraVouchersPage />} />
+                  <Route path="/accounting/other-payments" element={<OtherPaymentsPage />} />
+                  <Route path="/accounting/other-receipts" element={<OtherReceiptsPage />} />
+                  <Route path="/accounting/bank-reconciliation" element={<BankReconciliationPage />} />
+                  <Route path="/accounting/credit-memo" element={<CreditMemoPage />} />
+                  <Route path="/accounting/deferred-expenses" element={<DeferredExpensesPage />} />
+                  <Route path="/accounting/depreciation-entry" element={<DepreciationEntryPage />} />
+                  <Route path="/accounting/rebate-calculation" element={<RebateCalculationPage />} />
+                  <Route path="/accounting/inter-costcenter-transfers" element={<InterCostCenterTransfersPage />} />
+                  <Route path="/accounting/expenses" element={<ExpensesPage />} />
+                  <Route path="/accounting/other-purchases" element={<OtherPurchasesPage />} />
+                  <Route path="/accounting/pnl-reports" element={<PnLReportsPage />} />
                   <Route path="/returns" element={<SalesReturnPage />} />
                   <Route path="/job-orders" element={<JobOrdersPage />} />
                   <Route path="/delivery-receipts" element={<DeliveryReceiptsPage />} />
@@ -242,3 +283,4 @@ export const AppRouter: React.FC = () => {
     </BrowserRouter>
   );
 };
+

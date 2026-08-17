@@ -60,7 +60,7 @@ export const ERPLayout: React.FC<{ children?: React.ReactNode }> = ({ children }
       />
 
       {/* 3. DYNAMIC RIBBON TOOLBAR */}
-      <ERPModuleRibbon groups={activeModule.ribbonGroups} lang={lang} moduleId={['tradings', 'reports'].includes(activeModule.id) ? 'tradings' : activeModule.id} />
+      <ERPModuleRibbon groups={activeModule.ribbonGroups} lang={lang} moduleId={['tradings', 'reports', 'accounts'].includes(activeModule.id) ? 'tradings' : activeModule.id} />
 
       {/* 4. WORKSPACE TABS */}
       <WorkspaceTabs

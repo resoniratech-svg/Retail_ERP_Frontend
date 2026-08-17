@@ -37,7 +37,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         actions: [
           { id: 'pos-main', label: 'POS Terminal', labelAr: 'شاشة النقطة', iconName: 'ShoppingBag', route: '/pos', shortcut: 'F2' },
           { id: 'pos-config', label: 'Configuration', labelAr: 'الإعدادات', iconName: 'Sliders', route: '/control-panel' },
-          { id: 'pos-dayclose', label: 'Day Close', labelAr: 'إغلاق اليوم', iconName: 'Lock', route: '/reports' },
+          { id: 'pos-dayclose', label: 'Day Close', labelAr: 'إغلاق اليوم', iconName: 'Lock', route: '/day-close' },
         ],
       },
     ],
@@ -55,7 +55,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         actions: [
           { id: 'reg-prod', label: 'Product', labelAr: 'المنتجات', iconName: 'Package', route: '/products' },
           { id: 'reg-barcode', label: 'Barcode', labelAr: 'الباركود', iconName: 'Barcode', route: '/batch-barcode' },
-          { id: 'reg-quick-barcode', label: 'Quick Barcode', labelAr: 'باركود سريع', iconName: 'Printer', route: '/batch-barcode' },
+          { id: 'reg-quick-barcode', label: 'Quick Barcode', labelAr: 'باركود سريع', iconName: 'Printer', route: '/batch-barcode?quickPrint=true' },
           { id: 'reg-price-update', label: 'Price Update', labelAr: 'تحديث الأسعار', iconName: 'TrendingUp', route: '/price-updates' },
         ],
       },
@@ -63,7 +63,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         title: 'Category Hierarchy',
         titleAr: 'هيكل الفئات',
         actions: [
-          { id: 'reg-dept', label: 'Department', labelAr: 'الأقسام الرئيسية', iconName: 'Grid', route: '/categories' },
+          { id: 'reg-dept', label: 'Department', labelAr: 'الأقسام الرئيسية', iconName: 'Grid', route: '/departments' },
           { id: 'reg-subdept', label: 'Sub Department', labelAr: 'الأقسام الفرعية', iconName: 'Layers', route: '/subdepartments' },
           { id: 'reg-cat', label: 'Category', labelAr: 'الفئات', iconName: 'Tag', route: '/categories' },
           { id: 'reg-subcat', label: 'SubCategory', labelAr: 'الفئات الفرعية', iconName: 'ListFilter', route: '/subcategories' },
@@ -75,7 +75,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         titleAr: 'الصلاحيات والفروع',
         actions: [
           { id: 'reg-roles', label: 'Roles', labelAr: 'الأدوار والصلاحيات', iconName: 'Shield', route: '/roles-permissions' },
-          { id: 'reg-loc-access', label: 'Location Access', labelAr: 'صلاحيات الفروع', iconName: 'Lock', route: '/branches' },
+          { id: 'reg-loc-access', label: 'Location Access', labelAr: 'صلاحيات الفروع', iconName: 'Lock', route: '/roles-permissions?locationAccess=true' },
         ],
       },
       {
@@ -92,7 +92,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         titleAr: 'المناطق والتوصيل',
         actions: [
           { id: 'reg-areas', label: 'Areas', labelAr: 'المناطق الجغرافية', iconName: 'Map', route: '/areas' },
-          { id: 'reg-loc', label: 'Location', labelAr: 'الفروع والأنشطة', iconName: 'MapPin', route: '/branches' },
+          { id: 'reg-loc', label: 'Location', labelAr: 'الفروع والأنشطة', iconName: 'MapPin', route: '/locations' },
           { id: 'reg-del-agents', label: 'DeliveryAgents', labelAr: 'مندوبي التوصيل', iconName: 'Navigation', route: '/delivery-agents' },
         ],
       },

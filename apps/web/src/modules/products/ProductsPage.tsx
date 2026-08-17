@@ -23,6 +23,7 @@ import {
   Percent,
   DollarSign,
   Scale,
+  Eye,
   Building,
   Truck,
   CheckCircle2,
@@ -107,6 +108,127 @@ export const ProductsPage: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeFormTab, setActiveFormTab] = useState<'Costing' | 'Packings' | 'Classifications'>('Costing');
 
+  // Sub-Ribbon Screen & Modal States (Matching Target System Images 1, 2, 3, & 4)
+  const [activeView, setActiveView] = useState<'Catalog' | 'StockReport' | 'PriceChange'>('Catalog');
+  const [stockReportSubTab, setStockReportSubTab] = useState<'Single Location' | 'Location - Stock Matrix'>('Single Location');
+
+  // Barcode Quick Print Modal State (Matching Target Image 3)
+  const [isQuickPrintModalOpen, setIsQuickPrintModalOpen] = useState(false);
+  const [quickPrintBarcodeScan, setQuickPrintBarcodeScan] = useState('');
+  const [quickPrintCode, setQuickPrintCode] = useState('123');
+  const [quickPrintProductDesc, setQuickPrintProductDesc] = useState('Almarai Full Cream Fresh Milk 1L');
+  const [quickPrintPriceInclTax, setQuickPrintPriceInclTax] = useState(15.00);
+  const [quickPrintWasPriceEnabled, setQuickPrintWasPriceEnabled] = useState(false);
+  const [quickPrintWasPrice, setQuickPrintWasPrice] = useState(67.00);
+  const [quickPrintTaxMode, setQuickPrintTaxMode] = useState<'Incl. Tax' | 'Excl. Tax'>('Incl. Tax');
+  const [quickPrintDesignMode, setQuickPrintDesignMode] = useState<'Default Design' | 'PRN Template'>('Default Design');
+  const [quickPrintTemplate, setQuickPrintTemplate] = useState('Standard Thermal 50x25mm');
+  const [quickPrintPrintPrice, setQuickPrintPrintPrice] = useState(true);
+  const [quickPrintAutoPrint, setQuickPrintAutoPrint] = useState(false);
+  const [quickPrintAutoPrintQty, setQuickPrintAutoPrintQty] = useState(1);
+  const [quickPrintQtyOnScan, setQuickPrintQtyOnScan] = useState(false);
+  const [quickPrintQty, setQuickPrintQty] = useState(1);
+
+  // Price Embedded Barcode Printing Modal State (Matching Target Image 4)
+  const [isPriceEmbeddedModalOpen, setIsPriceEmbeddedModalOpen] = useState(false);
+  const [embeddedSelectedProductId, setEmbeddedSelectedProductId] = useState('');
+  const [embeddedCode, setEmbeddedCode] = useState('');
+  const [embeddedBarcode, setEmbeddedBarcode] = useState('');
+  const [embeddedAddDescription, setEmbeddedAddDescription] = useState('');
+  const [embeddedVendor, setEmbeddedVendor] = useState('[Select a Vendor]');
+  const [embeddedCost, setEmbeddedCost] = useState(10.00);
+  const [embeddedCostCode, setEmbeddedCostCode] = useState('A10.00');
+  const [embeddedPrice, setEmbeddedPrice] = useState(13.04);
+  const [embeddedPriceInclTax, setEmbeddedPriceInclTax] = useState(15.00);
+  const [embeddedPrintPrice, setEmbeddedPrintPrice] = useState(true);
+  const [embeddedWasPriceEnabled, setEmbeddedWasPriceEnabled] = useState(false);
+  const [embeddedWasPrice, setEmbeddedWasPrice] = useState(67.00);
+  const [embeddedDesignMode, setEmbeddedDesignMode] = useState<'Default Design' | 'PRN Template'>('Default Design');
+  const [embeddedTemplate, setEmbeddedTemplate] = useState('Choose a Template');
+  const [embeddedQty, setEmbeddedQty] = useState(1);
+
+  // Price Change Screen State (Matching Target Image 2)
+  const [priceChangeKeyword, setPriceChangeKeyword] = useState('');
+  const [priceChangeSearchBy, setPriceChangeSearchBy] = useState<'Description' | 'Barcode' | 'Product Code' | 'Department'>('Description');
+  const [priceChangeSearchMode, setPriceChangeSearchMode] = useState<'Begin With' | 'Contains'>('Begin With');
+  const [priceChangePriceType, setPriceChangePriceType] = useState<'Retail Price' | 'Wholesale Price'>('Retail Price');
+  const [priceChangeDept, setPriceChangeDept] = useState('ALL');
+  const [priceChangeSubDept, setPriceChangeSubDept] = useState('ALL');
+  const [priceChangeBrand, setPriceChangeBrand] = useState('ALL');
+  const [priceChangeVendor, setPriceChangeVendor] = useState('[Select a Vendor]');
+  const [priceChangeMarkupPercent, setPriceChangeMarkupPercent] = useState('');
+  const [priceChangeGrossProfitPercent, setPriceChangeGrossProfitPercent] = useState('');
+  const [priceChangeShowStock, setPriceChangeShowStock] = useState(true);
+
+  // Row 2 Sub-Ribbon Modal States (Matching Target Screenshot)
+  const [isPromotionsModalOpen, setIsPromotionsModalOpen] = useState(false);
+  const [isSortOrderModalOpen, setIsSortOrderModalOpen] = useState(false);
+  const [isSerialHistoryModalOpen, setIsSerialHistoryModalOpen] = useState(false);
+  const [isActionHistoryModalOpen, setIsActionHistoryModalOpen] = useState(false);
+  const [isPurchaseHistoryModalOpen, setIsPurchaseHistoryModalOpen] = useState(false);
+  const [isDeptShiftingModalOpen, setIsDeptShiftingModalOpen] = useState(false);
+  const [serialSearchKeyword, setSerialSearchKeyword] = useState('');
+  const [stockReportFilter, setStockReportFilter] = useState({
+    reportType: 'All Products',
+    location: 'Saudi Arabia',
+    stockDate: new Date().toISOString().split('T')[0],
+    procurementType: 'Normal Purchase',
+    defaultVendor: '[Select a Vendor]',
+    vendorGroup: '[Select a Group]',
+    showDeptWiseStock: false,
+    showVariantStock: false,
+    includeVanStock: true,
+    inStockOnly: false,
+    negativeStock: false,
+    showLastPurchaseDetail: false,
+  });
+
+  const [isScaleModalOpen, setIsScaleModalOpen] = useState(false);
+  const [scaleFilesList, setScaleFilesList] = useState([
+    { id: '1', select: true, description: 'Bizerba Scale PLU Export File (Doha Main Branch)', status: 'Ready' },
+    { id: '2', select: true, description: 'Mettler Toledo Scale PLU File (Salwa Road Branch)', status: 'Generated (17/08/2026 09:55:27 AM)' },
+    { id: '3', select: false, description: 'DIGI SM-5100 Scale File (Industrial Area Plant)', status: 'Ready' },
+    { id: '4', select: false, description: 'Ishida Scale PLU Export File (Al Rayyan Branch)', status: 'Ready' },
+  ]);
+
+  const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
+  const [logsRadioMode, setLogsRadioMode] = useState<'User Log' | 'Barcode Print Log'>('User Log');
+  const [logsFilterType, setLogsFilterType] = useState<'Cost' | 'Price' | 'Stock'>('Price');
+  const [logsSearchProduct, setLogsSearchProduct] = useState('');
+  const [logsFromDate, setLogsFromDate] = useState('2026-08-01T00:00');
+  const [logsToDate, setLogsToDate] = useState('2026-08-17T23:59');
+  const [logsDefaultVendor, setLogsDefaultVendor] = useState('[Select a Vendor]');
+
+  // Import Products Modal State (Matching Target Screenshot 1)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFilePath, setImportFilePath] = useState('C:\\Documents\\Products_Master_Catalog.xlsx');
+  const [importSheetName, setImportSheetName] = useState('Sheet1');
+  const [checkDuplicateDescription, setCheckDuplicateDescription] = useState(false);
+  const [checkDuplicateProductCode, setCheckDuplicateProductCode] = useState(false);
+  const [importExcelData, setImportExcelData] = useState([
+    { code: '123', description: 'Almarai Full Cream Fresh Milk 1L', barcode: '346578', category: 'Dairy & Eggs', cost: 10.00, price: 13.04, priceInclTax: 15.00, status: 'Ready' },
+    { code: '124', description: 'Rayyan Natural Water 500ml Pack x24', barcode: '6291002938192', category: 'Beverages', cost: 9.50, price: 12.00, priceInclTax: 12.00, status: 'Ready' },
+    { code: '125', description: 'Khabari Premium Khudri Dates 1kg', barcode: '6298810293812', category: 'Dates & Fruits', cost: 22.00, price: 30.00, priceInclTax: 30.00, status: 'Ready' },
+  ]);
+
+  // Batch Barcode Printing Modal State (Matching Target Screenshot 2)
+  const [isBatchBarcodeModalOpen, setIsBatchBarcodeModalOpen] = useState(false);
+  const [batchBarcodeItems, setBatchBarcodeItems] = useState<Array<Product & { selected: boolean; printQty: number; packId: number; uom: number }>>([]);
+  const [batchBarcodeRecordsLimit, setBatchBarcodeRecordsLimit] = useState(100);
+  const [batchBarcodeFromDate, setBatchBarcodeFromDate] = useState('2026-08-01');
+  const [batchBarcodeToDate, setBatchBarcodeToDate] = useState('2026-08-17');
+  const [batchBarcodePriceChangedOnly, setBatchBarcodePriceChangedOnly] = useState(false);
+  const [batchBarcodeKeyword, setBatchBarcodeKeyword] = useState('');
+  const [batchBarcodeSearchBy, setBatchBarcodeSearchBy] = useState<'Description' | 'Barcode' | 'Product Code' | 'Department'>('Description');
+  const [batchBarcodeSearchMode, setBatchBarcodeSearchMode] = useState<'Begin With' | 'Contains'>('Contains');
+  const [batchBarcodeTaxMode, setBatchBarcodeTaxMode] = useState<'Incl. Tax' | 'Excl. Tax'>('Incl. Tax');
+  const [batchBarcodeDesignMode, setBatchBarcodeDesignMode] = useState<'Default Design' | 'PRN Template'>('Default Design');
+  const [batchBarcodeTemplate, setBatchBarcodeTemplate] = useState('Choose a Template');
+  const [batchBarcodePrintPrice, setBatchBarcodePrintPrice] = useState(true);
+  const [batchBarcodeShowPackings, setBatchBarcodeShowPackings] = useState(false);
+  const [batchBarcodePrintExpDate, setBatchBarcodePrintExpDate] = useState(false);
+  const [batchBarcodeQtyMode, setBatchBarcodeQtyMode] = useState<'Stock Qty' | 'Manual Qty' | 'One Each'>('One Each');
+
   // Form State matching DART POS Screenshots 2 & 3
   const [formData, setFormData] = useState<Partial<Product>>({
     sku: '',
@@ -166,7 +288,7 @@ export const ProductsPage: React.FC = () => {
   const [packingsList, setPackingsList] = useState<ProductPacking[]>([]);
 
   // Bottom Print Panel State
-  const [quickPrintWasPrice, setQuickPrintWasPrice] = useState('67.00');
+  const [bottomWasPrice, setBottomWasPrice] = useState('67.00');
   const [stockLookupLocation, setStockLookupLocation] = useState('Doha Main Branch');
 
   const loadProducts = () => {
@@ -279,6 +401,27 @@ export const ProductsPage: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
+  const handleCreateSimilarProduct = () => {
+    const base = products[0];
+    if (!base) {
+      alert('Please select a product first to clone.');
+      return;
+    }
+    const available = loadAvailableCategories();
+    setCategoriesList(available);
+
+    setEditingProduct(null);
+    setFormData({
+      ...base,
+      sku: `${base.sku}-COPY`,
+      barcode: `${Math.floor(100000000000 + Math.random() * 900000000000)}`,
+      name: `${base.name} (Similar Copy)`,
+      nameAr: base.nameAr ? `${base.nameAr} (نسخة)` : '',
+    });
+    setPackingsList(base.packings || []);
+    setIsAddModalOpen(true);
+  };
+
   const handleOpenEditModal = (prod: Product) => {
     setEditingProduct(prod);
     setFormData({ ...prod });
@@ -386,15 +529,19 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('📊 Stock Ledger Report generated for product master catalog.')}
-            className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
+            onClick={() => setActiveView('StockReport')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border font-semibold ${
+              activeView === 'StockReport'
+                ? 'bg-sky-600 text-white border-sky-500 font-bold'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+            }`}
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-sky-400" />
             <span>Stock Report</span>
           </button>
 
           <button
-            onClick={() => alert('⚖️ Scale Barcode File generated for DIGI/Mettler Toledo weighing scales.')}
+            onClick={() => setIsScaleModalOpen(true)}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
           >
             <Scale className="w-3.5 h-3.5 text-amber-400" />
@@ -402,7 +549,10 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('📈 Price Adjustment History Log opened.')}
+            onClick={() => {
+              setLogsFilterType('Price');
+              setIsLogsModalOpen(true);
+            }}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
           >
             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -410,7 +560,10 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('💵 Cost Adjustment History Log opened.')}
+            onClick={() => {
+              setLogsFilterType('Cost');
+              setIsLogsModalOpen(true);
+            }}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
           >
             <DollarSign className="w-3.5 h-3.5 text-yellow-400" />
@@ -418,7 +571,10 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('📦 Stock Movement Audit Log opened.')}
+            onClick={() => {
+              setLogsFilterType('Stock');
+              setIsLogsModalOpen(true);
+            }}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
           >
             <Boxes className="w-3.5 h-3.5 text-purple-400" />
@@ -426,7 +582,7 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('📥 Bulk Excel/CSV Products Import Wizard opened.')}
+            onClick={() => setIsImportModalOpen(true)}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
           >
             <Download className="w-3.5 h-3.5 text-teal-400" />
@@ -434,7 +590,7 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('🖨️ Shelf Barcode Printing Wizard initiated.')}
+            onClick={() => setIsBatchBarcodeModalOpen(true)}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
           >
             <Printer className="w-3.5 h-3.5 text-indigo-400" />
@@ -442,8 +598,28 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('🏷️ Price Change by Gross Profit % tool triggered.')}
+            onClick={() => setIsPriceEmbeddedModalOpen(true)}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
+          >
+            <Barcode className="w-3.5 h-3.5 text-pink-400" />
+            <span>Price Embedded Barcode</span>
+          </button>
+
+          <button
+            onClick={() => setIsQuickPrintModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
+          >
+            <Printer className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Quick Print</span>
+          </button>
+
+          <button
+            onClick={() => setActiveView('PriceChange')}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border font-semibold ${
+              activeView === 'PriceChange'
+                ? 'bg-rose-600 text-white border-rose-500 font-bold'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+            }`}
           >
             <Percent className="w-3.5 h-3.5 text-rose-400" />
             <span>Price Chng By GP</span>
@@ -461,8 +637,607 @@ export const ProductsPage: React.FC = () => {
         <span className="text-[10px] text-slate-400 font-mono shrink-0">Catalog Items: {products.length}</span>
       </div>
 
-      {/* 2. DART POS TASKS & FILTER BAR (Matching Screenshot 1) */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+      {/* 2. DART POS SECOND SUB-RIBBON ACTION TOOLBAR (Matching User's Screenshot) */}
+      <div className="bg-white border border-slate-200 rounded-xl p-2 shadow-sm flex items-center justify-between gap-2 overflow-x-auto text-xs">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={() => setIsPromotionsModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg font-bold shadow-xs"
+          >
+            <Tag className="w-3.5 h-3.5 text-amber-600" />
+            <span>Active Promotions</span>
+          </button>
+
+          <button
+            onClick={handleCreateSimilarProduct}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
+          >
+            <Copy className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Create A Similar Product</span>
+          </button>
+
+          <button
+            onClick={() => setIsSortOrderModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
+          >
+            <Layers className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Sort Order</span>
+          </button>
+
+          <button
+            onClick={() => setIsSerialHistoryModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
+          >
+            <Barcode className="w-3.5 h-3.5 text-sky-600" />
+            <span>Product History By Serial</span>
+          </button>
+
+          <button
+            onClick={() => setIsActionHistoryModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
+          >
+            <History className="w-3.5 h-3.5 text-purple-600" />
+            <span>Action History</span>
+          </button>
+        </div>
+
+        {/* Right Aligned Quick Tools */}
+        <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+          <button
+            onClick={() => setIsPurchaseHistoryModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 rounded-lg font-bold"
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-red-600" />
+            <span>Purchase History</span>
+          </button>
+
+          <button
+            onClick={() => alert('🚚 Vendors directory opened.')}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
+          >
+            <Truck className="w-3.5 h-3.5 text-blue-600" />
+            <span>Vendors</span>
+          </button>
+
+          <button
+            onClick={() => setIsDeptShiftingModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
+          >
+            <Boxes className="w-3.5 h-3.5 text-teal-600" />
+            <span>Department/Brand Shifting</span>
+          </button>
+        </div>
+      </div>
+
+      {/* CONDITIONAL CONTENT VIEW: STOCK REPORT SCREEN (Image 2) VS PRODUCTS CATALOG (Image 1) */}
+      {activeView === 'StockReport' ? (
+        <div className="space-y-3">
+          {/* Top Sub-Tabs Bar (Matching Image 2 Top) */}
+          <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setStockReportSubTab('Single Location')}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
+                  stockReportSubTab === 'Single Location'
+                    ? 'bg-slate-900 text-emerald-400 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                Single Location
+              </button>
+              <button
+                onClick={() => setStockReportSubTab('Location - Stock Matrix')}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
+                  stockReportSubTab === 'Location - Stock Matrix'
+                    ? 'bg-slate-900 text-emerald-400 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                Location - Stock Matrix
+              </button>
+            </div>
+
+            <button
+              onClick={() => setActiveView('Catalog')}
+              className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg border border-slate-300 text-xs"
+            >
+              ← Back to Products Catalog
+            </button>
+          </div>
+
+          {/* Filters Card (Matching Image 2 Filters Panel) */}
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-3 text-xs">
+            <h3 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider border-b border-slate-200 pb-1">
+              Filters & Stock Ledger Parameters
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Report Type</label>
+                <select
+                  value={stockReportFilter.reportType}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, reportType: e.target.value })}
+                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold bg-white"
+                >
+                  <option value="All Products">All Products</option>
+                  <option value="Active Products">Active Products</option>
+                  <option value="Low Stock">Low Stock</option>
+                  <option value="Out of Stock">Out of Stock</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Location</label>
+                <select
+                  value={stockReportFilter.location}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, location: e.target.value })}
+                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-bold bg-white text-slate-900"
+                >
+                  <option value="Saudi Arabia">Saudi Arabia</option>
+                  <option value="Doha Main Branch">Doha Main Branch</option>
+                  <option value="Industrial Area Warehouse">Industrial Area Warehouse</option>
+                  <option value="Salwa Road Showroom">Salwa Road Showroom</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Stock Date</label>
+                <input
+                  type="date"
+                  value={stockReportFilter.stockDate}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, stockDate: e.target.value })}
+                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono font-bold bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Procurement Type</label>
+                <select
+                  value={stockReportFilter.procurementType}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, procurementType: e.target.value })}
+                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold bg-white"
+                >
+                  <option value="Normal Purchase">Normal Purchase</option>
+                  <option value="Consignment">Consignment</option>
+                  <option value="Import">Import</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Default Vendor</label>
+                <div className="flex items-center gap-1">
+                  <select
+                    value={stockReportFilter.defaultVendor}
+                    onChange={(e) => setStockReportFilter({ ...stockReportFilter, defaultVendor: e.target.value })}
+                    className="flex-1 px-2.5 py-1.5 border border-slate-300 rounded font-semibold bg-white"
+                  >
+                    <option value="[Select a Vendor]">[Select a Vendor]</option>
+                    <option value="Almarai Food Qatar W.L.L">Almarai Food Qatar W.L.L</option>
+                    <option value="Doha Wholesale Trading W.L.L">Doha Wholesale Trading W.L.L</option>
+                    <option value="Rayyan Water Company W.L.L">Rayyan Water Company W.L.L</option>
+                  </select>
+                  <button onClick={() => alert('+ F4 Vendor master lookup')} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded border font-bold text-[10px]">
+                    + F4
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Vendor Group</label>
+                <select
+                  value={stockReportFilter.vendorGroup}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, vendorGroup: e.target.value })}
+                  className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold bg-white"
+                >
+                  <option value="[Select a Group]">[Select a Group]</option>
+                  <option value="General FMCG">General FMCG</option>
+                  <option value="Wholesale Grains">Wholesale Grains</option>
+                  <option value="Beverages">Beverages</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Checkboxes Grid (Matching Image 2) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-[11px] font-bold text-slate-700">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={stockReportFilter.showDeptWiseStock}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, showDeptWiseStock: e.target.checked })}
+                  className="rounded text-emerald-600"
+                />
+                <span>Show Department Wise Stock</span>
+              </label>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={stockReportFilter.showVariantStock}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, showVariantStock: e.target.checked })}
+                  className="rounded text-emerald-600"
+                />
+                <span>Show Varient Stock</span>
+              </label>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={stockReportFilter.includeVanStock}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, includeVanStock: e.target.checked })}
+                  className="rounded text-emerald-600"
+                />
+                <span>Include Van Stock</span>
+              </label>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={stockReportFilter.inStockOnly}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, inStockOnly: e.target.checked })}
+                  className="rounded text-emerald-600"
+                />
+                <span>InStock Only</span>
+              </label>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={stockReportFilter.negativeStock}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, negativeStock: e.target.checked })}
+                  className="rounded text-emerald-600"
+                />
+                <span>Negative Stock</span>
+              </label>
+
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={stockReportFilter.showLastPurchaseDetail}
+                  onChange={(e) => setStockReportFilter({ ...stockReportFilter, showLastPurchaseDetail: e.target.checked })}
+                  className="rounded text-emerald-600"
+                />
+                <span>Show Last Purchase Detail</span>
+              </label>
+            </div>
+
+            {/* Actions Toolbar */}
+            <div className="pt-2 border-t border-slate-200 flex items-center justify-end gap-2">
+              <button
+                onClick={() => alert('💾 Layout saved successfully!')}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg border border-slate-300"
+              >
+                Save Layout
+              </button>
+              <button
+                onClick={() => alert(`👁️ Querying stock report for location ${stockReportFilter.location}...`)}
+                className="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Show</span>
+              </button>
+              <button
+                onClick={() => alert(`🖨️ Printing Stock Ledger Report for ${stockReportFilter.location}`)}
+                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Stock Report Data Grid (Matching Image 2 Table) */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 font-bold text-slate-800 text-xs">
+              Stock Report Data Grid ({stockReportFilter.location})
+            </div>
+            <div className="overflow-x-auto max-h-[50vh]">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 uppercase font-bold text-[10px]">
+                  <tr>
+                    <th className="py-2.5 px-3">Product Code</th>
+                    <th className="py-2.5 px-3">Barcode</th>
+                    <th className="py-2.5 px-3">Product Description</th>
+                    <th className="py-2.5 px-3">Category</th>
+                    <th className="py-2.5 px-3">Location</th>
+                    <th className="py-2.5 px-3 text-right">Current Stock</th>
+                    <th className="py-2.5 px-3 text-right">Unit Cost</th>
+                    <th className="py-2.5 px-3 text-right">Stock Value</th>
+                    <th className="py-2.5 px-3">Last Supplier</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 font-medium">
+                  {products.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50">
+                      <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{p.sku}</td>
+                      <td className="py-2.5 px-3 font-mono text-slate-600">{p.barcode}</td>
+                      <td className="py-2.5 px-3 font-bold text-slate-900">{p.name}</td>
+                      <td className="py-2.5 px-3 text-slate-700">{p.categoryName || 'General'}</td>
+                      <td className="py-2.5 px-3 text-slate-700">{stockReportFilter.location}</td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">{p.stockQuantity || 100} {p.unit}</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-slate-800">{formatQAR(p.costPrice)}</td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">{formatQAR((p.costPrice || 0) * (p.stockQuantity || 100))}</td>
+                      <td className="py-2.5 px-3 text-slate-600">{p.defaultVendor || 'General'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : activeView === 'PriceChange' ? (
+        <div className="space-y-3 font-sans text-xs">
+          {/* PRICE CHANGE SCREEN (Matching Target Image 2) */}
+          <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            {/* Top Row Search & Mode Bar */}
+            <div className="flex items-center gap-3 flex-wrap justify-between border-b border-slate-200 pb-2">
+              <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+                <span className="font-bold text-slate-700">Product Search:</span>
+                <input
+                  type="text"
+                  placeholder="Scan or enter product name..."
+                  value={priceChangeKeyword}
+                  onChange={(e) => setPriceChangeKeyword(e.target.value)}
+                  className="flex-1 px-2.5 py-1 border border-slate-300 rounded font-mono text-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-700">Search By:</span>
+                <select
+                  value={priceChangeSearchBy}
+                  onChange={(e) => setPriceChangeSearchBy(e.target.value as any)}
+                  className="px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white text-xs"
+                >
+                  <option value="Description">Description</option>
+                  <option value="Barcode">Barcode</option>
+                  <option value="Product Code">Product Code</option>
+                  <option value="Department">Department</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 font-bold text-slate-700">
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="priceSearchMode"
+                    checked={priceChangeSearchMode === 'Begin With'}
+                    onChange={() => setPriceChangeSearchMode('Begin With')}
+                  />
+                  <span>Begin With (F4)</span>
+                </label>
+
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="priceSearchMode"
+                    checked={priceChangeSearchMode === 'Contains'}
+                    onChange={() => setPriceChangeSearchMode('Contains')}
+                  />
+                  <span>Contains (F5)</span>
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3 font-bold text-slate-700 border-l border-slate-300 pl-3">
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="priceTypeMode"
+                    checked={priceChangePriceType === 'Retail Price'}
+                    onChange={() => setPriceChangePriceType('Retail Price')}
+                  />
+                  <span>Retail Price</span>
+                </label>
+
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="priceTypeMode"
+                    checked={priceChangePriceType === 'Wholesale Price'}
+                    onChange={() => setPriceChangePriceType('Wholesale Price')}
+                  />
+                  <span>Wholesale Price</span>
+                </label>
+              </div>
+
+              <div className="flex items-center gap-1.5 ml-auto">
+                <button onClick={() => alert('All products selected')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded border text-xs">
+                  Select All [F6]
+                </button>
+                <button onClick={() => alert('All products deselected')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded border text-xs">
+                  Deselect All [F7]
+                </button>
+                <button onClick={() => alert('Selection inverted')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded border text-xs">
+                  Select Inverse [F8]
+                </button>
+              </div>
+            </div>
+
+            {/* Middle Section: Filters Box + Markup/GP Box + Update Actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+              {/* Filters Box */}
+              <div className="lg:col-span-5 bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+                <div className="font-bold text-[11px] text-slate-700 uppercase tracking-wide">Filters</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-16 font-semibold text-slate-600">Department</span>
+                    <select
+                      value={priceChangeDept}
+                      onChange={(e) => setPriceChangeDept(e.target.value)}
+                      className="flex-1 px-2 py-0.5 border border-slate-300 rounded bg-white"
+                    >
+                      <option value="ALL">ALL</option>
+                      <option value="Fresh Food">Fresh Food</option>
+                      <option value="Beverages">Beverages</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-16 font-semibold text-slate-600">Sub Dept.</span>
+                    <select
+                      value={priceChangeSubDept}
+                      onChange={(e) => setPriceChangeSubDept(e.target.value)}
+                      className="flex-1 px-2 py-0.5 border border-slate-300 rounded bg-white"
+                    >
+                      <option value="ALL">ALL</option>
+                      <option value="Dairy">Dairy</option>
+                      <option value="Juices">Juices</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-16 font-semibold text-slate-600">Brand</span>
+                    <select
+                      value={priceChangeBrand}
+                      onChange={(e) => setPriceChangeBrand(e.target.value)}
+                      className="flex-1 px-2 py-0.5 border border-slate-300 rounded bg-white"
+                    >
+                      <option value="ALL">ALL</option>
+                      <option value="Almarai">Almarai</option>
+                      <option value="Rayyan">Rayyan</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-16 font-semibold text-slate-600">Vendor</span>
+                    <select
+                      value={priceChangeVendor}
+                      onChange={(e) => setPriceChangeVendor(e.target.value)}
+                      className="flex-1 px-2 py-0.5 border border-slate-300 rounded bg-white text-[11px]"
+                    >
+                      <option value="[Select a Vendor]">[Select a Vendor]</option>
+                      <option value="Almarai Food Qatar W.L.L">Almarai Food Qatar W.L.L</option>
+                      <option value="Rayyan Water Company">Rayyan Water Company</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Markup / GP Calculation Box */}
+              <div className="lg:col-span-4 bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-1.5">
+                <div className="font-bold text-[11px] text-slate-700 uppercase tracking-wide">Markup / GP</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-600">Markup %</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. 30.43%"
+                      value={priceChangeMarkupPercent}
+                      onChange={(e) => setPriceChangeMarkupPercent(e.target.value)}
+                      className="w-full px-2 py-1 border border-slate-300 rounded font-mono font-bold bg-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-600">Gross Profit %</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. 23.33%"
+                      value={priceChangeGrossProfitPercent}
+                      onChange={(e) => setPriceChangeGrossProfitPercent(e.target.value)}
+                      className="w-full px-2 py-1 border border-slate-300 rounded font-mono font-bold bg-white text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions & Show Stock Checkbox */}
+              <div className="lg:col-span-3 flex flex-col items-end gap-2">
+                <label className="flex items-center gap-1.5 font-bold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={priceChangeShowStock}
+                    onChange={(e) => setPriceChangeShowStock(e.target.checked)}
+                    className="rounded text-emerald-600"
+                  />
+                  <span>Show Stock</span>
+                </label>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => alert('✅ Retail prices updated across selected products!')}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow flex items-center gap-1 text-xs"
+                  >
+                    <span>Update [F3]</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveView('Catalog')}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg flex items-center gap-1 text-xs"
+                  >
+                    <span>Cancel [ESC]</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Warning Message Bar (Matching Image 2 Warning) */}
+            <div className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 font-medium text-[11px] flex items-center gap-2">
+              <span className="font-bold">⚠️</span>
+              <span>
+                Product with zero cost will become zero price if Markup or GP applied. GP/MarkUp % may have small variation due to final price rounding.
+              </span>
+            </div>
+
+            {/* Product List Grid (Matching Image 2 Table) */}
+            <div className="border border-slate-200 rounded-lg overflow-hidden">
+              <div className="bg-slate-100 px-3 py-1.5 font-bold text-slate-800 border-b border-slate-200">
+                Product List
+              </div>
+              <div className="overflow-x-auto max-h-[50vh]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-50 font-bold uppercase text-[10px] text-slate-600 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-2 text-center w-8">Select</th>
+                      <th className="p-2 font-mono">Code</th>
+                      <th className="p-2">Product Description</th>
+                      <th className="p-2 font-mono">Barcode</th>
+                      <th className="p-2">Unit</th>
+                      <th className="p-2">Department</th>
+                      <th className="p-2 font-mono text-center">UOM</th>
+                      <th className="p-2 text-right">Cost</th>
+                      <th className="p-2 text-right">Price</th>
+                      <th className="p-2 text-right">Price Incl Tax</th>
+                      <th className="p-2 text-right">MSP</th>
+                      <th className="p-2 text-right">GP%</th>
+                      <th className="p-2 text-right">Markup%</th>
+                      <th className="p-2 text-right">New Price</th>
+                      <th className="p-2 text-right font-bold text-emerald-700">New Price Incl Tax</th>
+                      <th className="p-2 text-right font-mono">Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    {products.map((p) => (
+                      <tr key={p.id} className="hover:bg-amber-50/40">
+                        <td className="p-2 text-center">
+                          <input type="checkbox" defaultChecked className="rounded text-emerald-600" />
+                        </td>
+                        <td className="p-2 font-mono font-bold text-slate-900">{p.sku}</td>
+                        <td className="p-2 font-bold text-slate-900">{p.name}</td>
+                        <td className="p-2 font-mono text-slate-600">{p.barcode}</td>
+                        <td className="p-2 font-mono">{p.unit}</td>
+                        <td className="p-2 text-slate-700">{p.categoryName || 'General'}</td>
+                        <td className="p-2 font-mono text-center">1</td>
+                        <td className="p-2 text-right font-mono">{formatQAR(p.costPrice)}</td>
+                        <td className="p-2 text-right font-mono text-slate-800">{formatQAR(p.retailPrice)}</td>
+                        <td className="p-2 text-right font-mono text-slate-800">{formatQAR(p.priceInclTax || p.retailPrice)}</td>
+                        <td className="p-2 text-right font-mono">{formatQAR(p.msp || p.retailPrice)}</td>
+                        <td className="p-2 text-right font-mono text-emerald-700 font-bold">{p.grossProfitPercent || 23.33}%</td>
+                        <td className="p-2 text-right font-mono text-indigo-700 font-bold">{p.markupPercent || 30.43}%</td>
+                        <td className="p-2 text-right font-mono font-bold text-slate-900">{formatQAR(p.retailPrice)}</td>
+                        <td className="p-2 text-right font-mono font-black text-emerald-700">{formatQAR(p.priceInclTax || p.retailPrice)}</td>
+                        <td className="p-2 text-right font-mono font-bold">{p.stockQuantity}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* 2. DART POS TASKS & FILTER BAR (Matching Screenshot 1) */}
+          <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 flex-wrap w-full">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-700 text-xs">Barcode:</span>
@@ -678,8 +1453,8 @@ export const ProductsPage: React.FC = () => {
               <span className="block text-[10px] font-bold text-slate-600 mb-0.5">Was Price (Comparative)</span>
               <input
                 type="text"
-                value={quickPrintWasPrice}
-                onChange={(e) => setQuickPrintWasPrice(e.target.value)}
+                value={bottomWasPrice}
+                onChange={(e) => setBottomWasPrice(e.target.value)}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs font-mono font-bold text-amber-700"
               />
             </div>
@@ -687,7 +1462,7 @@ export const ProductsPage: React.FC = () => {
 
           <div className="flex items-center justify-end pt-1">
             <button
-              onClick={() => alert(`🖨️ Thermal Shelf Label Printed! (Was Price: QAR ${quickPrintWasPrice})`)}
+              onClick={() => alert(`🖨️ Thermal Shelf Label Printed! (Was Price: QAR ${bottomWasPrice})`)}
               className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5"
             >
               <Printer className="w-3.5 h-3.5" />
@@ -732,6 +1507,8 @@ export const ProductsPage: React.FC = () => {
           </div>
         </div>
       </div>
+    </>
+  )}
 
       {/* 5. DART POS COMPREHENSIVE NEW/EDIT PRODUCT MODAL (Matching Screenshots 2 & 3 Layout) */}
       {isAddModalOpen && (
@@ -1247,6 +2024,1533 @@ export const ProductsPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. GENERATE SCALE FILES MODAL (Matching Image 3) */}
+      {isScaleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Scale className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-bold">Generate Scale Files - DART POS</h2>
+              </div>
+              <button onClick={() => setIsScaleModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 text-xs">
+              {/* Inner Action Bar (Matching Image 3) */}
+              <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-lg border border-slate-200">
+                <button
+                  onClick={() => alert('✏️ Edit PLU scale file settings opened')}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded border border-slate-300"
+                >
+                  Edit PLU File
+                </button>
+                <button
+                  onClick={() => alert('⚡ Scale PLU file generated for selected scales!')}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded"
+                >
+                  Generate For Selected
+                </button>
+                <button
+                  onClick={() => alert('🚀 Scale PLU files generated for all weighing scales!')}
+                  className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-sm"
+                >
+                  Generate For All
+                </button>
+              </div>
+
+              {/* Data Table */}
+              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                <div className="bg-slate-50 px-3 py-2 font-bold border-b border-slate-200 text-slate-700">Files</div>
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 font-bold uppercase text-[10px] text-slate-600">
+                    <tr>
+                      <th className="p-2 text-center w-12">Select</th>
+                      <th className="p-2">Description</th>
+                      <th className="p-2">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {scaleFilesList.map((file, idx) => (
+                      <tr key={file.id} className="hover:bg-slate-50">
+                        <td className="p-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={file.select}
+                            onChange={(e) => {
+                              const updated = [...scaleFilesList];
+                              updated[idx].select = e.target.checked;
+                              setScaleFilesList(updated);
+                            }}
+                            className="rounded text-emerald-600"
+                          />
+                        </td>
+                        <td className="p-2 font-bold text-slate-900">{file.description}</td>
+                        <td className="p-2 font-mono font-semibold text-emerald-700">{file.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200 flex justify-end">
+                <button onClick={() => setIsScaleModalOpen(false)} className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. LOGS & AUDIT MODAL (Matching Image 4) */}
+      {isLogsModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <h2 className="text-sm font-bold">Logs - DART POS</h2>
+              </div>
+              <button onClick={() => setIsLogsModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 text-xs">
+              {/* Filters Header (Matching Image 4) */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <h3 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider border-b border-slate-200 pb-1">
+                  Filters
+                </h3>
+
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-700 text-[11px]">From Date:</span>
+                    <input
+                      type="datetime-local"
+                      value={logsFromDate}
+                      onChange={(e) => setLogsFromDate(e.target.value)}
+                      className="px-2 py-1 border border-slate-300 rounded font-mono text-[11px] bg-white"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-700 text-[11px]">To Date:</span>
+                    <input
+                      type="datetime-local"
+                      value={logsToDate}
+                      onChange={(e) => setLogsToDate(e.target.value)}
+                      className="px-2 py-1 border border-slate-300 rounded font-mono text-[11px] bg-white"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="logsRadioMode"
+                        checked={logsRadioMode === 'User Log'}
+                        onChange={() => setLogsRadioMode('User Log')}
+                      />
+                      <span>User Log</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="logsRadioMode"
+                        checked={logsRadioMode === 'Barcode Print Log'}
+                        onChange={() => setLogsRadioMode('Barcode Print Log')}
+                      />
+                      <span>Barcode Print Log</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <button
+                      onClick={() => alert('👁️ Logs queried')}
+                      className="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded text-xs"
+                    >
+                      Show
+                    </button>
+                    <button
+                      onClick={() => alert('🖨️ Logs report printed')}
+                      className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs"
+                    >
+                      Print
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap pt-1 border-t border-slate-200">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-[200px]">
+                    <span className="font-bold text-slate-700 text-[11px]">Product:</span>
+                    <input
+                      type="text"
+                      placeholder="Search product code / name"
+                      value={logsSearchProduct}
+                      onChange={(e) => setLogsSearchProduct(e.target.value)}
+                      className="flex-1 px-2.5 py-1 border border-slate-300 rounded text-xs bg-white"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="logsFilterType"
+                        checked={logsFilterType === 'Cost'}
+                        onChange={() => setLogsFilterType('Cost')}
+                      />
+                      <span>Cost</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="logsFilterType"
+                        checked={logsFilterType === 'Price'}
+                        onChange={() => setLogsFilterType('Price')}
+                      />
+                      <span>Price</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="logsFilterType"
+                        checked={logsFilterType === 'Stock'}
+                        onChange={() => setLogsFilterType('Stock')}
+                      />
+                      <span>Stock</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-700 text-[11px]">Default Vendor:</span>
+                    <select
+                      value={logsDefaultVendor}
+                      onChange={(e) => setLogsDefaultVendor(e.target.value)}
+                      className="px-2 py-1 border border-slate-300 rounded text-xs font-semibold bg-white"
+                    >
+                      <option value="[Select a Vendor]">[Select a Vendor]</option>
+                      <option value="Almarai Food Qatar W.L.L">Almarai Food Qatar W.L.L</option>
+                      <option value="Doha Wholesale Trading W.L.L">Doha Wholesale Trading W.L.L</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data Table (Matching Image 4 Table) */}
+              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                <div className="bg-slate-100 px-3 py-2 font-bold border-b border-slate-200 text-slate-800">
+                  Stock Movement & Price Audit Report ({logsFilterType} Filter)
+                </div>
+                <div className="overflow-x-auto max-h-[45vh]">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-50 font-bold uppercase text-[10px] text-slate-600">
+                      <tr>
+                        <th className="p-2">Date & Time</th>
+                        <th className="p-2">Product Code</th>
+                        <th className="p-2">Product Description</th>
+                        <th className="p-2">Log Type</th>
+                        <th className="p-2 text-right">Old Value</th>
+                        <th className="p-2 text-right">New Value</th>
+                        <th className="p-2">User</th>
+                        <th className="p-2">Note</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      <tr className="hover:bg-slate-50">
+                        <td className="p-2 font-mono text-slate-600">17/08/2026 09:52:14 AM</td>
+                        <td className="p-2 font-mono font-bold text-slate-900">123</td>
+                        <td className="p-2 font-bold text-slate-900">Almarai Full Cream Fresh Milk 1L</td>
+                        <td className="p-2 font-bold text-emerald-700">Retail Price Change</td>
+                        <td className="p-2 text-right font-mono text-slate-600">14.00 QAR</td>
+                        <td className="p-2 text-right font-mono font-bold text-slate-900">15.00 QAR</td>
+                        <td className="p-2 text-slate-700 font-semibold">Administrator</td>
+                        <td className="p-2 text-slate-600">Price Adjustment by Margin GP%</td>
+                      </tr>
+                      <tr className="hover:bg-slate-50">
+                        <td className="p-2 font-mono text-slate-600">16/08/2026 04:30:10 PM</td>
+                        <td className="p-2 font-mono font-bold text-slate-900">123</td>
+                        <td className="p-2 font-bold text-slate-900">Almarai Full Cream Fresh Milk 1L</td>
+                        <td className="p-2 font-bold text-blue-700">Stock Movement</td>
+                        <td className="p-2 text-right font-mono text-slate-600">85 Pcs</td>
+                        <td className="p-2 text-right font-mono font-bold text-slate-900">120 Pcs</td>
+                        <td className="p-2 text-slate-700 font-semibold">Inventory Manager</td>
+                        <td className="p-2 text-slate-600">GRN Receipt #GRN-2026-0891</td>
+                      </tr>
+                      <tr className="hover:bg-slate-50">
+                        <td className="p-2 font-mono text-slate-600">15/08/2026 11:15:00 AM</td>
+                        <td className="p-2 font-mono font-bold text-slate-900">124</td>
+                        <td className="p-2 font-bold text-slate-900">Rayyan Natural Water 500ml Pack x24</td>
+                        <td className="p-2 font-bold text-amber-700">Landed Cost Adjustment</td>
+                        <td className="p-2 text-right font-mono text-slate-600">9.50 QAR</td>
+                        <td className="p-2 text-right font-mono font-bold text-slate-900">10.00 QAR</td>
+                        <td className="p-2 text-slate-700 font-semibold">Administrator</td>
+                        <td className="p-2 text-slate-600">Supplier Cost Increase Revision</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200 flex justify-end">
+                <button onClick={() => setIsLogsModalOpen(false)} className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. IMPORT PRODUCTS MODAL (Matching Target Image 1) */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-5xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Download className="w-4 h-4 text-teal-400" />
+                <h2 className="text-sm font-bold">Import Products - DART POS</h2>
+              </div>
+              <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4 text-xs">
+              {/* Top Controls Area (Matching Image 1) */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+                    <span className="font-bold text-slate-700 text-[11px] w-20">Select File</span>
+                    <input
+                      type="text"
+                      value={importFilePath}
+                      onChange={(e) => setImportFilePath(e.target.value)}
+                      className="flex-1 px-2.5 py-1.5 border border-slate-300 rounded font-mono bg-white text-xs"
+                    />
+                    <button
+                      onClick={() => alert('📁 File Browser opened to select Excel/CSV file')}
+                      className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded border border-slate-300"
+                    >
+                      Browse
+                    </button>
+                    <button
+                      onClick={() => alert('📄 Excel Template downloaded: Products_Import_Template.xlsx')}
+                      className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded"
+                    >
+                      Download Template
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap pt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-700 text-[11px] w-20">Select Sheet</span>
+                    <select
+                      value={importSheetName}
+                      onChange={(e) => setImportSheetName(e.target.value)}
+                      className="px-3 py-1 border border-slate-300 rounded font-semibold bg-white text-xs w-40"
+                    >
+                      <option value="Sheet1">Sheet1</option>
+                      <option value="Sheet2">Sheet2</option>
+                      <option value="Products_Catalog">Products_Catalog</option>
+                    </select>
+                    <button
+                      onClick={() => alert('🔄 Refreshed sheet structure')}
+                      className="px-3 py-1 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded border border-slate-300"
+                    >
+                      Refresh
+                    </button>
+                    <button
+                      onClick={() => alert('✅ Sheet data loaded into table grid')}
+                      className="px-4 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Data Table Area (Matching Image 1 Table Grid) */}
+              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                <div className="bg-slate-100 px-3 py-2 font-bold border-b border-slate-200 text-slate-800">
+                  Excel Data Preview Grid
+                </div>
+                <div className="overflow-x-auto max-h-[45vh]">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-50 font-bold uppercase text-[10px] text-slate-600">
+                      <tr>
+                        <th className="p-2">Product Code</th>
+                        <th className="p-2">Product Description</th>
+                        <th className="p-2">Barcode</th>
+                        <th className="p-2">Category</th>
+                        <th className="p-2 text-right">Cost Price</th>
+                        <th className="p-2 text-right">Retail Price</th>
+                        <th className="p-2 text-right">Price Incl Tax</th>
+                        <th className="p-2 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 font-medium">
+                      {importExcelData.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="p-2 font-mono font-bold text-slate-900">{row.code}</td>
+                          <td className="p-2 font-bold text-slate-900">{row.description}</td>
+                          <td className="p-2 font-mono text-slate-600">{row.barcode}</td>
+                          <td className="p-2 text-slate-700">{row.category}</td>
+                          <td className="p-2 text-right font-mono">{formatQAR(row.cost)}</td>
+                          <td className="p-2 text-right font-mono font-bold text-slate-900">{formatQAR(row.price)}</td>
+                          <td className="p-2 text-right font-mono font-bold text-emerald-700">{formatQAR(row.priceInclTax)}</td>
+                          <td className="p-2 text-center font-bold text-emerald-600">{row.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Bottom Controls Area (Matching Image 1 Bottom) */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                <div className="text-slate-500 text-[11px] font-medium">
+                  Status: 3 valid Excel records ready for import.
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="space-y-1 text-[11px] font-bold text-slate-700">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checkDuplicateDescription}
+                        onChange={(e) => setCheckDuplicateDescription(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Check for Duplicate Description</span>
+                    </label>
+
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checkDuplicateProductCode}
+                        onChange={(e) => setCheckDuplicateProductCode(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Check For Duplicate Product Code</span>
+                    </label>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      alert('✅ Bulk products imported successfully!');
+                      setIsImportModalOpen(false);
+                    }}
+                    className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm"
+                  >
+                    Import
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. BATCH BARCODE PRINTING MODAL (Matching Target Image 2) */}
+      {isBatchBarcodeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-6xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Printer className="w-4 h-4 text-indigo-400" />
+                <h2 className="text-sm font-bold">Batch Barcode Printing - DART POS</h2>
+              </div>
+              <button onClick={() => setIsBatchBarcodeModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 text-xs">
+              {/* Top Controls Toolbar (Matching Image 2 Top Toolbar) */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Barcode Printing Group */}
+                  <div className="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-300">
+                    <span className="font-bold text-slate-700 text-[10px] uppercase">Barcode Printing:</span>
+                    <button
+                      onClick={() => alert('🖨️ Quick Print (Ctrl + A) initiated')}
+                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded text-xs flex items-center gap-1"
+                    >
+                      <span>Quick Print</span>
+                      <span className="text-[9px] text-slate-400">Ctrl + A</span>
+                    </button>
+                    <button
+                      onClick={() => alert('💾 PDT Download (Ctrl + P) export initiated')}
+                      className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded border text-xs flex items-center gap-1"
+                    >
+                      <span>PDT</span>
+                      <span className="text-[9px] text-slate-500">Ctrl + P</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-700">Records:</span>
+                    <input
+                      type="number"
+                      value={batchBarcodeRecordsLimit}
+                      onChange={(e) => setBatchBarcodeRecordsLimit(parseInt(e.target.value) || 100)}
+                      className="w-16 px-2 py-1 border border-slate-300 rounded font-mono font-bold bg-white text-center"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-slate-700">Product Created/Modified Date From and To:</span>
+                    <input
+                      type="date"
+                      value={batchBarcodeFromDate}
+                      onChange={(e) => setBatchBarcodeFromDate(e.target.value)}
+                      className="px-2 py-1 border border-slate-300 rounded font-mono bg-white text-[11px]"
+                    />
+                    <span>-</span>
+                    <input
+                      type="date"
+                      value={batchBarcodeToDate}
+                      onChange={(e) => setBatchBarcodeToDate(e.target.value)}
+                      className="px-2 py-1 border border-slate-300 rounded font-mono bg-white text-[11px]"
+                    />
+                    <button onClick={() => alert('🔍 Querying records...')} className="px-3 py-1 bg-sky-600 text-white font-bold rounded text-xs">
+                      Search
+                    </button>
+                  </div>
+
+                  <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={batchBarcodePriceChangedOnly}
+                      onChange={(e) => setBatchBarcodePriceChangedOnly(e.target.checked)}
+                      className="rounded text-emerald-600"
+                    />
+                    <span>Price Changed Only</span>
+                  </label>
+
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <button
+                      onClick={() => alert('All items selected')}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 rounded border border-slate-300 font-bold text-[11px]"
+                    >
+                      Select All (Ctrl + A)
+                    </button>
+                    <button
+                      onClick={() => alert('All items deselected')}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 rounded border border-slate-300 font-bold text-[11px]"
+                    >
+                      Deselect All (Ctrl + D)
+                    </button>
+                    <button
+                      onClick={() => alert('Selection inverted')}
+                      className="px-2.5 py-1 bg-white hover:bg-slate-100 rounded border border-slate-300 font-bold text-[11px]"
+                    >
+                      Select Inverse (Ctrl + I)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search Row (Matching Image 2 Row 2) */}
+                <div className="flex items-center gap-3 pt-1 border-t border-slate-200 flex-wrap">
+                  <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                    <span className="font-bold text-slate-700">Product Search (F1):</span>
+                    <input
+                      type="text"
+                      placeholder="Enter Keyword"
+                      value={batchBarcodeKeyword}
+                      onChange={(e) => setBatchBarcodeKeyword(e.target.value)}
+                      className="flex-1 px-2.5 py-1 border border-slate-300 rounded bg-white text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-700">Search By:</span>
+                    <select
+                      value={batchBarcodeSearchBy}
+                      onChange={(e) => setBatchBarcodeSearchBy(e.target.value as any)}
+                      className="px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white text-xs"
+                    >
+                      <option value="Description">Description</option>
+                      <option value="Barcode">Barcode</option>
+                      <option value="Product Code">Product Code</option>
+                      <option value="Department">Department</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2 font-bold text-slate-700">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchSearchMode"
+                        checked={batchBarcodeSearchMode === 'Begin With'}
+                        onChange={() => setBatchBarcodeSearchMode('Begin With')}
+                      />
+                      <span>Begin With (F4)</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchSearchMode"
+                        checked={batchBarcodeSearchMode === 'Contains'}
+                        onChange={() => setBatchBarcodeSearchMode('Contains')}
+                      />
+                      <span>Contains (F5)</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data Table Grid (All 16 Columns Matching Image 2) */}
+              <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                <div className="overflow-x-auto max-h-[45vh]">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="bg-slate-100 font-bold uppercase text-[10px] text-slate-700 sticky top-0 z-10">
+                      <tr>
+                        <th className="p-2 text-center w-10">Select</th>
+                        <th className="p-2 font-mono">Pack ID</th>
+                        <th className="p-2 font-mono text-center">Qty</th>
+                        <th className="p-2">Product Description</th>
+                        <th className="p-2">Local Name</th>
+                        <th className="p-2 font-mono">Barcode</th>
+                        <th className="p-2 font-mono">Product Code</th>
+                        <th className="p-2">Department Name</th>
+                        <th className="p-2">Unit</th>
+                        <th className="p-2 font-mono text-center">UOM</th>
+                        <th className="p-2 text-right">Cost</th>
+                        <th className="p-2 text-right">Price</th>
+                        <th className="p-2 text-right">Price Incl Tax</th>
+                        <th className="p-2 text-right">MSP</th>
+                        <th className="p-2 text-right">Was Price</th>
+                        <th className="p-2">Vendor Name</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 font-medium">
+                      {products.map((p) => (
+                        <tr key={p.id} className="hover:bg-slate-50">
+                          <td className="p-2 text-center">
+                            <input type="checkbox" defaultChecked className="rounded text-emerald-600" />
+                          </td>
+                          <td className="p-2 font-mono text-center">0</td>
+                          <td className="p-2 font-mono font-bold text-center">1</td>
+                          <td className="p-2 font-bold text-slate-900">{p.name}</td>
+                          <td className="p-2 font-arabic text-slate-600">{p.nameAr || p.name}</td>
+                          <td className="p-2 font-mono text-slate-600">{p.barcode}</td>
+                          <td className="p-2 font-mono font-bold text-slate-900">{p.sku}</td>
+                          <td className="p-2 text-slate-700">{p.categoryName || 'General'}</td>
+                          <td className="p-2 font-mono text-slate-700">{p.unit}</td>
+                          <td className="p-2 font-mono text-center">1</td>
+                          <td className="p-2 text-right font-mono text-slate-800">{formatQAR(p.costPrice)}</td>
+                          <td className="p-2 text-right font-mono text-slate-800">{formatQAR(p.retailPrice)}</td>
+                          <td className="p-2 text-right font-mono font-bold text-emerald-700">{formatQAR(p.priceInclTax || p.retailPrice)}</td>
+                          <td className="p-2 text-right font-mono">{formatQAR(p.msp || p.retailPrice)}</td>
+                          <td className="p-2 text-right font-mono text-slate-500">{formatQAR(p.wasPrice || p.retailPrice)}</td>
+                          <td className="p-2 text-slate-600">{p.defaultVendor || 'General'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Bottom Control Strip (Matching Image 2 Bottom Panel) */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                {/* Left Panel Settings */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-2 font-bold text-slate-700">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchTaxMode"
+                        checked={batchBarcodeTaxMode === 'Incl. Tax'}
+                        onChange={() => setBatchBarcodeTaxMode('Incl. Tax')}
+                      />
+                      <span>Incl. Tax</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchTaxMode"
+                        checked={batchBarcodeTaxMode === 'Excl. Tax'}
+                        onChange={() => setBatchBarcodeTaxMode('Excl. Tax')}
+                      />
+                      <span>Excl. Tax</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2 font-bold text-slate-700 border-l border-slate-300 pl-3">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchDesignMode"
+                        checked={batchBarcodeDesignMode === 'Default Design'}
+                        onChange={() => setBatchBarcodeDesignMode('Default Design')}
+                      />
+                      <span>Default Design</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchDesignMode"
+                        checked={batchBarcodeDesignMode === 'PRN Template'}
+                        onChange={() => setBatchBarcodeDesignMode('PRN Template')}
+                      />
+                      <span>PRN Template</span>
+                    </label>
+                    <select
+                      value={batchBarcodeTemplate}
+                      onChange={(e) => setBatchBarcodeTemplate(e.target.value)}
+                      className="px-2 py-1 border border-slate-300 rounded font-semibold bg-white text-xs"
+                    >
+                      <option value="Choose a Template">Choose a Template</option>
+                      <option value="Standard Thermal 50x25mm">Standard Thermal 50x25mm</option>
+                      <option value="Shelf Tag 60x40mm">Shelf Tag 60x40mm</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3 font-bold text-slate-700 border-l border-slate-300 pl-3">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={batchBarcodePrintPrice}
+                        onChange={(e) => setBatchBarcodePrintPrice(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Print Price</span>
+                    </label>
+
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={batchBarcodeShowPackings}
+                        onChange={(e) => setBatchBarcodeShowPackings(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Show Packings</span>
+                    </label>
+
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={batchBarcodePrintExpDate}
+                        onChange={(e) => setBatchBarcodePrintExpDate(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Print Exp. Date</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-2 font-bold text-slate-700 border-l border-slate-300 pl-3">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchQtyMode"
+                        checked={batchBarcodeQtyMode === 'Stock Qty'}
+                        onChange={() => setBatchBarcodeQtyMode('Stock Qty')}
+                      />
+                      <span>Stock Qty</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchQtyMode"
+                        checked={batchBarcodeQtyMode === 'Manual Qty'}
+                        onChange={() => setBatchBarcodeQtyMode('Manual Qty')}
+                      />
+                      <span>Manual Qty</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="batchQtyMode"
+                        checked={batchBarcodeQtyMode === 'One Each'}
+                        onChange={() => setBatchBarcodeQtyMode('One Each')}
+                      />
+                      <span>One Each</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Right Action Buttons */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => alert('🖨️ Printing selected product barcode label (F1)...')}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg flex items-center gap-1.5"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Selected Product Print (F1)</span>
+                  </button>
+                  <button
+                    onClick={() => alert('🖨️ Printing batch barcode labels (Ctrl + P)...')}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Batch Print (Ctrl + P)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 10. BARCODE QUICK PRINT MODAL (Matching Target Image 3) */}
+      {isQuickPrintModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Printer className="w-4 h-4 text-cyan-400" />
+                <h2 className="text-sm font-bold">Barcode Quick Print</h2>
+              </div>
+              <button onClick={() => setIsQuickPrintModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 text-xs">
+              {/* Barcode Scanner Box */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Barcode</label>
+                <input
+                  type="text"
+                  placeholder="Scan or enter barcode..."
+                  value={quickPrintBarcodeScan}
+                  onChange={(e) => {
+                    setQuickPrintBarcodeScan(e.target.value);
+                    const found = products.find((p) => p.barcode === e.target.value || p.sku === e.target.value);
+                    if (found) {
+                      setQuickPrintCode(found.sku);
+                      setQuickPrintProductDesc(found.name);
+                      setQuickPrintPriceInclTax(found.priceInclTax || found.retailPrice);
+                    }
+                  }}
+                  className="w-full px-3 py-2 border-2 border-slate-400 focus:border-cyan-600 rounded font-mono text-sm font-bold bg-white"
+                  autoFocus
+                />
+              </div>
+
+              {/* Product Details Group Box */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="font-bold text-slate-700 text-[11px] border-b border-slate-200 pb-1">Product Details</div>
+                
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Code</span>
+                  <input
+                    type="text"
+                    value={quickPrintCode}
+                    onChange={(e) => setQuickPrintCode(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Barcode</span>
+                  <input
+                    type="text"
+                    value={quickPrintBarcodeScan || '346578'}
+                    onChange={(e) => setQuickPrintBarcodeScan(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Product Description</span>
+                  <input
+                    type="text"
+                    value={quickPrintProductDesc}
+                    onChange={(e) => setQuickPrintProductDesc(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded bg-white font-bold text-slate-900"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Price Incl. Tax</span>
+                  <input
+                    type="number"
+                    value={quickPrintPriceInclTax}
+                    onChange={(e) => setQuickPrintPriceInclTax(parseFloat(e.target.value) || 0)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono font-bold text-emerald-700 bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={quickPrintWasPriceEnabled}
+                      onChange={(e) => setQuickPrintWasPriceEnabled(e.target.checked)}
+                      className="rounded text-emerald-600"
+                    />
+                    <span>Was Price</span>
+                  </label>
+                  <input
+                    type="number"
+                    disabled={!quickPrintWasPriceEnabled}
+                    value={quickPrintWasPrice}
+                    onChange={(e) => setQuickPrintWasPrice(parseFloat(e.target.value) || 0)}
+                    className={`col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono ${
+                      quickPrintWasPriceEnabled ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-400'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Printing Group Box */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="font-bold text-slate-700 text-[11px] border-b border-slate-200 pb-1">Printing</div>
+                
+                <div className="flex items-center gap-4 font-bold text-slate-700">
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="quickTaxMode"
+                      checked={quickPrintTaxMode === 'Incl. Tax'}
+                      onChange={() => setQuickPrintTaxMode('Incl. Tax')}
+                    />
+                    <span>Incl. Tax</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="quickTaxMode"
+                      checked={quickPrintTaxMode === 'Excl. Tax'}
+                      onChange={() => setQuickPrintTaxMode('Excl. Tax')}
+                    />
+                    <span>Excl. Tax</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2 font-bold text-slate-700">
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="quickDesignMode"
+                      checked={quickPrintDesignMode === 'Default Design'}
+                      onChange={() => setQuickPrintDesignMode('Default Design')}
+                    />
+                    <span>Default Design</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="quickDesignMode"
+                      checked={quickPrintDesignMode === 'PRN Template'}
+                      onChange={() => setQuickPrintDesignMode('PRN Template')}
+                    />
+                    <span>PRN Template</span>
+                  </label>
+                  <select
+                    value={quickPrintTemplate}
+                    onChange={(e) => setQuickPrintTemplate(e.target.value)}
+                    className="flex-1 px-2 py-1 border border-slate-300 rounded font-semibold bg-white"
+                  >
+                    <option value="Standard Thermal 50x25mm">Standard Thermal 50x25mm</option>
+                    <option value="Shelf Label 60x40mm">Shelf Label 60x40mm</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-4 flex-wrap font-bold text-slate-700">
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={quickPrintPrintPrice}
+                      onChange={(e) => setQuickPrintPrintPrice(e.target.checked)}
+                      className="rounded text-emerald-600"
+                    />
+                    <span>Print Price</span>
+                  </label>
+
+                  <div className="flex items-center gap-1.5">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={quickPrintAutoPrint}
+                        onChange={(e) => setQuickPrintAutoPrint(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Auto print</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={quickPrintAutoPrintQty}
+                      onChange={(e) => setQuickPrintAutoPrintQty(parseInt(e.target.value) || 1)}
+                      className="w-12 px-1.5 py-0.5 border border-slate-300 rounded font-mono text-center bg-white"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={quickPrintQtyOnScan}
+                      onChange={(e) => setQuickPrintQtyOnScan(e.target.checked)}
+                      className="rounded text-emerald-600"
+                    />
+                    <span>Qty on scan</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Bottom Row Qty Box & Print (F1) Button */}
+              <div className="flex items-center justify-between gap-3 pt-2">
+                <div className="flex-1 bg-slate-100 p-3 rounded-lg border border-slate-300 flex items-center justify-between">
+                  <span className="font-bold text-slate-600 text-sm">Qty</span>
+                  <input
+                    type="number"
+                    value={quickPrintQty}
+                    onChange={(e) => setQuickPrintQty(parseInt(e.target.value) || 1)}
+                    className="w-24 px-3 py-1 border-2 border-slate-400 rounded font-mono text-xl font-black text-center bg-white"
+                  />
+                </div>
+
+                <button
+                  onClick={() => alert(`🖨️ Quick Printing ${quickPrintQty} barcode label(s) for ${quickPrintProductDesc}`)}
+                  className="px-6 py-4 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-md flex items-center gap-2 text-sm"
+                >
+                  <Printer className="w-5 h-5 text-cyan-400" />
+                  <span>Print (F1)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 11. PRICE EMBEDDED BARCODE PRINTING MODAL (Matching Target Image 4) */}
+      {isPriceEmbeddedModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Barcode className="w-4 h-4 text-pink-400" />
+                <h2 className="text-sm font-bold">Price Embedded Barcode Printing</h2>
+              </div>
+              <button onClick={() => setIsPriceEmbeddedModalOpen(false)} className="text-slate-400 hover:text-white font-bold">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 text-xs">
+              {/* Product Details Group Box */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="font-bold text-slate-700 text-[11px] border-b border-slate-200 pb-1">Product Details</div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Product</span>
+                  <select
+                    value={embeddedSelectedProductId}
+                    onChange={(e) => {
+                      setEmbeddedSelectedProductId(e.target.value);
+                      const found = products.find((p) => p.id === e.target.value);
+                      if (found) {
+                        setEmbeddedCode(found.sku);
+                        setEmbeddedBarcode(found.barcode);
+                        setEmbeddedCost(found.costPrice);
+                        setEmbeddedPrice(found.retailPrice);
+                        setEmbeddedPriceInclTax(found.priceInclTax || found.retailPrice);
+                      }
+                    }}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white text-xs"
+                  >
+                    <option value="">Select a product</option>
+                    {products.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Code</span>
+                  <input
+                    type="text"
+                    value={embeddedCode}
+                    onChange={(e) => setEmbeddedCode(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Barcode</span>
+                  <input
+                    type="text"
+                    value={embeddedBarcode}
+                    onChange={(e) => setEmbeddedBarcode(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Add. Description</span>
+                  <input
+                    type="text"
+                    value={embeddedAddDescription}
+                    onChange={(e) => setEmbeddedAddDescription(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Printing Group Box */}
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="font-bold text-slate-700 text-[11px] border-b border-slate-200 pb-1">Printing</div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Vendor</span>
+                  <select
+                    value={embeddedVendor}
+                    onChange={(e) => setEmbeddedVendor(e.target.value)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white text-xs"
+                  >
+                    <option value="[Select a Vendor]">[Select a Vendor]</option>
+                    <option value="Almarai Food Qatar W.L.L">Almarai Food Qatar W.L.L</option>
+                    <option value="Rayyan Water Company">Rayyan Water Company</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Cost</span>
+                  <div className="col-span-2 flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={embeddedCost}
+                      onChange={(e) => setEmbeddedCost(parseFloat(e.target.value) || 0)}
+                      className="flex-1 px-2.5 py-1 border border-slate-300 rounded font-mono bg-white"
+                    />
+                    <span className="text-[11px] font-bold text-slate-500 shrink-0">Cost Code: {embeddedCostCode}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Price</span>
+                  <input
+                    type="number"
+                    value={embeddedPrice}
+                    onChange={(e) => setEmbeddedPrice(parseFloat(e.target.value) || 0)}
+                    className="col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <span className="font-semibold text-slate-600">Price Incl. Tax</span>
+                  <div className="col-span-2 flex items-center gap-3">
+                    <input
+                      type="number"
+                      value={embeddedPriceInclTax}
+                      onChange={(e) => setEmbeddedPriceInclTax(parseFloat(e.target.value) || 0)}
+                      className="flex-1 px-2.5 py-1 border border-slate-300 rounded font-mono font-bold text-emerald-700 bg-white"
+                    />
+                    <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-700 shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={embeddedPrintPrice}
+                        onChange={(e) => setEmbeddedPrintPrice(e.target.checked)}
+                        className="rounded text-emerald-600"
+                      />
+                      <span>Print Price</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 items-center">
+                  <label className="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={embeddedWasPriceEnabled}
+                      onChange={(e) => setEmbeddedWasPriceEnabled(e.target.checked)}
+                      className="rounded text-emerald-600"
+                    />
+                    <span>Was Price</span>
+                  </label>
+                  <input
+                    type="number"
+                    disabled={!embeddedWasPriceEnabled}
+                    value={embeddedWasPrice}
+                    onChange={(e) => setEmbeddedWasPrice(parseFloat(e.target.value) || 0)}
+                    className={`col-span-2 px-2.5 py-1 border border-slate-300 rounded font-mono ${
+                      embeddedWasPriceEnabled ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-400'
+                    }`}
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 font-bold text-slate-700 pt-1 border-t border-slate-200">
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="embeddedDesignMode"
+                      checked={embeddedDesignMode === 'Default Design'}
+                      onChange={() => setEmbeddedDesignMode('Default Design')}
+                    />
+                    <span>Default Design</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="embeddedDesignMode"
+                      checked={embeddedDesignMode === 'PRN Template'}
+                      onChange={() => setEmbeddedDesignMode('PRN Template')}
+                    />
+                    <span>PRN Template</span>
+                  </label>
+                  <select
+                    value={embeddedTemplate}
+                    onChange={(e) => setEmbeddedTemplate(e.target.value)}
+                    className="flex-1 px-2 py-1 border border-slate-300 rounded font-semibold bg-white"
+                  >
+                    <option value="Choose a Template">Choose a Template</option>
+                    <option value="Price Embedded EAN13 Scale Template">Price Embedded EAN13 Scale Template</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Bottom Row Qty Box & Print (F1) Button */}
+              <div className="flex items-center justify-between gap-3 pt-2">
+                <div className="flex-1 bg-slate-100 p-3 rounded-lg border border-slate-300 flex items-center justify-between">
+                  <span className="font-bold text-slate-600 text-sm">Qty</span>
+                  <input
+                    type="number"
+                    value={embeddedQty}
+                    onChange={(e) => setEmbeddedQty(parseInt(e.target.value) || 1)}
+                    className="w-24 px-3 py-1 border-2 border-slate-400 rounded font-mono text-xl font-black text-center bg-white"
+                  />
+                </div>
+
+                <button
+                  onClick={() => alert(`🖨️ Price Embedded Barcode printed for product ${embeddedCode} (${embeddedQty} label(s))`)}
+                  className="px-6 py-4 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg shadow-md flex items-center gap-2 text-sm"
+                >
+                  <Printer className="w-5 h-5 text-pink-400" />
+                  <span>Print (F1)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 12. ACTIVE PROMOTIONS MODAL */}
+      {isPromotionsModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-bold">Active Promotions Catalog</h2>
+              </div>
+              <button onClick={() => setIsPromotionsModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="p-4 space-y-3 text-xs">
+              <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-slate-700">Promotions:</span>
+                  <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[11px]">2 Active Offers</span>
+                </div>
+                <button onClick={() => alert('➕ Create New Promotional Offer modal opened')} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded">
+                  + Add Promotion
+                </button>
+              </div>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 font-bold uppercase text-[10px] text-slate-700">
+                    <tr>
+                      <th className="p-2">Promotion Name</th>
+                      <th className="p-2 font-mono">Product SKU</th>
+                      <th className="p-2">Description</th>
+                      <th className="p-2 text-right">Normal Price</th>
+                      <th className="p-2 text-right">Promo Price</th>
+                      <th className="p-2 text-right">Discount</th>
+                      <th className="p-2 text-center">Valid Until</th>
+                      <th className="p-2 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-bold text-amber-900">Summer Super Deal 2026</td>
+                      <td className="p-2 font-mono font-bold">123</td>
+                      <td className="p-2 font-bold">Almarai Full Cream Milk 1L</td>
+                      <td className="p-2 text-right font-mono text-slate-500 line-through">15.00 QAR</td>
+                      <td className="p-2 text-right font-mono font-bold text-emerald-700">12.50 QAR</td>
+                      <td className="p-2 text-right font-mono font-bold text-amber-600">16.6% OFF</td>
+                      <td className="p-2 text-center font-mono">31/08/2026</td>
+                      <td className="p-2 text-center font-bold text-emerald-600">Active</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-bold text-amber-900">Water Hydration Pack Offer</td>
+                      <td className="p-2 font-mono font-bold">124</td>
+                      <td className="p-2 font-bold">Rayyan Natural Water 500ml Pack x24</td>
+                      <td className="p-2 text-right font-mono text-slate-500 line-through">12.00 QAR</td>
+                      <td className="p-2 text-right font-mono font-bold text-emerald-700">9.99 QAR</td>
+                      <td className="p-2 text-right font-mono font-bold text-amber-600">16.7% OFF</td>
+                      <td className="p-2 text-center font-mono">15/09/2026</td>
+                      <td className="p-2 text-center font-bold text-emerald-600">Active</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 13. SORT ORDER MODAL */}
+      {isSortOrderModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-indigo-400" />
+                <h2 className="text-sm font-bold">Product Display Sort Order</h2>
+              </div>
+              <button onClick={() => setIsSortOrderModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="p-4 space-y-3 text-xs">
+              <div className="text-slate-600 font-medium">Set numerical priority index to rearrange product position in POS touchscreen register.</div>
+              <div className="border border-slate-200 rounded-lg overflow-hidden max-h-[50vh] overflow-y-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 font-bold text-slate-700 uppercase text-[10px]">
+                    <tr>
+                      <th className="p-2 w-20 text-center">Sort Index</th>
+                      <th className="p-2 font-mono">SKU</th>
+                      <th className="p-2">Product Name</th>
+                      <th className="p-2">Category</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    {products.map((p, idx) => (
+                      <tr key={p.id} className="hover:bg-slate-50">
+                        <td className="p-2 text-center">
+                          <input type="number" defaultValue={idx + 1} className="w-14 px-2 py-0.5 border border-slate-300 rounded font-mono font-bold text-center" />
+                        </td>
+                        <td className="p-2 font-mono font-bold text-slate-900">{p.sku}</td>
+                        <td className="p-2 font-bold text-slate-900">{p.name}</td>
+                        <td className="p-2 text-slate-600">{p.categoryName || 'General'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+                <button onClick={() => setIsSortOrderModalOpen(false)} className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded">Cancel</button>
+                <button onClick={() => { alert('✅ Product sort order updated!'); setIsSortOrderModalOpen(false); }} className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded">Save Sort Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 14. PRODUCT HISTORY BY SERIAL MODAL */}
+      {isSerialHistoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Barcode className="w-4 h-4 text-sky-400" />
+                <h2 className="text-sm font-bold">Product History By Serial Number / IMEI</h2>
+              </div>
+              <button onClick={() => setIsSerialHistoryModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="p-4 space-y-3 text-xs">
+              <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <span className="font-bold text-slate-700">Serial Number / IMEI:</span>
+                <input type="text" placeholder="Enter Serial No (e.g. SN-8921002931)" value={serialSearchKeyword} onChange={(e) => setSerialSearchKeyword(e.target.value)} className="flex-1 px-3 py-1 border border-slate-300 rounded font-mono text-xs" />
+                <button onClick={() => alert('🔍 Searching serial history...')} className="px-4 py-1 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded">Search</button>
+              </div>
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 font-bold uppercase text-[10px] text-slate-700">
+                    <tr>
+                      <th className="p-2 font-mono">Serial Number</th>
+                      <th className="p-2 font-mono">SKU</th>
+                      <th className="p-2">Description</th>
+                      <th className="p-2">Transaction Event</th>
+                      <th className="p-2 font-mono">Doc No</th>
+                      <th className="p-2 font-mono">Date & Time</th>
+                      <th className="p-2">Party</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-mono font-bold text-slate-900">SN-8921002931</td>
+                      <td className="p-2 font-mono font-bold">123</td>
+                      <td className="p-2 font-bold">Almarai Full Cream Milk 1L</td>
+                      <td className="p-2 font-bold text-emerald-700">POS Sale Invoice</td>
+                      <td className="p-2 font-mono text-slate-700">INV-2026-9012</td>
+                      <td className="p-2 font-mono text-slate-600">17/08/2026 11:20 AM</td>
+                      <td className="p-2 text-slate-800">Walk-in Customer</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-mono font-bold text-slate-900">SN-8921002931</td>
+                      <td className="p-2 font-mono font-bold">123</td>
+                      <td className="p-2 font-bold">Almarai Full Cream Milk 1L</td>
+                      <td className="p-2 font-bold text-blue-700">Goods Receipt (GRN)</td>
+                      <td className="p-2 font-mono text-slate-700">GRN-2026-0891</td>
+                      <td className="p-2 font-mono text-slate-600">16/08/2026 04:15 PM</td>
+                      <td className="p-2 text-slate-800">Almarai Food Qatar W.L.L</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 15. ACTION HISTORY MODAL */}
+      {isActionHistoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="w-4 h-4 text-purple-400" />
+                <h2 className="text-sm font-bold">System Master Action History Log</h2>
+              </div>
+              <button onClick={() => setIsActionHistoryModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="p-4 space-y-3 text-xs">
+              <div className="border border-slate-200 rounded-lg overflow-hidden max-h-[50vh] overflow-y-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 font-bold uppercase text-[10px] text-slate-700 sticky top-0">
+                    <tr>
+                      <th className="p-2 font-mono">Date & Time</th>
+                      <th className="p-2 font-mono">SKU</th>
+                      <th className="p-2">Description</th>
+                      <th className="p-2">Action Performed</th>
+                      <th className="p-2 font-semibold">User</th>
+                      <th className="p-2">Terminal / IP</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-mono text-slate-600">17/08/2026 10:34:42 AM</td>
+                      <td className="p-2 font-mono font-bold text-slate-900">123</td>
+                      <td className="p-2 font-bold text-slate-900">Almarai Full Cream Fresh Milk 1L</td>
+                      <td className="p-2 font-bold text-emerald-700">Retail Price Update (QAR 15.00)</td>
+                      <td className="p-2 text-slate-800 font-semibold">Administrator</td>
+                      <td className="p-2 font-mono text-slate-500">POS-TERM-01 (192.168.1.10)</td>
+                    </tr>
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-mono text-slate-600">16/08/2026 03:10:00 PM</td>
+                      <td className="p-2 font-mono font-bold text-slate-900">124</td>
+                      <td className="p-2 font-bold text-slate-900">Rayyan Natural Water 500ml Pack x24</td>
+                      <td className="p-2 font-bold text-blue-700">Stock Receipt Adjustment (+100 Units)</td>
+                      <td className="p-2 text-slate-800 font-semibold">Inventory Specialist</td>
+                      <td className="p-2 font-mono text-slate-500">BACKOFFICE-PC (192.168.1.15)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 16. PURCHASE HISTORY MODAL */}
+      {isPurchaseHistoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-red-400" />
+                <h2 className="text-sm font-bold">Supplier Purchase History</h2>
+              </div>
+              <button onClick={() => setIsPurchaseHistoryModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="p-4 space-y-3 text-xs">
+              <div className="border border-slate-200 rounded-lg overflow-hidden">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 font-bold uppercase text-[10px] text-slate-700">
+                    <tr>
+                      <th className="p-2 font-mono">GRN Date</th>
+                      <th className="p-2 font-mono">GRN No</th>
+                      <th className="p-2">Supplier Name</th>
+                      <th className="p-2 text-center font-mono">Qty</th>
+                      <th className="p-2 text-right font-mono">Unit Cost</th>
+                      <th className="p-2 text-right font-mono">Total Amount</th>
+                      <th className="p-2 font-mono">Supplier Inv No</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 font-medium">
+                    <tr className="hover:bg-slate-50">
+                      <td className="p-2 font-mono text-slate-600">16/08/2026</td>
+                      <td className="p-2 font-mono font-bold text-slate-900">GRN-2026-0891</td>
+                      <td className="p-2 font-bold text-slate-900">Almarai Food Qatar W.L.L</td>
+                      <td className="p-2 font-mono text-center font-bold">500</td>
+                      <td className="p-2 text-right font-mono text-slate-800">10.00 QAR</td>
+                      <td className="p-2 text-right font-mono font-bold text-emerald-700">5,000.00 QAR</td>
+                      <td className="p-2 font-mono text-slate-600">INV-ALM-8892</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 17. DEPARTMENT & BRAND SHIFTING MODAL */}
+      {isDeptShiftingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden font-sans">
+            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Boxes className="w-4 h-4 text-teal-400" />
+                <h2 className="text-sm font-bold">Bulk Department & Brand Shifting</h2>
+              </div>
+              <button onClick={() => setIsDeptShiftingModalOpen(false)} className="text-slate-400 hover:text-white font-bold">✕</button>
+            </div>
+            <div className="p-4 space-y-4 text-xs">
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                <div className="font-bold text-slate-700 border-b border-slate-200 pb-1">Source Selection</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="font-semibold text-slate-600 block mb-1">From Department</span>
+                    <select className="w-full px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white">
+                      <option value="Fresh Food">Fresh Food</option>
+                      <option value="Beverages">Beverages</option>
+                    </select>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-600 block mb-1">From Brand</span>
+                    <select className="w-full px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white">
+                      <option value="Mango">Mango</option>
+                      <option value="Almarai">Almarai</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                <div className="font-bold text-slate-700 border-b border-slate-200 pb-1">Target Destination</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="font-semibold text-slate-600 block mb-1">To Department</span>
+                    <select className="w-full px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white">
+                      <option value="Dairy & Chilled">Dairy & Chilled</option>
+                      <option value="Packaged Foods">Packaged Foods</option>
+                    </select>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-600 block mb-1">To Brand</span>
+                    <select className="w-full px-2.5 py-1 border border-slate-300 rounded font-semibold bg-white">
+                      <option value="Almarai Premium">Almarai Premium</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+                <button onClick={() => setIsDeptShiftingModalOpen(false)} className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded">Cancel</button>
+                <button onClick={() => { alert('✅ Products shifted to new Department & Brand!'); setIsDeptShiftingModalOpen(false); }} className="px-6 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-sm">Perform Bulk Shift</button>
+              </div>
+            </div>
           </div>
         </div>
       )}

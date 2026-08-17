@@ -20,6 +20,25 @@ export const ERPLayout: React.FC<{ children?: React.ReactNode }> = ({ children }
     { id: 'pos', title: 'POS Sales', path: '/pos', closable: true },
   ]);
 
+  React.useEffect(() => {
+    const currentPath = location.pathname;
+    const foundModule = ERP_TOP_MODULES.find((mod) =>
+      mod.ribbonGroups.some((grp) =>
+        grp.actions.some((act) => {
+          if (!act.route) return false;
+          if (act.route === currentPath) return true;
+          if ((currentPath === '/roles' || currentPath === '/roles-permissions') && (act.route === '/roles-permissions' || act.route === '/roles')) return true;
+          if ((currentPath === '/locations' || currentPath === '/branches') && (act.route === '/locations' || act.route === '/branches')) return true;
+          if ((currentPath === '/vendors' || currentPath === '/suppliers') && (act.route === '/suppliers' || act.route === '/vendors')) return true;
+          return false;
+        })
+      )
+    );
+    if (foundModule) {
+      setActiveModule(foundModule);
+    }
+  }, [location.pathname]);
+
   const handleToggleLang = () => {
     const nextLang = lang === 'en' ? 'ar' : 'en';
     setLang(nextLang);

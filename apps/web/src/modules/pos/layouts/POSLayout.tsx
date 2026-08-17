@@ -34,6 +34,7 @@ import {
 import { PaymentModal } from '../components/PaymentModal';
 import { HoldRecallModal } from '../components/HoldRecallModal';
 import { CashDropModal } from '../components/CashDropModal';
+import { POSConfigModal } from '../components/POSConfigModal';
 import { CartRow } from '../types/posModule.types';
 import { Product } from '@qatar-erp/types';
 
@@ -45,6 +46,7 @@ export const POSLayout: React.FC = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isHoldOpen, setIsHoldOpen] = useState(false);
   const [isCashDropOpen, setIsCashDropOpen] = useState(false);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [pendingSync, setPendingSync] = useState(0);
 
@@ -670,6 +672,11 @@ export const POSLayout: React.FC = () => {
       <CashDropModal
         isOpen={isCashDropOpen}
         onClose={() => setIsCashDropOpen(false)}
+      />
+
+      <POSConfigModal
+        isOpen={isConfigOpen}
+        onClose={() => setIsConfigOpen(false)}
       />
     </div>
   );

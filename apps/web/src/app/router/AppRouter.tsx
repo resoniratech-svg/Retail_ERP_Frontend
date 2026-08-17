@@ -7,12 +7,17 @@ import { DashboardPage } from '../../modules/dashboard/DashboardPage';
 import { OrganizationPage } from '../../modules/organization/OrganizationPage';
 import { CompaniesPage } from '../../modules/companies/CompaniesPage';
 import { BranchesPage } from '../../modules/branches/BranchesPage';
+import { LocationsPage } from '../../modules/branches/LocationsPage';
+import { AreasPage } from '../../modules/organization/AreasPage';
 import { UsersPage } from '../../modules/users/UsersPage';
 import { RolesPermissionsPage } from '../../modules/roles-permissions/RolesPermissionsPage';
 import { ControlPanelPage } from '../../modules/control-panel/ControlPanelPage';
 import { ProductsPage } from '../../modules/products/ProductsPage';
 import { BatchBarcodePage } from '../../modules/products/BatchBarcodePage';
 import { CategoriesPage } from '../../modules/categories/CategoriesPage';
+import { DepartmentsPage } from '../../modules/categories/DepartmentsPage';
+import { SubDepartmentsPage } from '../../modules/categories/SubDepartmentsPage';
+import { PriceUpdatesPage } from '../../modules/products/PriceUpdatesPage';
 import { SubCategoriesPage } from '../../modules/categories/SubCategoriesPage';
 import { BrandsPage } from '../../modules/brands/BrandsPage';
 import { InventoryPage } from '../../modules/inventory/InventoryPage';
@@ -21,6 +26,10 @@ import { WarehousesPage } from '../../modules/warehouses/WarehousesPage';
 import { StockTransfersPage } from '../../modules/stock-transfers/StockTransfersPage';
 import { StockRequisitionsPage } from '../../modules/stock/StockRequisitionsPage';
 import { CustomersPage } from '../../modules/customers/CustomersPage';
+import { CustomerBusinessTypesPage } from '../../modules/customers/CustomerBusinessTypesPage';
+import { DeliveryAgentsPage } from '../../modules/organization/DeliveryAgentsPage';
+import { ShiftMasterPage } from '../../modules/hr/ShiftMasterPage';
+import { ShiftAssignmentPage } from '../../modules/hr/ShiftAssignmentPage';
 import { VendorsPage } from '../../modules/vendors/VendorsPage';
 import { AccountingPage } from '../../modules/accounting/AccountingPage';
 import { PaymentVouchersPage } from '../../modules/accounting/PaymentVouchersPage';
@@ -48,6 +57,7 @@ import { HRPage } from '../../modules/hr/HRPage';
 import { LeaveTypesPage } from '../../modules/hr/LeaveTypesPage';
 import { LeaveApplicationsPage } from '../../modules/hr/LeaveApplicationsPage';
 import { POSPage } from '../../modules/pos/POSPage';
+import { DayClosePage } from '../../modules/pos/DayClosePage';
 import { TokenManagementPage } from '../../modules/token-management/TokenManagementPage';
 import { GenericModulePage } from '../../modules/common/GenericModulePage';
 import { PurchaseOrdersPage } from '../../modules/inventory/PurchaseOrdersPage';
@@ -138,6 +148,7 @@ export const AppRouter: React.FC = () => {
                   <Route path="/branches" element={<BranchesPage />} />
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/roles-permissions" element={<RolesPermissionsPage />} />
+                  <Route path="/roles" element={<RolesPermissionsPage />} />
                   <Route path="/control-panel" element={<ControlPanelPage />} />
                   <Route path="/products" element={<ProductsPage />} />
                   <Route path="/batch-barcode" element={<BatchBarcodePage />} />
@@ -156,18 +167,21 @@ export const AppRouter: React.FC = () => {
                   <Route path="/leave-types" element={<LeaveTypesPage />} />
                   <Route path="/leave" element={<LeaveApplicationsPage />} />
                   <Route path="/pos" element={<POSPage />} />
+                  <Route path="/day-close" element={<DayClosePage />} />
 
                   {/* Catalog & Register masters extensions */}
+                  <Route path="/departments" element={<DepartmentsPage />} />
+                  <Route path="/subdepartments" element={<SubDepartmentsPage />} />
                   <Route path="/colors" element={<GenericModulePage title="Product Colors" subtitle="Color master attributes" entityName="Color" items={[{ id: '1', code: 'CLR-RED', name: 'Standard Red', status: 'ACTIVE' }]} />} />
                   <Route path="/subcategories" element={<SubCategoriesPage />} />
-                  <Route path="/subdepartments" element={<GenericModulePage title="Sub Departments" subtitle="Secondary department division" entityName="Sub Department" items={[{ id: '1', code: 'SDEP-RET', name: 'Fresh Counter Sales', status: 'ACTIVE' }]} />} />
-                  <Route path="/batch-barcode" element={<GenericModulePage title="Batch Barcode Printing" subtitle="Print shelf & item barcodes" entityName="Barcode Batch" items={[{ id: '1', code: 'BAR-001', name: 'Milk & Beverage Shelf Labels Batch', status: 'PRINTED' }]} />} />
-                  <Route path="/price-updates" element={<GenericModulePage title="Price Updates Register" subtitle="Bulk cost & retail price overrides" entityName="Price Change Log" items={[{ id: '1', code: 'PRC-991', name: 'Almarai Retail Price Adjustment', amount: 7.50, status: 'EFFECTIVE' }]} />} />
-                  <Route path="/shift-master" element={<GenericModulePage title="Work Shift Master" subtitle="Cashier & store shift scheduling" entityName="Shift Schedule" items={[{ id: '1', code: 'SHF-MORNING', name: 'Morning Cashier Shift (07:00 - 15:00)', status: 'ACTIVE' }]} />} />
-                  <Route path="/shift-assignment" element={<GenericModulePage title="Work Shift Assignment" subtitle="Employee shift roster" entityName="Shift Roster" items={[{ id: '1', code: 'ROST-01', name: 'Tariq Mahmood - Morning Shift', status: 'ASSIGNED' }]} />} />
-                  <Route path="/areas" element={<GenericModulePage title="Geographical Areas" subtitle="Delivery zones & delivery areas" entityName="Area Zone" items={[{ id: '1', code: 'AREA-DOH', name: 'Doha West Bay & Pearl Zone', status: 'ACTIVE' }]} />} />
-                  <Route path="/delivery-agents" element={<GenericModulePage title="Delivery Agents" subtitle="Store drivers & delivery fleet" entityName="Delivery Agent" items={[{ id: '1', code: 'DRV-01', name: 'Kassim Express Driver', status: 'ACTIVE' }]} />} />
-                  <Route path="/customer-types" element={<GenericModulePage title="Customer Business Types" subtitle="Retail, Wholesale, & Hotel tiers" entityName="Business Type" items={[{ id: '1', code: 'BIZ-HTL', name: 'Hotel & Hospitality Corporate', status: 'ACTIVE' }]} />} />
+                  <Route path="/batch-barcode" element={<BatchBarcodePage />} />
+                  <Route path="/price-updates" element={<PriceUpdatesPage />} />
+                  <Route path="/shift-master" element={<ShiftMasterPage />} />
+                  <Route path="/shift-assignment" element={<ShiftAssignmentPage />} />
+                  <Route path="/areas" element={<AreasPage />} />
+                  <Route path="/locations" element={<LocationsPage />} />
+                  <Route path="/delivery-agents" element={<DeliveryAgentsPage />} />
+                  <Route path="/customer-types" element={<CustomerBusinessTypesPage />} />
                   <Route path="/production-material" element={<GenericModulePage title="Production Material" subtitle="Bakery & kitchen raw ingredients" entityName="Material" items={[{ id: '1', code: 'MAT-FLOUR', name: 'Wheat Flour 25kg Bag', amount: 45.00, status: 'ACTIVE' }]} />} />
                   <Route path="/taxes" element={<GenericModulePage title="Tax Setup & Rates" subtitle="Qatar VAT 0% & 5% Tax Rules" entityName="Tax Rate" items={[{ id: '1', code: 'VAT-0', name: 'Qatar Zero VAT (Essential Food)', amount: 0.00, status: 'ACTIVE' }]} />} />
                   <Route path="/units" element={<GenericModulePage title="Units of Measure" subtitle="Pcs, Kg, Box, Pack definitions" entityName="Unit" items={[{ id: '1', code: 'UOM-PCS', name: 'Pieces (Pcs)', status: 'ACTIVE' }, { id: '2', code: 'UOM-KG', name: 'Kilograms (Kg)', status: 'ACTIVE' }]} />} />

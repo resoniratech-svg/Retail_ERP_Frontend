@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '@qatar-erp/ui';
-import { Plus, Search, Eye, Edit, Trash2, Power, ArrowRight, CornerUpLeft } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Power, ArrowRight, CornerUpLeft, Save, Undo2, Banknote, List, Mail, History, X, CheckSquare, FileText } from 'lucide-react';
 import { Warehouse } from '@qatar-erp/types';
+import { PDTListModal } from './components/PDTListModal';
 
 const STORAGE_KEY = 'retail_erp_purchase_returns';
 const PURCHASES_KEY = 'retail_erp_purchases';
@@ -119,6 +120,7 @@ export const PurchaseReturnPage: React.FC = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activeReturn, setActiveReturn] = useState<PurchaseReturn | null>(null);
+  const [isPDTModalOpen, setIsPDTModalOpen] = useState(false);
   
   const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState<Partial<PurchaseReturn>>({ items: [] });
@@ -381,51 +383,101 @@ export const PurchaseReturnPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Purchase Returns</h1>
-          <p className="text-sm text-slate-500">Manage and track goods returned to suppliers</p>
+    <div className="flex flex-col gap-2 h-full relative">
+      <div className="flex flex-col border border-slate-300 dark:border-slate-700 rounded-sm bg-[#f1f5f9] dark:bg-slate-800 shadow-sm">
+        {/* Top Action Bar */}
+        <div className="flex items-center justify-between p-1 border-b border-slate-300 dark:border-slate-700">
+          <div className="flex items-center">
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Save className="w-3.5 h-3.5 text-slate-600" />
+              <span>Save Layout</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Undo2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Unpost</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Banknote className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Payment</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300" onClick={() => setIsPDTModalOpen(true)}>
+              <List className="w-3.5 h-3.5 text-orange-500" />
+              <span>PDT List</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Mail className="w-3.5 h-3.5 text-blue-500" />
+              <span>E-Mail To Vendor</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <History className="w-3.5 h-3.5 text-slate-600" />
+              <span>Action History</span>
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2 pr-2">
+            <Button variant="outline" className="py-1 px-2 text-xs h-7 flex items-center gap-1" onClick={loadData}>
+              Refresh
+            </Button>
+            <Button variant="primary" className="py-1 px-2 text-xs h-7 flex items-center gap-1 font-bold" onClick={handleOpenNew}>
+              <Plus className="w-3.5 h-3.5" /> New Purchase Return
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="flex items-center gap-2" onClick={loadData}>
-            Refresh
-          </Button>
-          <Button variant="primary" className="flex items-center gap-2 font-bold" onClick={handleOpenNew}>
-            <Plus className="w-4 h-4" /> New Purchase Return
-          </Button>
+
+        {/* Serial Search Row */}
+        <div className="flex items-center gap-3 p-1.5 bg-[#e2e8f0] dark:bg-slate-900 border-b border-slate-300">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-700 font-medium ml-1">Serial Search</span>
+            <input type="text" className="w-48 px-2 py-0.5 text-xs border border-slate-300 rounded bg-white" />
+            <button className="flex items-center gap-1 px-2 py-0.5 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50">
+              <Search className="w-3 h-3 text-blue-500" /> Search
+            </button>
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <span className="text-[11px] text-slate-700">Records</span>
+            <input type="text" value="0" readOnly className="w-16 px-2 py-0.5 text-xs border border-slate-300 rounded bg-slate-100 text-center" />
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <span className="text-[11px] text-slate-700">List Type</span>
+            <select className="px-2 py-0.5 text-xs border border-slate-300 rounded bg-white w-32">
+              <option>All</option>
+              <option>Drafted</option>
+              <option>Approval Pending</option>
+              <option>Approved Not Posted</option>
+              <option>Posted</option>
+            </select>
+          </div>
+        </div>
+        
+        {/* Purchases Header */}
+        <div className="bg-slate-200 text-slate-700 text-center text-[11px] font-bold py-1 border-b border-slate-300">
+          Purchase Returns
+        </div>
+
+        {/* Search Bar Row */}
+        <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-900 border-b border-slate-300">
+          <input
+            type="text"
+            placeholder="Enter text to search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64 px-2 py-1 text-xs border border-slate-300 rounded bg-white focus:outline-none focus:border-primary-500 ml-1"
+          />
+          <button className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium">
+            Find
+          </button>
+          <button 
+            className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium"
+            onClick={() => setSearchTerm('')}
+          >
+            Clear
+          </button>
         </div>
       </div>
 
-      <Card className="p-4 flex flex-wrap items-center justify-start gap-4 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search return no, invoice no, supplier..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-          />
-        </div>
-        <div className="w-full md:w-48">
-          <Select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={[
-              { value: 'ALL', label: 'All Statuses' },
-              { value: 'DRAFT', label: 'Draft' },
-              { value: 'SUBMITTED', label: 'Submitted' },
-              { value: 'APPROVED', label: 'Approved' },
-              { value: 'PROCESSED', label: 'Processed' },
-              { value: 'CANCELLED', label: 'Cancelled' }
-            ]}
-          />
-        </div>
-      </Card>
-
-      <Card className="p-0 overflow-x-auto shadow-sm">
-        <table className="w-full text-left text-sm">
+      <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-300 rounded-sm relative">
+        <div className="flex-1 overflow-auto flex flex-col relative">
+          <table className="w-full h-full text-left text-[11px]">
           <thead className="bg-slate-100 dark:bg-slate-800 uppercase text-[11px] font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
             <tr>
               <th className="p-4 whitespace-nowrap">Refno</th>
@@ -538,197 +590,288 @@ export const PurchaseReturnPage: React.FC = () => {
                 </td>
               </tr>
             )}
+            {/* Filler row to push footer to bottom */}
+            <tr className="h-full">
+              <td colSpan={22}></td>
+            </tr>
           </tbody>
+          <tfoot className="sticky bottom-0 bg-slate-100 dark:bg-slate-800 border-t border-slate-300 dark:border-slate-700 z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+            <tr>
+              <td colSpan={11}></td>
+              <td className="p-1 align-middle text-right">
+                <input type="text" value="0.00" readOnly className="w-full min-w-[70px] max-w-[100px] px-2 py-1 text-xs text-right border border-slate-300 rounded bg-white font-medium text-slate-700" />
+              </td>
+              <td className="p-1 align-middle text-right">
+                <input type="text" value="0.00" readOnly className="w-full min-w-[70px] max-w-[100px] px-2 py-1 text-xs text-right border border-slate-300 rounded bg-white font-medium text-slate-700" />
+              </td>
+              <td className="p-1 align-middle text-right">
+                <input type="text" value="0.00" readOnly className="w-full min-w-[70px] max-w-[100px] px-2 py-1 text-xs text-right border border-slate-300 rounded bg-white font-medium text-slate-700" />
+              </td>
+              <td className="p-1 align-middle text-right">
+                <input type="text" value="0.00" readOnly className="w-full min-w-[70px] max-w-[100px] px-2 py-1 text-xs text-right border border-slate-300 rounded bg-white font-medium text-slate-700" />
+              </td>
+              <td colSpan={7}></td>
+            </tr>
+          </tfoot>
         </table>
-      </Card>
-
-      {/* --- ADD / EDIT MODAL --- */}
+        </div>
+      </div>
+      {/* --- ADD / EDIT FORM OVERLAY --- */}
       {isFormModalOpen && (
-        <Modal
-          isOpen={isFormModalOpen}
-          onClose={() => setIsFormModalOpen(false)}
-          title={formData.id ? `Edit Return: ${formData.returnNo}` : "New Purchase Return"}
-          className="max-w-[1200px]"
-        >
-          <div className="w-full p-4 md:p-6 overflow-y-auto max-h-[75vh] [&::-webkit-scrollbar]:hidden">
-            {formError && (
-              <div className="mb-4 p-3 bg-rose-50 text-rose-600 text-sm rounded-md font-medium border border-rose-200">
-                {formError}
+        <div className="absolute inset-0 z-50 bg-white dark:bg-slate-900 flex flex-col font-sans text-xs overflow-hidden rounded-sm border border-slate-300 dark:border-slate-700">
+
+          {/* Action Toolbar */}
+          <div className="flex items-center px-2 py-1 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 gap-1 shadow-sm relative z-10">
+            <button className="flex flex-col items-center justify-center px-2 py-0.5 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded text-slate-700 dark:text-slate-300 min-w-[70px] transition-colors">
+              <div className="relative">
+                <Save className="w-4 h-4 text-blue-600 mb-0.5" />
+                <Plus className="w-2.5 h-2.5 text-blue-600 absolute -top-1 -right-2" />
               </div>
-            )}
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="space-y-6 lg:col-span-1 border-r border-slate-100 dark:border-slate-800 pr-0 lg:pr-6">
-                <div>
-                  <h3 className="font-bold text-sm text-slate-800 border-b pb-2 mb-4">Return Details</h3>
-                  <div className="space-y-4">
-                    <Input label="Return No" value={formData.returnNo} disabled />
-                    
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Purchase / Invoice</span>
-                      <Select 
-                        value={formData.purchaseInvoiceId || ''}
-                        onChange={(e) => handlePurchaseSelect(e.target.value)}
-                        options={[
-                          { value: '', label: '-- Select Purchase Invoice --' },
-                          ...purchases.map(p => ({ value: p.id, label: `${p.invoiceNo} - ${p.supplierName}` }))
-                        ]}
-                      />
-                    </div>
-
-                    <Input 
-                      label="Supplier Name *" 
-                      value={formData.supplierName} 
-                      onChange={(e) => setFormData({...formData, supplierName: e.target.value})} 
-                      disabled={!!formData.purchaseInvoiceId}
-                    />
-
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Warehouse *</span>
-                      <Select 
-                        value={formData.warehouseId || ''}
-                        onChange={(e) => setFormData({...formData, warehouseId: e.target.value})}
-                        options={[
-                          { value: '', label: '-- Select Warehouse --' },
-                          ...warehouses.map(w => ({ value: w.id, label: w.name }))
-                        ]}
-                      />
-                    </div>
-
-                    <Input type="date" label="Return Date *" value={formData.returnDate} onChange={(e) => setFormData({...formData, returnDate: e.target.value})} />
-
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Global Return Reason</span>
-                      <Select 
-                        value={formData.returnReason || 'Damaged'}
-                        onChange={(e) => setFormData({...formData, returnReason: e.target.value})}
-                        options={[
-                          { value: 'Damaged', label: 'Damaged' },
-                          { value: 'Expired', label: 'Expired' },
-                          { value: 'Wrong Item', label: 'Wrong Item' },
-                          { value: 'Excess Quantity', label: 'Excess Quantity' },
-                          { value: 'Quality Issue', label: 'Quality Issue' },
-                          { value: 'Supplier Request', label: 'Supplier Request' },
-                          { value: 'Other', label: 'Other' }
-                        ]}
-                      />
-                    </div>
-
-                    <Input label="Reference / Delivery Note" value={formData.reference} onChange={(e) => setFormData({...formData, reference: e.target.value})} />
-                    <Input label="Remarks / Notes" value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} />
-                  </div>
-                </div>
+              <span className="text-[10px] font-medium">Save & New</span>
+              <span className="text-[9px] text-slate-500 font-normal">Ctrl + N</span>
+            </button>
+            <button className="flex flex-col items-center justify-center px-2 py-0.5 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded text-slate-700 dark:text-slate-300 min-w-[70px] transition-colors" onClick={() => { handleSaveForm('SUBMITTED'); setIsFormModalOpen(false); }}>
+              <div className="relative">
+                <Save className="w-4 h-4 text-red-600 mb-0.5" />
+                <CornerUpLeft className="w-2.5 h-2.5 text-red-600 absolute -top-1 -right-2" />
               </div>
-              
-              <div className="lg:col-span-2 space-y-4">
-                <h3 className="font-bold text-sm text-slate-800 border-b pb-2 mb-4">Return Items</h3>
-                
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-wrap gap-4 items-end mb-4">
-                  <div className="flex-1 min-w-[200px]">
-                    <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Available Product</span>
-                    <Select 
-                      value={newItem.productId || ''}
-                      onChange={(e) => handleProductSelectForAdd(e.target.value)}
-                      options={[
-                        { value: '', label: '-- Select Product --' },
-                        ...availablePurchaseItems.map((p: any) => ({ value: p.productId, label: `${p.productName} (Returnable: ${p.returnableQty})` }))
-                      ]}
-                      disabled={!formData.purchaseInvoiceId}
-                    />
-                    {!formData.purchaseInvoiceId && <p className="text-[10px] text-slate-500 mt-1">Select an invoice first</p>}
-                  </div>
-                  <div className="w-24">
-                    <Input 
-                      type="number"
-                      label="Return Qty" 
-                      value={newItem.returnQty?.toString() || ''} 
-                      onChange={(e) => setNewItem({...newItem, returnQty: Number(e.target.value)})} 
-                    />
-                  </div>
-                  <div className="w-28">
-                    <Input 
-                      type="number"
-                      label="Unit Cost" 
-                      value={newItem.unitCost?.toString() || ''} 
-                      onChange={(e) => setNewItem({...newItem, unitCost: Number(e.target.value)})} 
-                    />
-                  </div>
-                  <div className="w-20">
-                    <Input 
-                      type="number"
-                      label="Tax %" 
-                      value={newItem.taxPercent?.toString() || ''} 
-                      onChange={(e) => setNewItem({...newItem, taxPercent: Number(e.target.value)})} 
-                    />
-                  </div>
-                  <div className="w-full md:w-auto mt-2 md:mt-0">
-                    <Button variant="primary" onClick={handleAddItem} className="w-full" disabled={!formData.purchaseInvoiceId}>Add Item</Button>
-                  </div>
-                </div>
-
-                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-x-auto">
-                  <table className="w-full text-xs text-left whitespace-nowrap">
-                    <thead className="bg-slate-100 dark:bg-slate-800">
-                      <tr>
-                        <th className="p-3">Product</th>
-                        <th className="p-3 text-right">Orig Qty</th>
-                        <th className="p-3 text-right">Returnable</th>
-                        <th className="p-3 text-right">Return Qty</th>
-                        <th className="p-3 text-right">Unit Cost</th>
-                        <th className="p-3 text-right">Line Total</th>
-                        <th className="p-3 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {formData.items && formData.items.length > 0 ? formData.items.map(item => (
-                        <tr key={item.id}>
-                          <td className="p-3 font-medium">{item.productName} <span className="text-slate-500 ml-1">({item.sku})</span></td>
-                          <td className="p-3 text-right">{item.originalQty}</td>
-                          <td className="p-3 text-right">{item.returnableQty}</td>
-                          <td className="p-3 text-right font-bold text-rose-600">{item.returnQty}</td>
-                          <td className="p-3 text-right">${item.unitCost.toFixed(2)}</td>
-                          <td className="p-3 text-right font-bold">${item.lineTotal.toFixed(2)}</td>
-                          <td className="p-3 text-center">
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-rose-500" onClick={() => handleRemoveItem(item.id)}>
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </td>
-                        </tr>
-                      )) : (
-                        <tr><td colSpan={7} className="p-6 text-center text-slate-500">No items added.</td></tr>
-                      )}
-                    </tbody>
-                    {formData.items && formData.items.length > 0 && (
-                      <tfoot className="bg-slate-50 dark:bg-slate-800 border-t border-slate-200">
-                        <tr>
-                          <td colSpan={5} className="p-3 text-right font-bold">Subtotal:</td>
-                          <td className="p-3 text-right font-bold">${calculateTotals(formData.items).subtotal.toFixed(2)}</td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <td colSpan={5} className="p-3 text-right font-bold text-slate-500">Tax:</td>
-                          <td className="p-3 text-right font-bold text-slate-500">${calculateTotals(formData.items).taxAmount.toFixed(2)}</td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <td colSpan={5} className="p-3 text-right font-bold text-slate-900 text-sm">Total Return Value:</td>
-                          <td className="p-3 text-right font-bold text-slate-900 text-sm">${calculateTotals(formData.items).totalValue.toFixed(2)}</td>
-                          <td></td>
-                        </tr>
-                      </tfoot>
-                    )}
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex justify-end gap-3 border-t pt-4">
-              <Button variant="outline" onClick={() => setIsFormModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" className="bg-slate-600 hover:bg-slate-700" onClick={() => handleSaveForm('DRAFT')}>Save as Draft</Button>
-              <Button variant="primary" onClick={() => handleSaveForm('SUBMITTED')}>Submit Return</Button>
+              <span className="text-[10px] font-medium">Save & Close</span>
+              <span className="text-[9px] text-slate-500 font-normal">Ctrl + L</span>
+            </button>
+            <button className="flex flex-col items-center justify-center px-2 py-0.5 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-300 dark:hover:border-slate-600 rounded text-slate-700 dark:text-slate-300 min-w-[70px] transition-colors">
+              <Banknote className="w-4 h-4 text-emerald-600 mb-0.5" />
+              <span className="text-[10px] font-medium">Post</span>
+              <span className="text-[9px] text-slate-500 font-normal">Ctrl + P</span>
+            </button>
+            <div className="ml-auto flex items-center pr-2">
+              <button onClick={() => setIsFormModalOpen(false)} className="flex items-center justify-center hover:bg-rose-500 hover:text-white w-6 h-6 rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 transition-colors bg-white dark:bg-slate-800 shadow-sm" title="Close">
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
-        </Modal>
+
+          {/* Invoice Details Section */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-300 dark:border-slate-700">
+            <div className="px-3 py-1.5 font-bold text-blue-700 dark:text-blue-400 text-[11px] flex items-center gap-2">
+              Invoice Details <span className="text-slate-700 dark:text-slate-300">Ref#: {formData.id ? formData.returnNo : 'New'}</span>
+            </div>
+            <div className="px-3 pb-2 flex flex-col gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+              {/* Row 1 */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 w-[280px]">
+                  <span className="w-14 text-right shrink-0">Vendor</span>
+                  <select className="flex-1 border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[22px] rounded-sm focus:outline-none focus:border-blue-500">
+                    <option>[Select a vendor]</option>
+                  </select>
+                  <div className="w-[18px] h-[18px] bg-blue-50 dark:bg-blue-900/30 border border-blue-400 dark:border-blue-700 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-[14px] leading-none cursor-pointer hover:bg-blue-100 shrink-0">+</div>
+                </div>
+                <div className="flex items-center gap-1 w-[200px]">
+                  <span className="w-16 text-right shrink-0">Invoice No.</span>
+                  <input type="text" className="flex-1 border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[22px] rounded-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div className="flex items-center gap-1 w-[160px]">
+                  <span className="w-14 text-right shrink-0">Inv Date</span>
+                  <input type="date" className="flex-1 border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[22px] rounded-sm focus:outline-none focus:border-blue-500" />
+                </div>
+                <div className="flex items-center gap-1 w-[180px]">
+                  <span className="w-20 text-right shrink-0">Returned Date</span>
+                  <input type="date" className="flex-1 border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[22px] rounded-sm focus:outline-none focus:border-blue-500" defaultValue={formData.returnDate} />
+                </div>
+                <div className="flex items-center gap-1 ml-2">
+                  <span className="font-medium text-slate-500">TRN</span>
+                  <span className="text-slate-500 font-medium">N/A</span>
+                </div>
+              </div>
+
+              {/* Row 2 */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 w-[280px]">
+                  <span className="w-14 text-right shrink-0">Location</span>
+                  <select className="flex-1 border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[22px] rounded-sm focus:outline-none focus:border-blue-500">
+                    <option>Saudi Arabia</option>
+                  </select>
+                  <div className="w-[18px] h-[18px] bg-blue-50 dark:bg-blue-900/30 border border-blue-400 dark:border-blue-700 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-[14px] leading-none cursor-pointer hover:bg-blue-100 shrink-0">+</div>
+                </div>
+                <div className="flex items-center gap-1 w-[200px]">
+                  <span className="w-16 text-right shrink-0">Paymode</span>
+                  <select className="flex-1 border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[22px] rounded-sm focus:outline-none focus:border-blue-500">
+                    <option>Credit</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-1 ml-1 w-[160px]">
+                  <input type="checkbox" id="disableTax" className="w-3 h-3 cursor-pointer" />
+                  <label htmlFor="disableTax" className="cursor-pointer mt-0.5">Disable Tax</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Details Section */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-300 dark:border-slate-700">
+             <div className="px-3 py-1 font-bold text-blue-700 dark:text-blue-400 text-[11px]">Product Details</div>
+             
+             <div className="px-3 pb-2 space-y-1 text-[10px]">
+               {/* First Row of Headers & Inputs */}
+               <div className="flex gap-1.5 items-end">
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Code</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" /></div>
+                 <div className="w-[110px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Barcode</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" /></div>
+                 <div className="flex-1 min-w-[200px] relative">
+                   <div className="text-slate-600 dark:text-slate-400 mb-0.5 flex justify-between">Product <div className="text-slate-700 dark:text-slate-300 flex items-center justify-center w-3 h-3 bg-slate-200 dark:bg-slate-700 border border-slate-400 dark:border-slate-600 rounded-sm text-[8px]">👤</div></div>
+                   <input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" />
+                 </div>
+                 <div className="w-[100px] shrink-0">
+                   <div className="text-slate-600 dark:text-slate-400 mb-0.5 flex justify-between">Unit <div className="text-emerald-500 flex items-center justify-center w-3 h-3 text-[8px] font-bold">🔄</div></div>
+                   <select className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-500 dark:text-slate-400 focus:outline-none focus:border-blue-500"><option>[Select unit]</option></select>
+                 </div>
+                 <div className="w-[60px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">UOM</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 h-[22px] rounded-sm focus:outline-none" value="1" readOnly /></div>
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Curr. Cost</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-slate-100 dark:bg-slate-900 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none" readOnly /></div>
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Curr Price</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-slate-100 dark:bg-slate-900 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none" readOnly /></div>
+                 <div className="w-[60px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Tax(%)</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" /></div>
+                 
+                 <div className="ml-2 flex items-end">
+                   <button className="border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 px-3 py-0.5 shadow-sm rounded-sm hover:bg-slate-200 dark:hover:bg-slate-700 h-[22px] flex items-center font-medium text-slate-700 dark:text-slate-300 transition-colors">Load Purchase</button>
+                 </div>
+               </div>
+
+               {/* Second Row of Headers & Inputs */}
+               <div className="flex gap-1.5 items-end mt-1.5">
+                 <div className="w-[60px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Pur. Qty</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" /></div>
+                 <div className="w-[50px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">FOC</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" /></div>
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Sup. Cost</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" /></div>
+                 
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Unit. Disc</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 text-right h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" defaultValue="0.0000" /></div>
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Discount</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 text-right h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" defaultValue="0.0000" /></div>
+                 
+                 <div className="w-[80px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Amount</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-slate-100 dark:bg-slate-900 text-right h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none" defaultValue="0.00" readOnly /></div>
+                 <div className="w-[60px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Tax</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-slate-100 dark:bg-slate-900 text-right h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none" defaultValue="0.00" readOnly /></div>
+                 <div className="w-[90px] shrink-0"><div className="text-slate-600 dark:text-slate-400 mb-0.5">Amount Incl.Tax</div><input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-slate-100 dark:bg-slate-900 text-right h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none" defaultValue="0.00" readOnly /></div>
+                 
+                 <div className="flex-1 min-w-[150px] flex flex-col">
+                   <div className="text-slate-600 dark:text-slate-400 mb-0.5 flex justify-between px-1">
+                     <span className="text-[9px] translate-y-1 text-slate-400 dark:text-slate-500 truncate mr-2">Additional Descriptions</span>
+                     <span className="shrink-0">Serial #</span>
+                   </div>
+                   <input type="text" className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 h-[22px] rounded-sm text-slate-700 dark:text-slate-300 focus:outline-none focus:border-blue-500" />
+                 </div>
+
+                 <div className="flex flex-col gap-1 ml-2 shrink-0">
+                   <div className="flex gap-1 h-[22px]">
+                     <button className="flex items-center justify-center gap-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-red-600 font-medium transition-colors">
+                       <div className="w-3 h-3 bg-red-600 rounded-full flex items-center justify-center"><X className="w-2.5 h-2.5 text-white" /></div> Remove
+                     </button>
+                     <button className="flex items-center justify-center gap-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                       <span className="text-blue-700 dark:text-blue-400 font-bold flex items-center gap-1"><div className="w-3 h-3 bg-blue-700 text-white rounded-[2px] flex items-center justify-center text-[8px] transform -rotate-45">✎</div> PDT</span> <span className="text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-600 px-1 rounded-sm text-[9px]">F7</span>
+                     </button>
+                   </div>
+                   <div className="flex gap-1 h-[22px]">
+                     <button className="flex items-center justify-center gap-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-blue-700 dark:text-blue-400 font-medium w-[84px] transition-colors">
+                       <div className="w-3.5 h-3.5 bg-blue-100 dark:bg-blue-900/50 border border-blue-400 dark:border-blue-700 rounded-full flex items-center justify-center text-[12px] leading-none">+</div> Add (F1)
+                     </button>
+                     <button className="flex-1 flex items-center justify-center border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors">
+                       <div className="w-3 h-3 bg-blue-700 text-white rounded-[2px] flex items-center justify-center text-[8px] transform -rotate-45 mr-1">✎</div> Edit
+                     </button>
+                   </div>
+                 </div>
+               </div>
+               
+               <div className="flex items-center gap-1 mt-0 ml-[490px]">
+                 <input type="checkbox" id="calcQty" defaultChecked className="w-3 h-3 cursor-pointer" />
+                 <label htmlFor="calcQty" className="text-slate-700 dark:text-slate-300 mt-0.5 cursor-pointer">Calc. Qty From Serial</label>
+               </div>
+             </div>
+          </div>
+
+          {/* Main Table */}
+          <div className="flex-1 overflow-auto bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 shadow-sm flex flex-col relative">
+            <table className="w-full min-h-full text-left text-[11px] whitespace-nowrap border-collapse text-slate-700 dark:text-slate-300">
+              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 shadow-sm text-slate-800 dark:text-slate-200">
+                <tr>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-10 text-center">SlNo</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-20">Code</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24">Barcode</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 min-w-[150px]">Product</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16">UOM</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16 text-right">Qty</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16 text-right">FOC</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16 text-right">Tax Perc</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-20 text-right">Sup Cost</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24 text-right">Unit Discount</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24 text-right">Item Discount</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24 text-right">Amount</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-20 text-right">Tax</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24 text-right">Amount Incl.Tax</th>
+                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24">Serial No</th>
+                  <th className="font-normal px-2 py-1.5">Additional Descriptions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Empty table space to ensure rows render properly if any */}
+                <tr className="h-full"><td colSpan={16}></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer Totals */}
+          <div className="h-[120px] bg-slate-100 dark:bg-slate-800 flex text-[11px] shrink-0 border-t border-slate-300 dark:border-slate-700">
+            {/* Left Tabs */}
+            <div className="flex-1 border-r border-slate-300 dark:border-slate-700 flex flex-col bg-white dark:bg-slate-900">
+              <div className="flex bg-slate-100 dark:bg-slate-800/50 border-b border-slate-300 dark:border-slate-700 h-[26px]">
+                <button className="px-3 bg-white dark:bg-slate-900 border-t-2 border-t-blue-500 border-r border-slate-300 dark:border-slate-700 font-medium text-slate-800 dark:text-slate-200">General</button>
+                <button className="px-3 hover:bg-slate-200 dark:hover:bg-slate-700 border-r border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 flex items-center gap-1 transition-colors"><FileText className="w-3.5 h-3.5 text-orange-400" /> Notes</button>
+                <button className="px-3 hover:bg-slate-200 dark:hover:bg-slate-700 border-r border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 flex items-center gap-1 transition-colors"><CheckSquare className="w-3.5 h-3.5 text-green-500" /> Approval Status</button>
+                <button className="px-3 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 transition-colors">Documents</button>
+              </div>
+              <div className="p-3 space-y-2">
+                <div className="text-blue-700 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1 font-medium">F8 - Product Purchase History</div>
+                <div className="text-blue-700 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1 font-medium">F9 - Load Product From Purchase</div>
+              </div>
+            </div>
+
+            {/* Bill Discount */}
+            <div className="w-[340px] border-r border-slate-300 dark:border-slate-700 p-2 relative bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300">
+               <div className="font-bold text-slate-700 dark:text-slate-300 mb-2 border-b border-slate-200 dark:border-slate-700 pb-1">Apply Bill Discount</div>
+               <div className="grid grid-cols-[80px_100px] gap-2 items-center mb-1.5">
+                 <span className="text-slate-600 dark:text-slate-400">Discount (%)</span>
+                 <input type="text" className="border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 text-right rounded-sm" />
+               </div>
+               <div className="grid grid-cols-[80px_100px] gap-2 items-center mb-1">
+                 <span className="text-slate-600 dark:text-slate-400">Disc Amount</span>
+                 <input type="text" className="border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 text-right rounded-sm" />
+               </div>
+               <div className="absolute right-4 top-10">
+                 <button className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-1.5 rounded-sm shadow-sm flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                   <div className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] leading-none">←</div> Apply
+                 </button>
+               </div>
+               <div className="absolute bottom-2 right-2 w-[180px]">
+                 <select className="w-full border border-slate-300 dark:border-slate-600 px-1 py-0.5 bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 text-[10px] rounded-sm">
+                   <option>[Select a Ledger]</option>
+                 </select>
+               </div>
+            </div>
+
+            {/* Final Totals */}
+            <div className="w-[220px] p-2 bg-slate-100 dark:bg-slate-800 grid grid-cols-[100px_80px] justify-end gap-x-4 gap-y-1 content-start text-slate-700 dark:text-slate-300">
+               <div className="text-right text-slate-600 dark:text-slate-400">Total</div>
+               <div className="text-right font-medium pr-1">0.00</div>
+               
+               <div className="text-right text-slate-600 dark:text-slate-400">Discount</div>
+               <div className="text-right font-medium pr-1">0.00</div>
+               
+               <div className="text-right text-slate-600 dark:text-slate-400">Sub Total</div>
+               <div className="text-right font-medium pr-1">0.00</div>
+               
+               <div className="text-right text-slate-600 dark:text-slate-400 pt-0.5">TAX</div>
+               <input type="text" className="border border-slate-300 dark:border-slate-600 px-1 bg-white dark:bg-slate-950 text-right h-5 rounded-sm" />
+               
+               <div className="text-right text-slate-600 dark:text-slate-400 pt-0.5">Round off</div>
+               <input type="text" className="border border-slate-300 dark:border-slate-600 px-1 bg-white dark:bg-slate-950 text-right h-5 rounded-sm" />
+               
+               <div className="text-right font-bold text-slate-900 dark:text-slate-100 mt-1">Net Total</div>
+               <div className="text-right font-bold text-slate-900 dark:text-slate-100 mt-1 pr-1">0.00</div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* --- VIEW MODAL --- */}
@@ -834,6 +977,7 @@ export const PurchaseReturnPage: React.FC = () => {
         </Modal>
       )}
 
+      <PDTListModal isOpen={isPDTModalOpen} onClose={() => setIsPDTModalOpen(false)} title="Purchase Return" />
     </div>
   );
 };

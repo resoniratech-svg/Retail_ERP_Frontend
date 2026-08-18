@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Input, Badge, Modal, Select } from '@qatar-erp/ui';
-import { Plus, Search, Download, Trash2, Edit, Eye, X } from 'lucide-react';
+import { Plus, Search, Download, Trash2, Edit, Eye, X, Undo2, ArrowDownToLine, CheckCircle2, Mail, Copy, Printer } from 'lucide-react';
 import { formatQAR } from '@qatar-erp/utils';
 
 // --- INLINED STORAGE LOGIC ---
@@ -505,46 +505,74 @@ export const PurchaseOrdersPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Purchase Orders</h1>
-          <p className="text-sm text-slate-500">Manage and track purchase orders</p>
-        </div>
-        <Button variant="primary" onClick={handleOpenCreate} className="flex items-center gap-2 font-bold">
+      <div className="flex items-center justify-end mb-[-12px] z-10 relative pr-1">
+        <Button variant="primary" onClick={handleOpenCreate} className="flex items-center gap-2 font-bold shadow-sm">
           <Plus className="w-4 h-4" /> New Purchase Order
         </Button>
       </div>
 
-      <Card className="p-3 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search PO No, Supplier, Ref No..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-            />
+      <div className="flex flex-col border border-slate-300 dark:border-slate-700 rounded-sm bg-[#f1f5f9] dark:bg-slate-800">
+        {/* Top Action Bar */}
+        <div className="flex flex-wrap items-center justify-between p-1 border-b border-slate-300 dark:border-slate-700">
+          <div className="flex items-center">
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <Undo2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Unpost</span>
+            </button>
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <ArrowDownToLine className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Receive Products</span>
+            </button>
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Approval Status</span>
+            </button>
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <Mail className="w-3.5 h-3.5 text-blue-500" />
+              <span>Email To Vendor</span>
+            </button>
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <Copy className="w-3.5 h-3.5 text-slate-500" />
+              <span>Copy</span>
+            </button>
           </div>
-          <div className="w-48">
-            <Select 
-              options={[
-                { value: 'ALL', label: 'All Statuses' },
-                { value: 'DRAFT', label: 'Draft' },
-                { value: 'SUBMITTED', label: 'Submitted' },
-                { value: 'APPROVED', label: 'Approved' },
-                { value: 'CANCELLED', label: 'Cancelled' }
-              ]}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            />
+          
+          <div className="flex items-center gap-2 pr-2">
+            <span className="text-xs text-slate-600 dark:text-slate-300">Add. Print Designs</span>
+            <select className="text-xs border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-900 min-w-[150px]">
+              <option>Choose a Design...</option>
+            </select>
+            <button className="flex items-center gap-1 px-2 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" onClick={handleExportCSV}>
+              <Printer className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
+              <span>Print</span>
+            </button>
           </div>
         </div>
-        <Button variant="outline" className="flex items-center gap-1.5 text-xs py-1.5" onClick={handleExportCSV}>
-          <Download className="w-4 h-4" /> Export Report
-        </Button>
-      </Card>
+
+        {/* Search Bar */}
+        <div className="flex items-center gap-2 p-1.5 bg-[#f8fafc] dark:bg-slate-900">
+          <input
+            type="text"
+            placeholder="Enter text to search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64 px-2 py-1 text-xs border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-800 focus:outline-none focus:border-primary-500"
+          />
+          <button className="px-4 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+            Find
+          </button>
+          <button 
+            className="px-4 py-1 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+            onClick={() => setSearchTerm('')}
+          >
+            Clear
+          </button>
+        </div>
+      </div>
 
       <Card className="p-0 overflow-hidden">
         <div className="overflow-x-auto">

@@ -386,144 +386,94 @@ export const StockTakingPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Stock Taking</h1>
-          <p className="text-sm text-slate-500">Perform and manage physical inventory counts across warehouses</p>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
+      {!isFormModalOpen && (
+        <div className="flex flex-col h-full gap-2">
+          {/* Desktop App Style Action Toolbar */}
+          <div className="flex items-center gap-4 px-3 py-1.5 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 shadow-sm text-[12px] text-slate-700 dark:text-slate-300">
+            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+              <Power className="w-4 h-4 text-blue-600 rotate-180" /> Unpost
+            </button>
+            <div className="ml-auto">
+              <Button variant="primary" onClick={handleOpenNew} className="h-6 text-[11px] px-2 py-0 bg-emerald-600 hover:bg-emerald-700 border-none">
+                <Plus className="w-3 h-3 mr-1 inline" /> New Stock Taking
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-slate-200 dark:bg-slate-800 text-center py-1 text-[12px] font-bold text-slate-700 dark:text-slate-300 border-b border-slate-300 dark:border-slate-700 shadow-sm">
+            StockTakings
+          </div>
+
+          <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1 flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Enter text to search..."
+              className="w-64 border border-slate-300 dark:border-slate-600 px-2 py-1 bg-white dark:bg-slate-950 text-[11px] shadow-sm rounded-sm focus:outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="px-4 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm text-slate-700 dark:text-slate-300">
+              Find
+            </button>
+            <button 
+              className="px-4 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm text-slate-700 dark:text-slate-300"
+              onClick={() => setSearchTerm('')}
+            >
+              Clear
+            </button>
+          </div>
+
+          <div className="flex-1 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-700 shadow-sm overflow-auto">
+            <table className="w-full text-left whitespace-nowrap border-collapse text-slate-700 dark:text-slate-300 table-fixed">
+              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 shadow-sm text-slate-800 dark:text-slate-200 uppercase text-[9px] font-bold">
+                <tr>
+                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Ref No</th>
+                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Date</th>
+                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700 text-right">Amount</th>
+                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700 text-center w-24">Posted</th>
+                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Location</th>
+                  <th className="px-2 py-2 text-center w-16">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50 text-[10px]">
+                {filteredRecords.map((st) => (
+                  <tr key={st.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20">
+                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{st.stockTakeNo}</td>
+                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{st.countDate}</td>
+                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate text-right font-medium">{st.totalVarianceValue.toFixed(2)}</td>
+                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate text-center">
+                      {st.status === 'COMPLETED' || st.status === 'APPROVED' ? <CheckSquare className="w-3 h-3 text-emerald-600 inline-block" /> : ''}
+                    </td>
+                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{st.warehouseName}</td>
+                    <td className="px-2 py-1.5 text-center">
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(st)} className="h-5 px-2 py-0">
+                        <Eye className="w-3 h-3" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredRecords.length === 0 && (
+                  <tr><td colSpan={6} className="p-4 text-center text-slate-500">No stock taking records found.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 border border-slate-300 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-1">
+              <button className="px-1 hover:text-slate-900 dark:hover:text-white">|&lt;&lt;</button>
+              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&lt;</button>
+              <span className="px-2">StockTakings 0 of 0</span>
+              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&gt;</button>
+              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&gt;&gt;|</button>
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 px-8 py-0.5 min-w-[120px] text-right font-bold text-slate-800 dark:text-slate-200">
+              {filteredRecords.reduce((sum, st) => sum + st.totalVarianceValue, 0).toFixed(2)}
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="flex items-center gap-2" onClick={loadData}>
-            Refresh
-          </Button>
-          <Button variant="primary" className="flex items-center gap-2 font-bold" onClick={handleOpenNew}>
-            <Plus className="w-4 h-4" /> New Stock Take
-          </Button>
-        </div>
-      </div>
-
-      <Card className="p-4 flex flex-wrap items-center justify-start gap-4 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search stock take no, warehouse, reference, counted by..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-          />
-        </div>
-        <div className="w-full md:w-48">
-          <Select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={[
-              { value: 'ALL', label: 'All Statuses' },
-              { value: 'DRAFT', label: 'Draft' },
-              { value: 'IN_PROGRESS', label: 'In Progress' },
-              { value: 'SUBMITTED', label: 'Submitted' },
-              { value: 'APPROVED', label: 'Approved' },
-              { value: 'COMPLETED', label: 'Completed' },
-              { value: 'CANCELLED', label: 'Cancelled' }
-            ]}
-          />
-        </div>
-      </Card>
-
-      <Card className="p-0 overflow-x-auto shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 dark:bg-slate-800 uppercase text-[11px] font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th className="p-4 whitespace-nowrap">Stock Take #</th>
-              <th className="p-4 whitespace-nowrap">Warehouse</th>
-              <th className="p-4 whitespace-nowrap">Count Date</th>
-              <th className="p-4 text-center whitespace-nowrap">Items Counted</th>
-              <th className="p-4 text-center whitespace-nowrap">Variance Items</th>
-              <th className="p-4 text-right whitespace-nowrap">Variance Value</th>
-              <th className="p-4 whitespace-nowrap">Counted By</th>
-              <th className="p-4 text-center whitespace-nowrap">Status</th>
-              <th className="p-4 text-center whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
-            {filteredRecords.length > 0 ? filteredRecords.map((st) => (
-              <tr key={st.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <td className="p-4 font-mono font-bold text-xs">{st.stockTakeNo}</td>
-                <td className="p-4 font-medium">{st.warehouseName}</td>
-                <td className="p-4 text-xs">{st.countDate}</td>
-                <td className="p-4 text-center font-semibold">{st.totalItems}</td>
-                <td className="p-4 text-center font-semibold">
-                  <span className={st.varianceItemsCount > 0 ? "text-amber-600 font-bold" : "text-emerald-600"}>
-                    {st.varianceItemsCount}
-                  </span>
-                </td>
-                <td className="p-4 text-right font-bold text-slate-700">
-                  <span className={st.totalVarianceValue < 0 ? "text-rose-600" : st.totalVarianceValue > 0 ? "text-emerald-600" : ""}>
-                    ${st.totalVarianceValue.toFixed(2)}
-                  </span>
-                </td>
-                <td className="p-4 text-xs text-slate-500">{st.countedBy}</td>
-                <td className="p-4 text-center">{getStatusBadge(st.status)}</td>
-                <td className="p-4">
-                  <div className="flex items-center justify-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" onClick={() => { setActiveRecord(st); setIsViewModalOpen(true); }} title="View Details">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    
-                    {(st.status === 'DRAFT' || st.status === 'IN_PROGRESS') && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" onClick={() => handleEdit(st)} title={st.status === 'DRAFT' ? 'Edit' : 'Continue Count'}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {st.status === 'DRAFT' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-indigo-500 hover:text-indigo-600" onClick={() => handleStatusChange(st, 'IN_PROGRESS')} title="Start Count">
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {st.status === 'IN_PROGRESS' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-emerald-500 hover:text-emerald-600" onClick={() => handleStatusChange(st, 'SUBMITTED')} title="Submit">
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {st.status === 'DRAFT' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-rose-500 hover:text-rose-600" onClick={() => handleDelete(st)} title="Delete">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {st.status === 'SUBMITTED' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-indigo-500 hover:text-indigo-600" onClick={() => handleStatusChange(st, 'APPROVED')} title="Approve">
-                        <CheckSquare className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {st.status === 'APPROVED' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700" onClick={() => handleStatusChange(st, 'COMPLETED')} title="Complete">
-                        <CheckSquare className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {(st.status === 'SUBMITTED') && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600" onClick={() => handleStatusChange(st, 'CANCELLED')} title="Cancel">
-                        <Power className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )) : (
-              <tr>
-                <td colSpan={9} className="p-8 text-center text-slate-500">
-                  No stock takings found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+      )}
 
       {/* --- ADD / EDIT MODAL --- */}
       {isFormModalOpen && (

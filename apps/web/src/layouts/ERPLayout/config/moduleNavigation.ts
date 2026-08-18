@@ -128,7 +128,7 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
         titleAr: 'الشراء والمخازن',
         actions: [
           { id: 'inv-po', label: 'Purchase Orders', labelAr: 'أوامر الشراء', iconName: 'FileText', route: '/purchasing' },
-          { id: 'inv-grn', label: 'GRN Receipts', labelAr: 'استلام البضائع', iconName: 'Inbox', route: '/grn' },
+          { id: 'inv-grn', label: 'GRN', labelAr: 'إيصال استلام البضائع', iconName: 'Inbox', route: '/grn' },
           { id: 'inv-pur', label: 'Purchase', labelAr: 'مشتريات', iconName: 'ShoppingCart', route: '/purchase' },
           { id: 'inv-grtn', label: 'GRTN', labelAr: 'مرتجع استلام', iconName: 'ArrowUpRight', route: '/grtn' },
           { id: 'inv-pret', label: 'Purchase Return', labelAr: 'مرتجع مشتريات', iconName: 'CornerUpLeft', route: '/purchase-returns' },

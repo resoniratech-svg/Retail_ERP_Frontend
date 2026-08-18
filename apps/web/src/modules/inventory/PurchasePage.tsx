@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '@qatar-erp/ui';
-import { Plus, Search, Eye, Edit, Trash2, Power, ArrowRight, X } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Power, ArrowRight, X, Printer, Undo2, Save, Banknote, CheckCircle2, Tag, List, ArrowRightLeft, Mail, History } from 'lucide-react';
 import { productsService } from '@qatar-erp/api';
 import { Product } from '@qatar-erp/types';
 import { formatQAR } from '@qatar-erp/utils';
+import { PDTListModal } from './components/PDTListModal';
 
 const STORAGE_KEY = 'retail_erp_purchases';
 const CURRENT_USER = 'Ahmed Al-Mansouri (SUPER_ADMIN)';
@@ -195,6 +196,7 @@ export const PurchasePage: React.FC = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [activePurchase, setActivePurchase] = useState<PurchaseInvoice | null>(null);
+  const [isPDTModalOpen, setIsPDTModalOpen] = useState(false);
   
   const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState<Partial<PurchaseInvoice>>({ items: [] });
@@ -496,47 +498,117 @@ export const PurchasePage: React.FC = () => {
   const totalFoc = (formData.items || []).reduce((acc, curr) => acc + curr.foc, 0);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Purchase (Invoices)</h1>
-          <p className="text-sm text-slate-500">Record and manage purchase invoices post-receipt.</p>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col border border-slate-300 dark:border-slate-700 rounded-sm bg-[#f1f5f9] dark:bg-slate-800 shadow-sm">
+        {/* Top Action Bar */}
+        <div className="flex flex-wrap items-center justify-between p-1 border-b border-slate-300 dark:border-slate-700">
+          <div className="flex items-center">
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Printer className="w-3.5 h-3.5 text-slate-600" />
+              <span>Print Barcode</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Undo2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Unpost</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Save className="w-3.5 h-3.5 text-slate-600" />
+              <span>Save Layout</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Banknote className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Payments</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Approval Status</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Tag className="w-3.5 h-3.5 text-blue-500" />
+              <span>Price Update</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300" onClick={() => setIsPDTModalOpen(true)}>
+              <List className="w-3.5 h-3.5 text-orange-500" />
+              <span>PDT List</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <ArrowRightLeft className="w-3.5 h-3.5 text-slate-600" />
+              <span>Stock Transfer</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <Mail className="w-3.5 h-3.5 text-blue-500" />
+              <span>E-Mail To Vendor</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+              <History className="w-3.5 h-3.5 text-slate-600" />
+              <span>Action History</span>
+            </button>
+            <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <Edit className="w-3.5 h-3.5 text-slate-600" />
+              <span>Modify Expenses</span>
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-2 pr-2">
+            <Button variant="outline" className="py-1 px-2 text-xs h-7 flex items-center gap-1" onClick={loadData}>
+              Refresh
+            </Button>
+            <Button variant="primary" className="py-1 px-2 text-xs h-7 flex items-center gap-1 font-bold" onClick={handleOpenNew}>
+              <Plus className="w-3.5 h-3.5" /> New Purchase
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="flex items-center gap-2" onClick={loadData}>
-            Refresh
-          </Button>
-          <Button variant="primary" className="flex items-center gap-2 font-bold" onClick={handleOpenNew}>
-            <Plus className="w-4 h-4" /> New Purchase Invoice
-          </Button>
-        </div>
-      </div>
 
-      <Card className="p-4 flex flex-wrap items-center justify-start gap-4 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+        {/* Serial Search Row */}
+        <div className="flex items-center gap-3 p-1.5 bg-[#e2e8f0] dark:bg-slate-900 border-b border-slate-300">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-700 font-medium ml-1">Serial Search</span>
+            <input type="text" className="w-48 px-2 py-0.5 text-xs border border-slate-300 rounded bg-white" />
+            <button className="flex items-center gap-1 px-2 py-0.5 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50">
+              <Search className="w-3 h-3 text-blue-500" /> Search
+            </button>
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <span className="text-[11px] text-slate-700">Records</span>
+            <input type="text" value="0" readOnly className="w-16 px-2 py-0.5 text-xs border border-slate-300 rounded bg-slate-100 text-center" />
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <span className="text-[11px] text-slate-700">List Type</span>
+            <select className="px-2 py-0.5 text-xs border border-slate-300 rounded bg-white w-32">
+              <option>All</option>
+              <option>Drafted</option>
+              <option>Approval Pending</option>
+              <option>Approved Not Posted</option>
+              <option>Posted</option>
+            </select>
+          </div>
+        </div>
+        
+        {/* Purchases Header */}
+        <div className="bg-slate-200 text-slate-700 text-center text-[11px] font-bold py-1 border-b border-slate-300">
+          Purchases
+        </div>
+
+        {/* Search Bar Row */}
+        <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-900 border-b border-slate-300">
           <input
             type="text"
-            placeholder="Search invoice no, supplier, reference..." 
+            placeholder="Enter text to search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+            className="w-64 px-2 py-1 text-xs border border-slate-300 rounded bg-white focus:outline-none focus:border-primary-500 ml-1"
           />
+          <button className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium">
+            Find
+          </button>
+          <button 
+            className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium"
+            onClick={() => setSearchTerm('')}
+          >
+            Clear
+          </button>
         </div>
-        <div className="w-full md:w-48">
-          <Select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={[
-              { value: 'ALL', label: 'All Statuses' },
-              { value: 'DRAFT', label: 'Draft' },
-              { value: 'POSTED', label: 'Posted' },
-              { value: 'PAID', label: 'Paid' },
-              { value: 'CANCELLED', label: 'Cancelled' }
-            ]}
-          />
-        </div>
-      </Card>
+      </div>
 
       <Card className="p-0 overflow-hidden shadow-sm">
         <div className="w-full overflow-x-auto">
@@ -1068,6 +1140,7 @@ export const PurchasePage: React.FC = () => {
         </Modal>
       )}
 
+      <PDTListModal isOpen={isPDTModalOpen} onClose={() => setIsPDTModalOpen(false)} title="Purchase" />
     </div>
   );
 };

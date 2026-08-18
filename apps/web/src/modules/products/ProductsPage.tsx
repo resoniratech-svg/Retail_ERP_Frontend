@@ -31,6 +31,9 @@ import {
   HelpCircle,
   QrCode,
   FileText,
+  RotateCcw,
+  Save,
+  ShoppingCart,
 } from 'lucide-react';
 import { Button, Badge, Card } from '@qatar-erp/ui';
 
@@ -102,6 +105,7 @@ export const ProductsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchMatchType, setSearchMatchType] = useState<'Begin With' | 'Contains'>('Contains');
   const [selectedVendorFilter, setSelectedVendorFilter] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -291,6 +295,17 @@ export const ProductsPage: React.FC = () => {
   const [bottomWasPrice, setBottomWasPrice] = useState('67.00');
   const [stockLookupLocation, setStockLookupLocation] = useState('Doha Main Branch');
 
+  // Modal Sub-Tabs State (Matching DART POS Screenshot media_1787034154403.png)
+  const [activeClassTab, setActiveClassTab] = useState<'Classifications' | 'Properties'>('Classifications');
+  const [activeOptionsTab, setActiveOptionsTab] = useState<'Options' | 'Add. Features' | 'Re Order' | 'Accounts'>('Options');
+  const [activeCostingSubTab, setActiveCostingSubTab] = useState<'Costing & Pricing' | 'Barcode Printing'>('Costing & Pricing');
+  const [activePackingsSubTab, setActivePackingsSubTab] = useState<'Packings' | 'Stock link'>('Packings');
+
+  // Stock Link Sub-Tab State
+  const [stockLinkCode, setStockLinkCode] = useState('');
+  const [stockLinkBarcode, setStockLinkBarcode] = useState('');
+  const [stockLinkProduct, setStockLinkProduct] = useState('');
+
   const loadProducts = () => {
     setProducts(productsService.getProductsSync());
   };
@@ -302,6 +317,15 @@ export const ProductsPage: React.FC = () => {
     window.addEventListener('qatar_products_updated', handleUpdate);
     return () => window.removeEventListener('qatar_products_updated', handleUpdate);
   }, []);
+
+  useEffect(() => {
+    if (isAddModalOpen) {
+      const tabTitle = editingProduct ? 'Edit Product' : 'New Product';
+      window.dispatchEvent(new CustomEvent('qatar_erp_active_tab_rename', { detail: { title: tabTitle } }));
+    } else {
+      window.dispatchEvent(new CustomEvent('qatar_erp_active_tab_rename', { detail: { title: 'Products' } }));
+    }
+  }, [isAddModalOpen, editingProduct]);
 
   // Form Margin Calculations
   const updatePricingCalculations = (field: string, value: number) => {
@@ -515,19 +539,933 @@ export const ProductsPage: React.FC = () => {
     return matchesSearch && matchesBarcodeScan && matchesVendor;
   });
 
-  return (
+  if (isAddModalOpen) {
+    return (
+      <div className="w-full bg-slate-100 flex flex-col font-sans text-xs select-none space-y-2">
+        {/* WINDOW TITLE BAR */}
+        <div className="bg-slate-200 border border-slate-300 rounded-t-lg px-4 py-2 flex items-center justify-between text-slate-800 font-bold shadow-xs">
+          <div className="flex items-center gap-2">
+            <Package className="w-4 h-4 text-emerald-600" />
+            <span className="text-sm font-bold">
+              {editingProduct ? `Edit Product: ${formData.name || editingProduct.sku}` : 'New Product'} - DART POS
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(false)}
+            className="text-slate-500 hover:text-slate-900 font-bold px-2 py-0.5 rounded"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* TOP SUB-RIBBON ACTION TOOLBAR */}
+        <div className="bg-slate-200 border-x border-b border-slate-300 px-3 py-1.5 flex items-center justify-between shadow-inner">
+          {/* Left Action Buttons */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handleSaveProduct}
+              className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+            >
+              <Save className="w-3.5 h-3.5 text-blue-600" />
+              <span>Save (Ctrl+S)</span>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                handleSaveProduct(e);
+                handleOpenAddModal();
+              }}
+              className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+            >
+              <Plus className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Save & New (Ctrl+N)</span>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                handleSaveProduct(e);
+                setIsAddModalOpen(false);
+              }}
+              className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+            >
+              <X className="w-3.5 h-3.5 text-rose-600" />
+              <span>Save & Close (Ctrl+L)</span>
+            </button>
+          </div>
+
+          {/* Right Action Tools */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => alert('📊 Stock Movement history opened.')}
+              className="flex items-center gap-1 px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-xs shadow-2xs"
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
+              <span>Stock Movement</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => alert('🛒 Purchase History opened (F11)')}
+              className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+            >
+              <ShoppingCart className="w-3.5 h-3.5 text-sky-600" />
+              <span>Purchase History-F11</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleOpenAddModal()}
+              className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-slate-600" />
+              <span>Reset Fields-F5</span>
+            </button>
+          </div>
+        </div>
+
+        {/* FULL SCREEN FORM BODY */}
+        <form onSubmit={handleSaveProduct} className="p-3 space-y-3 bg-slate-100 rounded-b-lg border-x border-b border-slate-300 shadow-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-5 space-y-3">
+              {/* 1. GENERAL PANEL */}
+              <div className="bg-slate-200 border border-slate-300 rounded-lg p-2.5 space-y-2 shadow-xs">
+                <div className="bg-slate-300 px-2 py-0.5 font-bold text-slate-800 text-[11px] border-b border-slate-400 -mx-2.5 -mt-2.5 mb-2 rounded-t-lg">
+                  General
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Code</label>
+                  <input
+                    type="text"
+                    value={formData.sku || ''}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    className="w-28 px-2 py-1 border border-slate-400 rounded font-mono font-bold bg-white"
+                    required
+                  />
+                  <button type="button" className="px-2 py-1 bg-slate-300 hover:bg-slate-400 border border-slate-400 rounded font-bold text-[10px] text-blue-800">
+                    F4 Refno
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Product Name</label>
+                  <input
+                    type="text"
+                    value={formData.name || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData({
+                        ...formData,
+                        name: val,
+                        nameAr: autoTranslateToArabic(val),
+                        localDescription: autoTranslateToArabic(val),
+                      });
+                    }}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded font-bold bg-white"
+                    required
+                  />
+                  <span className="text-slate-500 cursor-pointer">📁</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Local Description</label>
+                  <input
+                    type="text"
+                    value={formData.nameAr || formData.localDescription || ''}
+                    onChange={(e) => setFormData({ ...formData, nameAr: e.target.value, localDescription: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded font-arabic bg-white"
+                    dir="rtl"
+                  />
+                  <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px]">F4</button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Short Description</label>
+                  <input
+                    type="text"
+                    value={formData.shortDescription || ''}
+                    onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded font-mono bg-white"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Barcode</label>
+                  <input
+                    type="text"
+                    value={formData.barcode || ''}
+                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded font-mono bg-white"
+                    required
+                  />
+                  <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px]">F4</button>
+                  <Barcode className="w-4 h-4 text-slate-600" />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Units</label>
+                  <select
+                    value={formData.unit || 'Pcs'}
+                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                  >
+                    <option value="Pcs">Pcs</option>
+                    <option value="Box">Box</option>
+                    <option value="Kg">Kg</option>
+                    <option value="Pack">Pack</option>
+                    <option value="apple">apple</option>
+                  </select>
+                  <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Default Vendor</label>
+                  <select
+                    value={formData.defaultVendor || 'Almarai Food Qatar W.L.L'}
+                    onChange={(e) => setFormData({ ...formData, defaultVendor: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                  >
+                    <option value="Almarai Food Qatar W.L.L">Almarai Food Qatar W.L.L</option>
+                    <option value="Doha Wholesale Trading W.L.L">Doha Wholesale Trading W.L.L</option>
+                    <option value="Rayyan Water Company W.L.L">Rayyan Water Company W.L.L</option>
+                    <option value="aaa">aaa</option>
+                  </select>
+                  <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <label className="w-32 font-bold text-slate-700 pt-1">Description</label>
+                  <textarea
+                    rows={2}
+                    value={formData.description || ''}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded bg-white text-xs"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="w-32 font-bold text-slate-700">Additional Description</label>
+                  <input
+                    type="text"
+                    value={formData.additionalDescription || ''}
+                    onChange={(e) => setFormData({ ...formData, additionalDescription: e.target.value })}
+                    className="flex-1 px-2 py-1 border border-slate-400 rounded bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* 2. CLASSIFICATIONS & PROPERTIES TABS */}
+              <div className="bg-slate-200 border border-slate-300 rounded-lg p-2 space-y-2 shadow-xs">
+                <div className="flex items-center gap-1 border-b border-slate-300 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveClassTab('Classifications')}
+                    className={`px-3 py-1 rounded-t font-bold text-xs ${
+                      activeClassTab === 'Classifications'
+                        ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                        : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                    }`}
+                  >
+                    Classifications
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveClassTab('Properties')}
+                    className={`px-3 py-1 rounded-t font-bold text-xs ${
+                      activeClassTab === 'Properties'
+                        ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                        : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                    }`}
+                  >
+                    Properties
+                  </button>
+                </div>
+
+                {activeClassTab === 'Classifications' && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center gap-2">
+                      <label className="w-28 font-bold text-slate-700">Brand</label>
+                      <select
+                        value={formData.brandName || 'Almarai'}
+                        onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                      >
+                        <option value="Almarai">Almarai</option>
+                        <option value="Khabari">Khabari</option>
+                        <option value="Rayyan">Rayyan</option>
+                        <option value="APPLE">APPLE</option>
+                      </select>
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="w-28 font-bold text-slate-700">Department</label>
+                      <select
+                        value={formData.categoryName || 'Dairy & Eggs'}
+                        onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                      >
+                        {categoriesList.map((c) => (
+                          <option key={c.name} value={c.name}>{c.name}</option>
+                        ))}
+                        <option value="GSDUYGYG">GSDUYGYG</option>
+                      </select>
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="w-28 font-bold text-slate-700">Sub Department</label>
+                      <input
+                        type="text"
+                        value={formData.subDepartment || 'GSFDGVFF'}
+                        onChange={(e) => setFormData({ ...formData, subDepartment: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-mono bg-white"
+                      />
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                    </div>
+                  </div>
+                )}
+
+                {activeClassTab === 'Properties' && (
+                  <div className="p-2 bg-white border border-slate-300 rounded text-slate-600 text-xs">
+                    Product Custom Master Attributes & ERP Field Properties
+                  </div>
+                )}
+              </div>
+
+              {/* 3. OPTIONS / ADD. FEATURES / RE ORDER / ACCOUNTS TABS */}
+              <div className="bg-slate-200 border border-slate-300 rounded-lg p-2 space-y-2 shadow-xs">
+                <div className="flex items-center gap-1 border-b border-slate-300 pb-1 overflow-x-auto">
+                  {(['Options', 'Add. Features', 'Re Order', 'Accounts'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveOptionsTab(tab)}
+                      className={`px-2.5 py-0.5 rounded-t font-bold text-[11px] whitespace-nowrap ${
+                        activeOptionsTab === tab
+                          ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                          : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+
+                {activeOptionsTab === 'Options' && (
+                  <div className="space-y-2 pt-1">
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={formData.weighingProductType !== 'None'}
+                          onChange={(e) => setFormData({ ...formData, weighingProductType: e.target.checked ? 'Amount In Barcode' : 'None' })}
+                        />
+                        <span>Weighing Product</span>
+                      </label>
+                      <select
+                        value={formData.weighingProductType || 'Amount In Barcode'}
+                        onChange={(e) => setFormData({ ...formData, weighingProductType: e.target.value as any })}
+                        className="px-2 py-0.5 border border-slate-400 rounded bg-white text-xs"
+                      >
+                        <option value="Amount In Barcode">Amount In Barcode</option>
+                        <option value="Weight In Barcode">Weight In Barcode</option>
+                        <option value="Quantity In Barcode">Quantity In Barcode</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={formData.isActive === false}
+                          onChange={(e) => setFormData({ ...formData, isActive: !e.target.checked })}
+                          className="rounded text-rose-600"
+                        />
+                        <span>Inactive (For Sale)</span>
+                      </label>
+
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={formData.nonInventory || false}
+                          onChange={(e) => setFormData({ ...formData, nonInventory: e.target.checked })}
+                          className="rounded text-emerald-600"
+                        />
+                        <span>Non Inventory Product</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div></div>
+                      <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                        <input
+                          type="checkbox"
+                          checked={formData.autoProductionWhileSale || false}
+                          onChange={(e) => setFormData({ ...formData, autoProductionWhileSale: e.target.checked })}
+                        />
+                        <span>Auto Production While Sale</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-300">
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Procurement Type</span>
+                        <select
+                          value={formData.procurementType || 'Normal Purchase'}
+                          onChange={(e) => setFormData({ ...formData, procurementType: e.target.value as any })}
+                          className="w-full px-2 py-0.5 border border-slate-400 rounded bg-white"
+                        >
+                          <option value="Normal Purchase">Normal Purchase</option>
+                          <option value="Consignment">Consignment</option>
+                          <option value="Internal Production">Internal Production</option>
+                        </select>
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Division Factor</span>
+                        <input
+                          type="number"
+                          step="0.001"
+                          value={formData.divisionFactor ?? 1.000}
+                          onChange={(e) => setFormData({ ...formData, divisionFactor: parseFloat(e.target.value) || 1.0 })}
+                          className="w-full px-2 py-0.5 border border-slate-400 rounded bg-white font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-1">
+                      <span className="block font-bold text-slate-700 text-[10px]">Max Discount Rate ℹ️</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        defaultValue="0.00"
+                        className="w-full max-w-[180px] px-2 py-0.5 border border-slate-400 rounded bg-white font-mono"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activeOptionsTab !== 'Options' && (
+                  <div className="p-2 bg-white border border-slate-300 rounded text-slate-600 text-xs">
+                    Advanced ERP Settings: {activeOptionsTab} configuration matrix
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN */}
+            <div className="lg:col-span-7 space-y-3">
+              {/* 1. COST, TAX AND PRICING CARD */}
+              <div className="bg-slate-200 border border-slate-300 rounded-lg p-2.5 space-y-2 shadow-xs">
+                <div className="bg-slate-300 px-2 py-0.5 font-bold text-slate-800 text-[11px] border-b border-slate-400 -mx-2.5 -mt-2.5 mb-2 rounded-t-lg flex items-center justify-between">
+                  <span>Cost, Tax and Pricing</span>
+                </div>
+
+                <div className="flex items-center gap-1 border-b border-slate-300 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveCostingSubTab('Costing & Pricing')}
+                    className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                      activeCostingSubTab === 'Costing & Pricing'
+                        ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                        : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                    }`}
+                  >
+                    💲 Costing & Pricing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCostingSubTab('Barcode Printing')}
+                    className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                      activeCostingSubTab === 'Barcode Printing'
+                        ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                        : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                    }`}
+                  >
+                    📊 Barcode Printing
+                  </button>
+                </div>
+
+                {activeCostingSubTab === 'Costing & Pricing' && (
+                  <div className="space-y-3 pt-1">
+                    {/* Costing Row */}
+                    <div className="grid grid-cols-7 gap-1.5 text-xs bg-white p-2 rounded border border-slate-300">
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Cost <span className="text-emerald-700 font-mono">F10</span></span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={formData.costPrice ?? 0.00}
+                          onChange={(e) => updatePricingCalculations('costPrice', parseFloat(e.target.value) || 0)}
+                          className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold"
+                        />
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Cost Incl.</span>
+                        <input
+                          type="number"
+                          readOnly
+                          value={formData.costInclTax ?? formData.costPrice ?? 0.00}
+                          className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono bg-slate-100 cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Lnd. Cost</span>
+                        <input
+                          type="text"
+                          value={`${(formData.landedCost ?? 0.00).toFixed(6)}X`}
+                          onChange={(e) => setFormData({ ...formData, landedCost: parseFloat(e.target.value) || 0 })}
+                          className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono text-[10px]"
+                        />
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Costing Method ℹ️</span>
+                        <select
+                          value={formData.costingMethod || 'Purchase Cost'}
+                          onChange={(e) => setFormData({ ...formData, costingMethod: e.target.value as any })}
+                          className="w-full px-1 py-0.5 border border-slate-300 rounded text-[10px] font-semibold"
+                        >
+                          <option value="Purchase Cost">Purchase Cost</option>
+                          <option value="Weighted Average">Weighted Average</option>
+                          <option value="FIFO">FIFO</option>
+                        </select>
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Gross</span>
+                        <input type="number" readOnly value="0.00" className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono bg-slate-100" />
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">Avg</span>
+                        <input type="text" readOnly value="0.000000..." className="w-full px-1 py-0.5 border border-slate-200 rounded font-mono text-[9px] bg-slate-100" />
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-700 text-[10px]">First Cost <span className="text-slate-500 font-mono">F8</span></span>
+                        <input type="number" readOnly value="0.00" className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono bg-slate-100" />
+                      </div>
+                    </div>
+
+                    {/* Taxes Row */}
+                    <div className="bg-white p-2 rounded border border-slate-300 space-y-1">
+                      <span className="block font-bold text-emerald-800 text-[10px]">💲 Taxes</span>
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-20 font-bold text-slate-700">Sale Tax 1</span>
+                          <select
+                            value={formData.vatRate || 0.15}
+                            onChange={(e) => setFormData({ ...formData, vatRate: parseFloat(e.target.value) || 0 })}
+                            className="flex-1 px-2 py-0.5 border border-slate-300 rounded font-semibold text-xs"
+                          >
+                            <option value={0.15}>STANDARD RATE 15% VAT</option>
+                            <option value={0.00}>STANDARD RATE 0% (Zero VAT)</option>
+                          </select>
+                          <span className="font-mono text-slate-600 font-bold">Tax 1 %</span>
+                          <input type="text" readOnly value="15.00%" className="w-16 px-1.5 py-0.5 border border-slate-200 rounded font-mono text-center bg-slate-100 font-bold text-emerald-700" />
+                          <button type="button" className="px-1 py-0.5 bg-slate-200 border border-slate-300 rounded font-bold text-[10px]">⊕ F4</button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="w-24 font-bold text-slate-700">Purchase Tax</span>
+                          <select
+                            value={formData.purchaseTaxRate || 0.15}
+                            onChange={(e) => setFormData({ ...formData, purchaseTaxRate: parseFloat(e.target.value) || 0 })}
+                            className="flex-1 px-2 py-0.5 border border-slate-300 rounded font-semibold text-xs"
+                          >
+                            <option value={0.15}>STANDARD RATE 15% VAT</option>
+                            <option value={0.00}>STANDARD RATE 0% (Zero VAT)</option>
+                          </select>
+                          <span className="font-mono text-slate-600 font-bold">Tax %</span>
+                          <input type="text" readOnly value="15.00%" className="w-16 px-1.5 py-0.5 border border-slate-200 rounded font-mono text-center bg-slate-100 font-bold text-emerald-700" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Retail & Wholesale Pricing Matrix */}
+                    <div className="bg-white p-2 rounded border border-slate-300 space-y-2">
+                      {/* Retail Row */}
+                      <div className="grid grid-cols-7 gap-1.5 text-xs">
+                        <div>
+                          <span className="block font-bold text-slate-700 text-[10px]">Price</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={formData.retailPrice ?? 0.00}
+                            onChange={(e) => updatePricingCalculations('retailPrice', parseFloat(e.target.value) || 0)}
+                            className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold"
+                          />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-700 text-[10px]">Markup</span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={formData.markupPercent ?? 0.00}
+                            onChange={(e) => updatePricingCalculations('markupPercent', parseFloat(e.target.value) || 0)}
+                            className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                          />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-700 text-[10px]">GP %</span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={formData.grossProfitPercent ?? 0.00}
+                            onChange={(e) => updatePricingCalculations('grossProfitPercent', parseFloat(e.target.value) || 0)}
+                            className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                          />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-700 text-[10px]">Price Incl Tax</span>
+                          <input
+                            type="number"
+                            readOnly
+                            value={formData.priceInclTax ?? 0.00}
+                            className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono font-bold text-emerald-700 bg-slate-100"
+                          />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-700 text-[10px]">MSP</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={formData.msp ?? 0.00}
+                            onChange={(e) => setFormData({ ...formData, msp: parseFloat(e.target.value) || 0 })}
+                            className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                          />
+                        </div>
+                        <div>
+                          <span className="block font-bold text-slate-700 text-[10px]">Was Price</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={formData.wasPrice ?? 0.00}
+                            onChange={(e) => setFormData({ ...formData, wasPrice: parseFloat(e.target.value) || 0 })}
+                            className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono text-amber-700 font-bold"
+                          />
+                        </div>
+                        <div className="flex items-center pt-3">
+                          <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-[10px]">
+                            <input
+                              type="checkbox"
+                              checked={formData.openPrice || false}
+                              onChange={(e) => setFormData({ ...formData, openPrice: e.target.checked })}
+                            />
+                            <span>Open Price</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Wholesale Row */}
+                      <div className="pt-2 border-t border-slate-200">
+                        <span className="block font-bold text-slate-700 text-[10px] mb-1">Wholesale Pricing</span>
+                        <div className="grid grid-cols-5 gap-2 text-xs">
+                          <div>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={formData.wsPrice ?? 0.00}
+                              onChange={(e) => setFormData({ ...formData, wsPrice: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="number"
+                              value={formData.wsMarkupPercent ?? 0.00}
+                              onChange={(e) => setFormData({ ...formData, wsMarkupPercent: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="number"
+                              value={formData.wsGrossProfitPercent ?? 0.00}
+                              onChange={(e) => setFormData({ ...formData, wsGrossProfitPercent: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="number"
+                              value={formData.wsPriceInclTax ?? 0.00}
+                              onChange={(e) => setFormData({ ...formData, wsPriceInclTax: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold text-emerald-600"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="number"
+                              value={formData.wsMsp ?? 0.00}
+                              onChange={(e) => setFormData({ ...formData, wsMsp: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                  {/* 2. PACKINGS & STOCK LINK CARD */}
+                  <div className="bg-slate-200 border border-slate-300 rounded-lg p-2.5 space-y-2 shadow-xs">
+                    <div className="flex items-center gap-1 border-b border-slate-300 pb-1">
+                      <button
+                        type="button"
+                        onClick={() => setActivePackingsSubTab('Packings')}
+                        className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                          activePackingsSubTab === 'Packings'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        📦 Packings
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActivePackingsSubTab('Stock link')}
+                        className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                          activePackingsSubTab === 'Stock link'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        🔗 Stock link
+                      </button>
+                    </div>
+
+                    {activePackingsSubTab === 'Packings' && (
+                      <div className="space-y-2 pt-1">
+                        {/* Sub-Form Row 1 */}
+                        <div className="flex items-center justify-between gap-2 bg-white p-2 rounded border border-slate-300">
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="font-bold text-slate-700 text-[11px]">Barcode</span>
+                            <input type="text" className="w-28 px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                            <Barcode className="w-4 h-4 text-slate-600" />
+
+                            <span className="font-bold text-slate-700 text-[11px] ml-2">Units</span>
+                            <select className="w-20 px-1 py-0.5 border border-slate-300 rounded text-xs">
+                              <option>Unit</option>
+                              <option>Box</option>
+                              <option>Carton</option>
+                            </select>
+
+                            <span className="font-bold text-slate-700 text-[11px] ml-2">Pack Qty</span>
+                            <input type="text" className="w-16 px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+
+                            <span className="font-bold text-slate-700 text-[11px] ml-2">Cost</span>
+                            <input type="text" className="w-20 px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button type="button" className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded font-bold text-[10px]">✏️ Edit</button>
+                            <button type="button" className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded font-bold text-[10px] text-rose-700">❌ Delete</button>
+                            <button type="button" className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded font-bold text-[10px] text-blue-800">📦 Raw Mater.</button>
+                            <button type="button" onClick={handleAddPackingRow} className="px-3 py-1 bg-slate-200 hover:bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">➕ Add (F9)</button>
+                          </div>
+                        </div>
+
+                        {/* Sub-Form Row 2 */}
+                        <div className="grid grid-cols-6 gap-2 bg-white p-2 rounded border border-slate-300 text-xs">
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Price</span>
+                            <input type="text" defaultValue="0.0000" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Price Incl Tax</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold text-emerald-700" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">MSP</span>
+                            <input type="text" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Product Name</span>
+                            <input type="text" placeholder="eg: 1 X 12" className="w-full px-1.5 py-0.5 border border-slate-300 rounded" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Add.Description</span>
+                            <input type="text" className="w-full px-1.5 py-0.5 border border-slate-300 rounded" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Was Price</span>
+                            <input type="text" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono text-amber-700" />
+                          </div>
+                        </div>
+
+                        {/* Sub-Form Row 3 */}
+                        <div className="grid grid-cols-8 gap-1.5 bg-white p-2 rounded border border-slate-300 text-xs items-center">
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">WS. Price</span>
+                            <input type="text" defaultValue="0.0000" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">WS P Tax</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">MSP</span>
+                            <input type="text" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">Mark Up</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">GP %</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div className="col-span-3 flex items-center gap-3 pt-3">
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-800 text-[10px]">
+                              <input type="checkbox" defaultChecked />
+                              <span>Is Ecomm. Product</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-800 text-[10px]">
+                              <input type="checkbox" />
+                              <span>Stock Unit</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-800 text-[10px]">
+                              <input type="checkbox" />
+                              <span>Weighing</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Packings Grid Table */}
+                        <div className="overflow-x-auto bg-white rounded border border-slate-300 max-h-36">
+                          <table className="w-full text-left text-[10px] border-collapse font-mono">
+                            <thead className="bg-slate-100 font-bold uppercase text-slate-700 sticky top-0 border-b border-slate-300">
+                              <tr>
+                                <th className="p-1 border-r border-slate-200">Barcode</th>
+                                <th className="p-1 border-r border-slate-200">Pack Qty</th>
+                                <th className="p-1 border-r border-slate-200">Price</th>
+                                <th className="p-1 border-r border-slate-200">Price Ind Tax</th>
+                                <th className="p-1 border-r border-slate-200">Unit Code</th>
+                                <th className="p-1 border-r border-slate-200">Pack Description</th>
+                                <th className="p-1 border-r border-slate-200">MSP</th>
+                                <th className="p-1 border-r border-slate-200">WS Price Ind Tax</th>
+                                <th className="p-1 border-r border-slate-200">WS Price</th>
+                                <th className="p-1 border-r border-slate-200">WSMSP</th>
+                                <th className="p-1 border-r border-slate-200">Was Price</th>
+                                <th className="p-1">Cost</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {packingsList.length === 0 ? (
+                                <tr>
+                                  <td colSpan={12} className="p-4 text-center text-slate-400 italic">
+                                    No packings mapped. Fill row above and click "➕ Add (F9)"
+                                  </td>
+                                </tr>
+                              ) : (
+                                packingsList.map((pack, idx) => (
+                                  <tr key={pack.id} className="hover:bg-slate-50">
+                                    <td className="p-1 border-r border-slate-200 font-bold text-slate-800">{pack.barcode}</td>
+                                    <td className="p-1 border-r border-slate-200 text-center font-bold">{pack.packQty}</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">{pack.price.toFixed(2)}</td>
+                                    <td className="p-1 border-r border-slate-200 text-right font-bold text-emerald-700">{pack.priceInclTax.toFixed(2)}</td>
+                                    <td className="p-1 border-r border-slate-200 font-sans">{pack.unit}</td>
+                                    <td className="p-1 border-r border-slate-200 font-sans">{pack.unit} Pack</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right text-amber-700">0.00</td>
+                                    <td className="p-1 text-right">{pack.cost.toFixed(2)}</td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {activePackingsSubTab === 'Stock link' && (
+                      <div className="space-y-3 pt-1 font-sans text-xs">
+                        {/* Top Link Form Controls Row */}
+                        <div className="bg-slate-100 p-3 rounded border border-slate-300 flex items-start justify-between gap-4">
+                          <div className="space-y-2 flex-1 max-w-lg">
+                            <div className="flex items-center gap-2">
+                              <label className="w-20 font-bold text-slate-700">Code</label>
+                              <input
+                                type="text"
+                                value={stockLinkCode}
+                                onChange={(e) => setStockLinkCode(e.target.value)}
+                                className="w-48 px-2 py-1 border border-slate-400 rounded font-mono bg-white text-xs"
+                              />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <label className="w-20 font-bold text-slate-700">Barcode</label>
+                              <input
+                                type="text"
+                                value={stockLinkBarcode}
+                                onChange={(e) => setStockLinkBarcode(e.target.value)}
+                                className="w-48 px-2 py-1 border border-slate-400 rounded font-mono bg-white text-xs"
+                              />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <label className="w-20 font-bold text-slate-700">Product</label>
+                              <input
+                                type="text"
+                                value={stockLinkProduct}
+                                onChange={(e) => setStockLinkProduct(e.target.value)}
+                                className="flex-1 px-2 py-1 border border-slate-400 rounded bg-white text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="pt-1">
+                            <button
+                              type="button"
+                              onClick={() => alert(`🔗 Product stock linked successfully for ${stockLinkProduct || 'selected item'}!`)}
+                              className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold border border-slate-400 rounded text-xs shadow-2xs transition-all"
+                            >
+                              Link Product Stock
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Stock Links Data Grid Table */}
+                        <div className="overflow-x-auto bg-white rounded border border-slate-300 min-h-[160px]">
+                          <table className="w-full text-left text-xs border-collapse font-mono">
+                            <thead className="bg-slate-100 font-bold uppercase text-slate-700 sticky top-0 border-b border-slate-300">
+                              <tr>
+                                <th className="p-2 border-r border-slate-200">Code</th>
+                                <th className="p-2 border-r border-slate-200">Barcode</th>
+                                <th className="p-2 border-r border-slate-200">Linked Product Name</th>
+                                <th className="p-2 border-r border-slate-200">Branch / Location</th>
+                                <th className="p-2 border-r border-slate-200 text-right">Available Stock</th>
+                                <th className="p-2 text-center">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-slate-400 italic">
+                                  No stock links mapped. Fill Code/Barcode above and click "Link Product Stock".
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        );
+      }
+
+      return (
     <div className="flex flex-col gap-4 font-sans text-xs">
       {/* 1. TOP DART POS SUB-RIBBON ACTION TOOLBAR */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-2 text-white shadow-sm flex items-center justify-between gap-2 overflow-x-auto">
         <div className="flex items-center gap-1 flex-wrap">
-          <button
-            onClick={handleOpenAddModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-xs font-bold text-white shadow"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Product</span>
-          </button>
-
           <button
             onClick={() => setActiveView('StockReport')}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-lg border font-semibold ${
@@ -624,14 +1562,6 @@ export const ProductsPage: React.FC = () => {
             <Percent className="w-3.5 h-3.5 text-rose-400" />
             <span>Price Chng By GP</span>
           </button>
-
-          <button
-            onClick={() => alert('🚚 Primary Supplier & Vendor Directory opened.')}
-            className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 border border-slate-700 font-semibold"
-          >
-            <Truck className="w-3.5 h-3.5 text-blue-400" />
-            <span>Vendors</span>
-          </button>
         </div>
 
         <span className="text-[10px] text-slate-400 font-mono shrink-0">Catalog Items: {products.length}</span>
@@ -692,11 +1622,11 @@ export const ProductsPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => alert('🚚 Vendors directory opened.')}
+            onClick={() => setIsDeptShiftingModalOpen(true)}
             className="flex items-center gap-1 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-lg font-semibold"
           >
-            <Truck className="w-3.5 h-3.5 text-blue-600" />
-            <span>Vendors</span>
+            <Boxes className="w-3.5 h-3.5 text-teal-600" />
+            <span>Department/Brand Shifting</span>
           </button>
 
           <button
@@ -1300,108 +2230,157 @@ export const ProductsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. DART POS MASTER PRODUCTS DATA TABLE (Matching Screenshot 1 Columns) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto max-h-[55vh]">
+      {/* 3. DART POS MASTER PRODUCTS DATA TABLE WITH RIGHT VERTICAL SHORTCUT STRIP (Matching Target Screenshot 100%) */}
+      <div className="bg-slate-200 border border-slate-300 rounded-xl overflow-hidden shadow-sm flex">
+        {/* Left: Master Table Data Container */}
+        <div className="flex-1 overflow-x-auto max-h-[55vh] bg-white">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10">
+            <thead className="bg-slate-100 border-b border-slate-300 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10 shadow-xs">
               <tr>
-                <th className="py-2.5 px-3">Product Code</th>
-                <th className="py-2.5 px-3">Product Description</th>
-                <th className="py-2.5 px-3">Barcode</th>
-                <th className="py-2.5 px-3">Unit Code</th>
-                <th className="py-2.5 px-3">Department</th>
-                <th className="py-2.5 px-3">Sub Department</th>
-                <th className="py-2.5 px-3">Category</th>
-                <th className="py-2.5 px-3">Brand</th>
-                <th className="py-2.5 px-3">Tax Code</th>
-                <th className="py-2.5 px-3 text-right">Cost</th>
-                <th className="py-2.5 px-3 text-right">Cost Incl.Tax</th>
-                <th className="py-2.5 px-3 text-right">Avg Cost</th>
-                <th className="py-2.5 px-3 text-right">Last Sup. Cost</th>
-                <th className="py-2.5 px-3 text-right">Price</th>
-                <th className="py-2.5 px-3 text-right text-emerald-600">Price Incl.Tax</th>
-                <th className="py-2.5 px-3 text-right">Exp Days</th>
-                <th className="py-2.5 px-3 text-right">WS Price</th>
-                <th className="py-2.5 px-3 text-right">WS Price Incl.Tax</th>
-                <th className="py-2.5 px-3">Vendor Name</th>
-                <th className="py-2.5 px-3 text-center">Inactive</th>
-                <th className="py-2.5 px-3 text-right">Markup %</th>
-                <th className="py-2.5 px-3 text-right">Gross Profit %</th>
-                <th className="py-2.5 px-3">Short Description</th>
-                <th className="py-2.5 px-3 text-center sticky right-0 bg-slate-100">Actions</th>
+                <th className="py-2 px-2 border-r border-slate-200">Product Code</th>
+                <th className="py-2 px-2 border-r border-slate-200">Product Description</th>
+                <th className="py-2 px-2 border-r border-slate-200">Barcode</th>
+                <th className="py-2 px-2 border-r border-slate-200">Unit Code</th>
+                <th className="py-2 px-2 border-r border-slate-200">Department</th>
+                <th className="py-2 px-2 border-r border-slate-200">Sub Department</th>
+                <th className="py-2 px-2 border-r border-slate-200">Category</th>
+                <th className="py-2 px-2 border-r border-slate-200">Brand</th>
+                <th className="py-2 px-2 border-r border-slate-200">Tax Code</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Cost</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Cost Incl.Tax</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Avg Cost</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Last Sup. Cost</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Price</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right text-emerald-700">Price Incl.Tax</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Exp Days</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">WS Price</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">WS Price Incl.Tax</th>
+                <th className="py-2 px-2 border-r border-slate-200">Vendor Name</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-center">Inactive</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Markup %</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-right">Gross Profit %</th>
+                <th className="py-2 px-2">Short Description</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-medium">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={24} className="py-8 text-center text-slate-500">
+                  <td colSpan={23} className="py-8 text-center text-slate-500">
                     <Package className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
                     <p className="font-bold text-sm">No Products Found</p>
                     <p className="text-xs text-slate-400">Click "+ Add Product" to create a new master item.</p>
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{p.sku}</td>
-                    <td className="py-2.5 px-3">
-                      <p className="font-bold text-slate-900">{p.name}</p>
-                      {p.nameAr && <p className="text-[10px] text-slate-500 font-arabic">{p.nameAr}</p>}
-                    </td>
-                    <td className="py-2.5 px-3 font-mono text-slate-600">{p.barcode}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-700">{p.unit}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{p.categoryName || 'General'}</td>
-                    <td className="py-2.5 px-3 text-slate-500">{p.subDepartment || 'GSFDGVFF'}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{p.categoryName}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{p.brandName || 'Almarai'}</td>
-                    <td className="py-2.5 px-3 text-slate-600 font-bold">{p.vatRate === 0 ? 'SR (0%)' : 'VAT (15%)'}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-800">{formatQAR(p.costPrice)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-800">{formatQAR(p.costInclTax || p.costPrice)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">{formatQAR(p.avgCost || p.costPrice)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">{formatQAR(p.lastSupplierCost || p.costPrice)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">{formatQAR(p.retailPrice)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-600">{formatQAR(p.priceInclTax || p.retailPrice)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono">{p.expDays || 0}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-700">{formatQAR(p.wsPrice || p.retailPrice * 0.9)}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-700">{formatQAR(p.wsPriceInclTax || p.retailPrice * 0.9)}</td>
-                    <td className="py-2.5 px-3 text-slate-600">{p.defaultVendor || 'General'}</td>
-                    <td className="py-2.5 px-3 text-center">
-                      <input type="checkbox" checked={!p.isActive} readOnly className="rounded text-rose-600" />
-                    </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-emerald-700 font-bold">{p.markupPercent || 30.43}%</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-blue-700 font-bold">{p.grossProfitPercent || 23.33}%</td>
-                    <td className="py-2.5 px-3 text-slate-500 font-mono">{p.shortDescription || p.name.substring(0, 12)}</td>
-                    <td className="py-2.5 px-3 text-center sticky right-0 bg-white shadow-left">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditModal(p)}
-                          className="p-1 hover:bg-slate-100 text-blue-600 rounded"
-                          title="Edit Product"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDuplicateProduct(p)}
-                          className="p-1 hover:bg-slate-100 text-teal-600 rounded"
-                          title="Duplicate Product"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(p.id)}
-                          className="p-1 hover:bg-rose-50 text-rose-600 rounded"
-                          title="Delete Product"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                filteredProducts.map((p) => {
+                  const isSelected = selectedProduct?.id === p.id;
+                  return (
+                    <tr
+                      key={p.id}
+                      onClick={() => setSelectedProduct(p)}
+                      onDoubleClick={() => handleOpenEditModal(p)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? 'bg-navy-900 bg-blue-900 text-white font-bold' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono font-bold">{p.sku}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-bold">{p.name}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono">{p.barcode}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono">{p.unit}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{p.categoryName || 'General'}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-slate-500">{p.subDepartment || 'GSFDGVFF'}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{p.categoryName}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{p.brandName || 'Mango'}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-bold">{p.vatRate === 0 ? 'SR' : 'VAT'}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{formatQAR(p.costPrice)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{formatQAR(p.costInclTax || p.costPrice)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{formatQAR(p.avgCost || p.costPrice)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{formatQAR(p.lastSupplierCost || p.costPrice)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono font-bold">{formatQAR(p.retailPrice)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono font-bold text-emerald-600">{formatQAR(p.priceInclTax || p.retailPrice)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{p.expDays || 0}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{formatQAR(p.wsPrice || p.retailPrice * 0.9)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono">{formatQAR(p.wsPriceInclTax || p.retailPrice * 0.9)}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{p.defaultVendor || 'General'}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-center">
+                        <input type="checkbox" checked={!p.isActive} readOnly className="rounded text-rose-600" />
+                      </td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono font-bold">{p.markupPercent || 30.43}%</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-right font-mono font-bold">{p.grossProfitPercent || 23.08}%</td>
+                      <td className="py-2 px-2 font-mono font-bold">{p.shortDescription || 'xcvb'}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Right Vertical Action Shortcut Strip (Matching Target DART POS Screenshot 100%) */}
+        <div className="w-11 bg-slate-300 border-l border-slate-400 p-1 flex flex-col items-center gap-2 shrink-0 select-none shadow-inner justify-start pt-2">
+          {/* Button 1: Add Product (Green Plus Circle - Ctrl+A) */}
+          <button
+            onClick={handleOpenAddModal}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs group transition-all"
+            title="Add Product (Ctrl + A)"
+          >
+            <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-xs leading-none shadow-2xs">
+              +
+            </div>
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+A</span>
+          </button>
+
+          {/* Button 2: Edit Product (Pencil Icon - Ctrl+E) */}
+          <button
+            onClick={() => {
+              if (!selectedProduct) {
+                alert('Please select a product first to edit.');
+                return;
+              }
+              handleOpenEditModal(selectedProduct);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Edit Selected Product (Ctrl + E)"
+          >
+            <Edit className="w-3.5 h-3.5 text-amber-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+E</span>
+          </button>
+
+          {/* Button 3: Delete Product (Red Cross Icon - Ctrl+D) */}
+          <button
+            onClick={() => {
+              if (!selectedProduct) {
+                alert('Please select a product first to delete.');
+                return;
+              }
+              handleDeleteProduct(selectedProduct.id);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Delete Selected Product (Ctrl + D)"
+          >
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+D</span>
+          </button>
+
+          {/* Button 4: Refresh List (Blue Circular Arrow Icon - Ctrl+R) */}
+          <button
+            onClick={loadProducts}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Refresh List (Ctrl + R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+R</span>
+          </button>
+
+          {/* Button 5: Search / Print (Magnifying Glass Icon - Ctrl+P) */}
+          <button
+            onClick={() => setIsQuickPrintModalOpen(true)}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Search / Print Product (Ctrl + P)"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+P</span>
+          </button>
         </div>
       </div>
 
@@ -1510,79 +2489,123 @@ export const ProductsPage: React.FC = () => {
     </>
   )}
 
-      {/* 5. DART POS COMPREHENSIVE NEW/EDIT PRODUCT MODAL (Matching Screenshots 2 & 3 Layout) */}
+      {/* 5. DART POS COMPREHENSIVE NEW/EDIT PRODUCT MODAL (Matching Screenshot media_1787034154403.png 100%) */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-5xl overflow-hidden my-6">
-            {/* MODAL HEADER BAR */}
-            <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 overflow-y-auto">
+          <div className="bg-slate-100 rounded-xl shadow-2xl border border-slate-300 w-full max-w-7xl overflow-hidden my-4 text-xs font-sans select-none">
+            {/* WINDOW TITLE BAR */}
+            <div className="bg-slate-200 border-b border-slate-300 px-4 py-2 flex items-center justify-between text-slate-800 font-bold shadow-xs">
               <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-emerald-400" />
-                <h2 className="text-sm font-bold">
-                  {editingProduct ? `Edit Master Product: ${editingProduct.sku}` : 'New Product - DART POS'}
-                </h2>
+                <Package className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-bold">
+                  {editingProduct ? `Edit Product: ${formData.name || editingProduct.sku}` : 'New Product'} - DART POS
+                </span>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="text-slate-500 hover:text-slate-900 font-bold px-2 py-0.5 rounded"
+              >
+                ✕
+              </button>
+            </div>
 
-              <div className="flex items-center gap-2">
+            {/* TOP SUB-RIBBON ACTION TOOLBAR */}
+            <div className="bg-slate-200 border-b border-slate-300 px-3 py-1.5 flex items-center justify-between shadow-inner">
+              {/* Left Action Buttons */}
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handleSaveProduct}
-                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded"
+                  className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
                 >
-                  Save (Ctrl+S)
+                  <Save className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Save (Ctrl+S)</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="text-slate-400 hover:text-white font-bold text-sm"
+                  onClick={(e) => {
+                    handleSaveProduct(e);
+                    handleOpenAddModal();
+                  }}
+                  className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
                 >
-                  ✕
+                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Save & New (Ctrl+N)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    handleSaveProduct(e);
+                    setIsAddModalOpen(false);
+                  }}
+                  className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+                >
+                  <X className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Save & Close (Ctrl+L)</span>
+                </button>
+              </div>
+
+              {/* Right Action Tools */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => alert('📊 Stock Movement history opened.')}
+                  className="flex items-center gap-1 px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-xs shadow-2xs"
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Stock Movement</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => alert('🛒 Purchase History opened (F11)')}
+                  className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+                >
+                  <ShoppingCart className="w-3.5 h-3.5 text-sky-600" />
+                  <span>Purchase History-F11</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenAddModal()}
+                  className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Reset Fields-F5</span>
                 </button>
               </div>
             </div>
 
-            {/* MODAL MAIN CONTENT GRID */}
-            <form onSubmit={handleSaveProduct} className="p-4 space-y-4 max-h-[82vh] overflow-y-auto text-xs">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                {/* LEFT COLUMN: GENERAL IDENTIFICATION & CLASSIFICATIONS (5 COLS) */}
-                <div className="lg:col-span-5 space-y-4">
-                  {/* GENERAL CARD */}
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2.5">
-                    <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider border-b border-slate-200 pb-1">
-                      General Identification
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Code / SKU *</label>
-                        <input
-                          type="text"
-                          value={formData.sku || ''}
-                          onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono font-bold text-slate-900"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Barcode *</label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            value={formData.barcode || ''}
-                            onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                            className="w-full pl-2.5 pr-6 py-1.5 border border-slate-300 rounded font-mono text-slate-900"
-                            required
-                          />
-                          <Barcode className="w-3.5 h-3.5 absolute right-2 top-2 text-slate-400" />
-                        </div>
-                      </div>
+            {/* FORM BODY GRID (2 Main Columns: Left 5 Cols, Right 7 Cols) */}
+            <form onSubmit={handleSaveProduct} className="p-3 space-y-3 max-h-[82vh] overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+                
+                {/* ================= LEFT COLUMN ================= */}
+                <div className="lg:col-span-5 space-y-3">
+                  
+                  {/* 1. GENERAL PANEL */}
+                  <div className="bg-slate-200 border border-slate-300 rounded-lg p-2.5 space-y-2 shadow-xs">
+                    <div className="bg-slate-300 px-2 py-0.5 font-bold text-slate-800 text-[11px] border-b border-slate-400 -mx-2.5 -mt-2.5 mb-2 rounded-t-lg">
+                      General
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Product Name (English) *</label>
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Code</label>
                       <input
                         type="text"
-                        placeholder="e.g. Almarai Fresh Milk Full Cream 1L"
+                        value={formData.sku || ''}
+                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                        className="w-28 px-2 py-1 border border-slate-400 rounded font-mono font-bold bg-white"
+                        required
+                      />
+                      <button type="button" className="px-2 py-1 bg-slate-300 hover:bg-slate-400 border border-slate-400 rounded font-bold text-[10px] text-blue-800">
+                        F4 Refno
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Product Name</label>
+                      <input
+                        type="text"
                         value={formData.name || ''}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -1593,435 +2616,729 @@ export const ProductsPage: React.FC = () => {
                             localDescription: autoTranslateToArabic(val),
                           });
                         }}
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold text-slate-900"
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-bold bg-white"
                         required
                       />
+                      <span className="text-slate-500 cursor-pointer">📁</span>
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Local / Arabic Description</label>
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Local Description</label>
                       <input
                         type="text"
-                        placeholder="مثال: حليب المراعي طازج"
                         value={formData.nameAr || formData.localDescription || ''}
                         onChange={(e) => setFormData({ ...formData, nameAr: e.target.value, localDescription: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-arabic text-slate-900"
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-arabic bg-white"
+                        dir="rtl"
+                      />
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px]">F4</button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Short Description</label>
+                      <input
+                        type="text"
+                        value={formData.shortDescription || ''}
+                        onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-mono bg-white"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Short Description</label>
-                        <input
-                          type="text"
-                          placeholder="Receipt Title"
-                          value={formData.shortDescription || ''}
-                          onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Units</label>
-                        <select
-                          value={formData.unit || 'Pcs'}
-                          onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold"
-                        >
-                          <option value="Pcs">Pcs</option>
-                          <option value="Box">Box</option>
-                          <option value="Kg">Kg</option>
-                          <option value="Pack">Pack</option>
-                        </select>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Barcode</label>
+                      <input
+                        type="text"
+                        value={formData.barcode || ''}
+                        onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-mono bg-white"
+                        required
+                      />
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px]">F4</button>
+                      <Barcode className="w-4 h-4 text-slate-600" />
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Default Vendor</label>
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Units</label>
+                      <select
+                        value={formData.unit || 'Pcs'}
+                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                      >
+                        <option value="Pcs">Pcs</option>
+                        <option value="Box">Box</option>
+                        <option value="Kg">Kg</option>
+                        <option value="Pack">Pack</option>
+                        <option value="apple">apple</option>
+                      </select>
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Default Vendor</label>
                       <select
                         value={formData.defaultVendor || 'Almarai Food Qatar W.L.L'}
                         onChange={(e) => setFormData({ ...formData, defaultVendor: e.target.value })}
-                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded font-semibold bg-white"
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
                       >
                         <option value="Almarai Food Qatar W.L.L">Almarai Food Qatar W.L.L</option>
                         <option value="Doha Wholesale Trading W.L.L">Doha Wholesale Trading W.L.L</option>
                         <option value="Rayyan Water Company W.L.L">Rayyan Water Company W.L.L</option>
+                        <option value="aaa">aaa</option>
                       </select>
+                      <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <label className="w-32 font-bold text-slate-700 pt-1">Description</label>
+                      <textarea
+                        rows={2}
+                        value={formData.description || ''}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded bg-white text-xs"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="w-32 font-bold text-slate-700">Additional Description</label>
+                      <input
+                        type="text"
+                        value={formData.additionalDescription || ''}
+                        onChange={(e) => setFormData({ ...formData, additionalDescription: e.target.value })}
+                        className="flex-1 px-2 py-1 border border-slate-400 rounded bg-white"
+                      />
                     </div>
                   </div>
 
-                  {/* CLASSIFICATIONS CARD */}
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
-                    <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider border-b border-slate-200 pb-1">
-                      Classifications & Grouping
-                    </h3>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Brand</label>
-                        <select
-                          value={formData.brandName || 'Almarai'}
-                          onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-semibold bg-white"
-                        >
-                          <option value="Almarai">Almarai</option>
-                          <option value="Khabari">Khabari</option>
-                          <option value="Rayyan">Rayyan</option>
-                          <option value="APPLE">APPLE</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Department</label>
-                        <select
-                          value={formData.categoryName || 'Dairy & Eggs'}
-                          onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-semibold bg-white"
-                        >
-                          {categoriesList.map((c) => (
-                            <option key={c.name} value={c.name}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-600 mb-0.5">Sub Department</label>
-                        <input
-                          type="text"
-                          value={formData.subDepartment || 'GSDUYGYG'}
-                          onChange={(e) => setFormData({ ...formData, subDepartment: e.target.value })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* OPTIONS & OPERATIONAL FLAGS BOX (Matching Screenshot 2 Bottom Left) */}
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2 text-[11px]">
-                    <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider border-b border-slate-200 pb-1">
-                      Options & Flags
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Weighing Product</label>
-                        <select
-                          value={formData.weighingProductType || 'None'}
-                          onChange={(e) => setFormData({ ...formData, weighingProductType: e.target.value as any })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded bg-white"
-                        >
-                          <option value="None">None (Standard SKU)</option>
-                          <option value="Amount In Barcode">Amount In Barcode</option>
-                          <option value="Weight In Barcode">Weight In Barcode</option>
-                          <option value="Quantity In Barcode">Quantity In Barcode</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Procurement Type</label>
-                        <select
-                          value={formData.procurementType || 'Normal Purchase'}
-                          onChange={(e) => setFormData({ ...formData, procurementType: e.target.value as any })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded bg-white"
-                        >
-                          <option value="Normal Purchase">Normal Purchase</option>
-                          <option value="Consignment">Consignment</option>
-                          <option value="Internal Production">Internal Production</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={formData.isActive === false}
-                          onChange={(e) => setFormData({ ...formData, isActive: !e.target.checked })}
-                          className="rounded text-rose-600"
-                        />
-                        <span>Inactive (For Sale)</span>
-                      </label>
-
-                      <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={formData.nonInventory || false}
-                          onChange={(e) => setFormData({ ...formData, nonInventory: e.target.checked })}
-                          className="rounded text-emerald-600"
-                        />
-                        <span>Non Inventory Product</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGHT COLUMN: COSTING, TAXES, PRICING & PACKINGS (7 COLS) */}
-                <div className="lg:col-span-7 space-y-4">
-                  {/* COST, TAX AND PRICING PANEL (Matching Screenshot 2 Top Right) */}
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-1">
-                      <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">
-                        Cost, Tax and Pricing Grid
-                      </h3>
-                      <span className="text-[10px] text-emerald-600 font-bold font-mono">QAR Currency</span>
-                    </div>
-
-                    {/* COSTING & TAXES */}
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Cost Price *</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.costPrice ?? 10.00}
-                          onChange={(e) => updatePricingCalculations('costPrice', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-mono font-bold text-slate-900 bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Cost Incl. Tax</label>
-                        <input
-                          type="number"
-                          readOnly
-                          value={formData.costInclTax ?? formData.costPrice ?? 10.00}
-                          className="w-full px-2 py-1 border border-slate-200 rounded font-mono font-bold text-slate-600 bg-slate-100 cursor-not-allowed"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Landed Cost</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.landedCost ?? 10.50}
-                          onChange={(e) => setFormData({ ...formData, landedCost: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-mono bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Costing Method</label>
-                        <select
-                          value={formData.costingMethod || 'Weighted Average'}
-                          onChange={(e) => setFormData({ ...formData, costingMethod: e.target.value as any })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded bg-white font-semibold text-[11px]"
-                        >
-                          <option value="Weighted Average">Weighted Average</option>
-                          <option value="Purchase Cost">Purchase Cost</option>
-                          <option value="FIFO">FIFO</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* TAXES SELECTION */}
-                    <div className="grid grid-cols-2 gap-2 bg-white p-2 rounded border border-slate-200">
-                      <div>
-                        <span className="block font-bold text-slate-700 text-[10px]">Sale Tax Rate (Qatar VAT)</span>
-                        <select
-                          value={formData.vatRate || 0}
-                          onChange={(e) => setFormData({ ...formData, vatRate: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-semibold text-xs"
-                        >
-                          <option value={0}>STANDARD RATE 0% (Zero VAT)</option>
-                          <option value={0.15}>STANDARD RATE 15% VAT</option>
-                        </select>
-                      </div>
-                      <div>
-                        <span className="block font-bold text-slate-700 text-[10px]">Purchase Tax Rate</span>
-                        <select
-                          value={formData.purchaseTaxRate || 0}
-                          onChange={(e) => setFormData({ ...formData, purchaseTaxRate: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-semibold text-xs"
-                        >
-                          <option value={0}>STANDARD RATE 0% (Zero VAT)</option>
-                          <option value={0.15}>STANDARD RATE 15% VAT</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* RETAIL PRICING MARGIN GRID */}
-                    <div className="grid grid-cols-6 gap-2 text-xs pt-1">
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Retail Price *</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.retailPrice ?? 13.04}
-                          onChange={(e) => updatePricingCalculations('retailPrice', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-mono font-bold text-slate-900 bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-emerald-700 mb-0.5">Markup %</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={formData.markupPercent ?? 30.43}
-                          onChange={(e) => updatePricingCalculations('markupPercent', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1 border border-emerald-300 rounded font-mono font-bold text-emerald-700 bg-emerald-50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-blue-700 mb-0.5">GP %</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={formData.grossProfitPercent ?? 23.33}
-                          onChange={(e) => updatePricingCalculations('grossProfitPercent', parseFloat(e.target.value) || 0)}
-                          className="w-full px-2 py-1 border border-blue-300 rounded font-mono font-bold text-blue-700 bg-blue-50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">Price Incl Tax</label>
-                        <input
-                          type="number"
-                          readOnly
-                          value={formData.priceInclTax ?? 15.00}
-                          className="w-full px-2 py-1 border border-slate-200 rounded font-mono font-bold text-slate-800 bg-slate-100 cursor-not-allowed"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-0.5">MSP (Floor)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.msp ?? 12.00}
-                          onChange={(e) => setFormData({ ...formData, msp: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-2 py-1 border border-slate-300 rounded font-mono bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold text-amber-700 mb-0.5">Was Price</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.wasPrice ?? 18.00}
-                          onChange={(e) => setFormData({ ...formData, wasPrice: parseFloat(e.target.value) || 0 })}
-                          className="w-full px-2 py-1 border border-amber-300 rounded font-mono font-bold text-amber-700 bg-amber-50"
-                        />
-                      </div>
-                    </div>
-
-                    {/* WHOLESALE PRICING GRID */}
-                    <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
-                      <span className="block font-bold text-slate-700 text-[10px] uppercase">Wholesale Price Tier</span>
-                      <div className="grid grid-cols-4 gap-2 text-xs">
-                        <div>
-                          <span className="block text-[10px] text-slate-500">WS Price</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={formData.wsPrice ?? 13.04}
-                            onChange={(e) => setFormData({ ...formData, wsPrice: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-2 py-1 border border-slate-300 rounded font-mono font-bold"
-                          />
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-slate-500">WS Markup %</span>
-                          <input
-                            type="number"
-                            value={formData.wsMarkupPercent ?? 30.43}
-                            onChange={(e) => setFormData({ ...formData, wsMarkupPercent: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-2 py-1 border border-slate-300 rounded font-mono"
-                          />
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-slate-500">WS GP %</span>
-                          <input
-                            type="number"
-                            value={formData.wsGrossProfitPercent ?? 23.33}
-                            onChange={(e) => setFormData({ ...formData, wsGrossProfitPercent: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-2 py-1 border border-slate-300 rounded font-mono"
-                          />
-                        </div>
-                        <div>
-                          <span className="block text-[10px] text-slate-500">WS Price Incl Tax</span>
-                          <input
-                            type="number"
-                            value={formData.wsPriceInclTax ?? 15.00}
-                            onChange={(e) => setFormData({ ...formData, wsPriceInclTax: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-2 py-1 border border-slate-300 rounded font-mono font-bold text-emerald-600"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* PACKINGS & MULTI-UNIT BARCODES GRID (Matching Screenshot 2 Bottom Right) */}
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-1">
-                      <h3 className="font-bold text-slate-800 uppercase text-[10px] tracking-wider">
-                        Packings & Multi-Unit Barcodes (Carton / Box Multipliers)
-                      </h3>
+                  {/* 2. CLASSIFICATIONS & PROPERTIES TABS */}
+                  <div className="bg-slate-200 border border-slate-300 rounded-lg p-2 space-y-2 shadow-xs">
+                    <div className="flex items-center gap-1 border-b border-slate-300 pb-1">
                       <button
                         type="button"
-                        onClick={handleAddPackingRow}
-                        className="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] rounded"
+                        onClick={() => setActiveClassTab('Classifications')}
+                        className={`px-3 py-1 rounded-t font-bold text-xs ${
+                          activeClassTab === 'Classifications'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
                       >
-                        + Add Pack Unit
+                        Classifications
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveClassTab('Properties')}
+                        className={`px-3 py-1 rounded-t font-bold text-xs ${
+                          activeClassTab === 'Properties'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        Properties
                       </button>
                     </div>
 
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-[11px] border-collapse bg-white rounded border border-slate-200">
-                        <thead className="bg-slate-100 font-bold uppercase text-[9px] text-slate-600">
-                          <tr>
-                            <th className="p-1.5">Barcode</th>
-                            <th className="p-1.5">Unit</th>
-                            <th className="p-1.5 text-center">Pack Qty</th>
-                            <th className="p-1.5 text-right">Cost</th>
-                            <th className="p-1.5 text-right">Retail Price</th>
-                            <th className="p-1.5 text-right">Price Incl Tax</th>
-                            <th className="p-1.5 text-center">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {packingsList.length === 0 ? (
-                            <tr>
-                              <td colSpan={7} className="p-3 text-center text-slate-400 text-[10px]">
-                                No multi-unit carton packings defined. Click "+ Add Pack Unit" to map bulk boxes.
-                              </td>
-                            </tr>
-                          ) : (
-                            packingsList.map((pack, idx) => (
-                              <tr key={pack.id}>
-                                <td className="p-1.5 font-mono text-slate-800">{pack.barcode}</td>
-                                <td className="p-1.5 font-semibold text-slate-800">{pack.unit}</td>
-                                <td className="p-1.5 text-center font-mono font-bold">{pack.packQty}</td>
-                                <td className="p-1.5 text-right font-mono">{formatQAR(pack.cost)}</td>
-                                <td className="p-1.5 text-right font-mono font-bold text-slate-900">{formatQAR(pack.price)}</td>
-                                <td className="p-1.5 text-right font-mono font-bold text-emerald-600">{formatQAR(pack.priceInclTax)}</td>
-                                <td className="p-1.5 text-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => setPackingsList((prev) => prev.filter((_, i) => i !== idx))}
-                                    className="text-rose-600 hover:text-rose-800 font-bold text-[10px]"
-                                  >
-                                    Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
+                    {activeClassTab === 'Classifications' && (
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-center gap-2">
+                          <label className="w-28 font-bold text-slate-700">Brand</label>
+                          <select
+                            value={formData.brandName || 'Almarai'}
+                            onChange={(e) => setFormData({ ...formData, brandName: e.target.value })}
+                            className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                          >
+                            <option value="Almarai">Almarai</option>
+                            <option value="Khabari">Khabari</option>
+                            <option value="Rayyan">Rayyan</option>
+                            <option value="APPLE">APPLE</option>
+                          </select>
+                          <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label className="w-28 font-bold text-slate-700">Department</label>
+                          <select
+                            value={formData.categoryName || 'Dairy & Eggs'}
+                            onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
+                            className="flex-1 px-2 py-1 border border-slate-400 rounded font-semibold bg-white"
+                          >
+                            {categoriesList.map((c) => (
+                              <option key={c.name} value={c.name}>{c.name}</option>
+                            ))}
+                            <option value="GSDUYGYG">GSDUYGYG</option>
+                          </select>
+                          <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label className="w-28 font-bold text-slate-700">Sub Department</label>
+                          <input
+                            type="text"
+                            value={formData.subDepartment || 'GSFDGVFF'}
+                            onChange={(e) => setFormData({ ...formData, subDepartment: e.target.value })}
+                            className="flex-1 px-2 py-1 border border-slate-400 rounded font-mono bg-white"
+                          />
+                          <button type="button" className="px-1.5 py-0.5 bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">⊕ F4</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeClassTab === 'Properties' && (
+                      <div className="p-2 bg-white border border-slate-300 rounded text-slate-600 text-xs">
+                        Product Custom Master Attributes & ERP Field Properties
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 3. OPTIONS / ADD. FEATURES / RE ORDER / ACCOUNTS TABS */}
+                  <div className="bg-slate-200 border border-slate-300 rounded-lg p-2 space-y-2 shadow-xs">
+                    <div className="flex items-center gap-1 border-b border-slate-300 pb-1 overflow-x-auto">
+                      {(['Options', 'Add. Features', 'Re Order', 'Accounts'] as const).map((tab) => (
+                        <button
+                          key={tab}
+                          type="button"
+                          onClick={() => setActiveOptionsTab(tab)}
+                          className={`px-2.5 py-0.5 rounded-t font-bold text-[11px] whitespace-nowrap ${
+                            activeOptionsTab === tab
+                              ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                              : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                          }`}
+                        >
+                          {tab}
+                        </button>
+                      ))}
                     </div>
+
+                    {activeOptionsTab === 'Options' && (
+                      <div className="space-y-2 pt-1">
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                            <input
+                              type="checkbox"
+                              checked={formData.weighingProductType !== 'None'}
+                              onChange={(e) => setFormData({ ...formData, weighingProductType: e.target.checked ? 'Amount In Barcode' : 'None' })}
+                            />
+                            <span>Weighing Product</span>
+                          </label>
+                          <select
+                            value={formData.weighingProductType || 'Amount In Barcode'}
+                            onChange={(e) => setFormData({ ...formData, weighingProductType: e.target.value as any })}
+                            className="px-2 py-0.5 border border-slate-400 rounded bg-white text-xs"
+                          >
+                            <option value="Amount In Barcode">Amount In Barcode</option>
+                            <option value="Weight In Barcode">Weight In Barcode</option>
+                            <option value="Quantity In Barcode">Quantity In Barcode</option>
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                            <input
+                              type="checkbox"
+                              checked={formData.isActive === false}
+                              onChange={(e) => setFormData({ ...formData, isActive: !e.target.checked })}
+                              className="rounded text-rose-600"
+                            />
+                            <span>Inactive (For Sale)</span>
+                          </label>
+
+                          <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                            <input
+                              type="checkbox"
+                              checked={formData.nonInventory || false}
+                              onChange={(e) => setFormData({ ...formData, nonInventory: e.target.checked })}
+                              className="rounded text-emerald-600"
+                            />
+                            <span>Non Inventory Product</span>
+                          </label>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div></div>
+                          <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-800">
+                            <input
+                              type="checkbox"
+                              checked={formData.autoProductionWhileSale || false}
+                              onChange={(e) => setFormData({ ...formData, autoProductionWhileSale: e.target.checked })}
+                            />
+                            <span>Auto Production While Sale</span>
+                          </label>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-300">
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Procurement Type</span>
+                            <select
+                              value={formData.procurementType || 'Normal Purchase'}
+                              onChange={(e) => setFormData({ ...formData, procurementType: e.target.value as any })}
+                              className="w-full px-2 py-0.5 border border-slate-400 rounded bg-white"
+                            >
+                              <option value="Normal Purchase">Normal Purchase</option>
+                              <option value="Consignment">Consignment</option>
+                              <option value="Internal Production">Internal Production</option>
+                            </select>
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Division Factor</span>
+                            <input
+                              type="number"
+                              step="0.001"
+                              value={formData.divisionFactor ?? 1.000}
+                              onChange={(e) => setFormData({ ...formData, divisionFactor: parseFloat(e.target.value) || 1.0 })}
+                              className="w-full px-2 py-0.5 border border-slate-400 rounded bg-white font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeOptionsTab !== 'Options' && (
+                      <div className="p-2 bg-white border border-slate-300 rounded text-slate-600 text-xs">
+                        Advanced ERP Settings: {activeOptionsTab} configuration matrix
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* MODAL FOOTER */}
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm"
-                >
-                  {editingProduct ? 'Update Product Master' : 'Save Product Master'}
-                </button>
+                {/* ================= RIGHT COLUMN ================= */}
+                <div className="lg:col-span-7 space-y-3">
+                  
+                  {/* 1. COST, TAX AND PRICING CARD */}
+                  <div className="bg-slate-200 border border-slate-300 rounded-lg p-2.5 space-y-2 shadow-xs">
+                    <div className="bg-slate-300 px-2 py-0.5 font-bold text-slate-800 text-[11px] border-b border-slate-400 -mx-2.5 -mt-2.5 mb-2 rounded-t-lg flex items-center justify-between">
+                      <span>Cost, Tax and Pricing</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 border-b border-slate-300 pb-1">
+                      <button
+                        type="button"
+                        onClick={() => setActiveCostingSubTab('Costing & Pricing')}
+                        className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                          activeCostingSubTab === 'Costing & Pricing'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        💲 Costing & Pricing
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveCostingSubTab('Barcode Printing')}
+                        className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                          activeCostingSubTab === 'Barcode Printing'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        📊 Barcode Printing
+                      </button>
+                    </div>
+
+                    {activeCostingSubTab === 'Costing & Pricing' && (
+                      <div className="space-y-3 pt-1">
+                        {/* COSTING ROW */}
+                        <div className="grid grid-cols-7 gap-1.5 text-xs bg-white p-2 rounded border border-slate-300">
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Cost <span className="text-emerald-700 font-mono">F10</span></span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={formData.costPrice ?? 0.00}
+                              onChange={(e) => updatePricingCalculations('costPrice', parseFloat(e.target.value) || 0)}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold"
+                            />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Cost Incl.</span>
+                            <input
+                              type="number"
+                              readOnly
+                              value={formData.costInclTax ?? formData.costPrice ?? 0.00}
+                              className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono bg-slate-100 cursor-not-allowed"
+                            />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Lnd. Cost</span>
+                            <input
+                              type="text"
+                              value={`${(formData.landedCost ?? 0.00).toFixed(6)}X`}
+                              onChange={(e) => setFormData({ ...formData, landedCost: parseFloat(e.target.value) || 0 })}
+                              className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono text-[10px]"
+                            />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Costing Method ℹ️</span>
+                            <select
+                              value={formData.costingMethod || 'Purchase Cost'}
+                              onChange={(e) => setFormData({ ...formData, costingMethod: e.target.value as any })}
+                              className="w-full px-1 py-0.5 border border-slate-300 rounded text-[10px] font-semibold"
+                            >
+                              <option value="Purchase Cost">Purchase Cost</option>
+                              <option value="Weighted Average">Weighted Average</option>
+                              <option value="FIFO">FIFO</option>
+                            </select>
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Gross</span>
+                            <input type="number" readOnly value="0.00" className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono bg-slate-100" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Avg</span>
+                            <input type="text" readOnly value="0.000000..." className="w-full px-1 py-0.5 border border-slate-200 rounded font-mono text-[9px] bg-slate-100" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">First Cost <span className="text-slate-500 font-mono">F8</span></span>
+                            <input type="number" readOnly value="0.00" className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono bg-slate-100" />
+                          </div>
+                        </div>
+
+                        {/* TAXES ROW */}
+                        <div className="bg-white p-2 rounded border border-slate-300 space-y-1">
+                          <span className="block font-bold text-emerald-800 text-[10px]">💲 Taxes</span>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="w-20 font-bold text-slate-700">Sale Tax 1</span>
+                              <select
+                                value={formData.vatRate || 0.15}
+                                onChange={(e) => setFormData({ ...formData, vatRate: parseFloat(e.target.value) || 0 })}
+                                className="flex-1 px-2 py-0.5 border border-slate-300 rounded font-semibold text-xs"
+                              >
+                                <option value={0.15}>STANDARD RATE 15% VAT</option>
+                                <option value={0.00}>STANDARD RATE 0% (Zero VAT)</option>
+                              </select>
+                              <span className="font-mono text-slate-600 font-bold">Tax 1 %</span>
+                              <input type="text" readOnly value="15.00%" className="w-16 px-1.5 py-0.5 border border-slate-200 rounded font-mono text-center bg-slate-100 font-bold text-emerald-700" />
+                              <button type="button" className="px-1 py-0.5 bg-slate-200 border border-slate-300 rounded font-bold text-[10px]">⊕ F4</button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="w-24 font-bold text-slate-700">Purchase Tax</span>
+                              <select
+                                value={formData.purchaseTaxRate || 0.15}
+                                onChange={(e) => setFormData({ ...formData, purchaseTaxRate: parseFloat(e.target.value) || 0 })}
+                                className="flex-1 px-2 py-0.5 border border-slate-300 rounded font-semibold text-xs"
+                              >
+                                <option value={0.15}>STANDARD RATE 15% VAT</option>
+                                <option value={0.00}>STANDARD RATE 0% (Zero VAT)</option>
+                              </select>
+                              <span className="font-mono text-slate-600 font-bold">Tax %</span>
+                              <input type="text" readOnly value="15.00%" className="w-16 px-1.5 py-0.5 border border-slate-200 rounded font-mono text-center bg-slate-100 font-bold text-emerald-700" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* RETAIL & WHOLESALE PRICING MATRIX */}
+                        <div className="bg-white p-2 rounded border border-slate-300 space-y-2">
+                          {/* Retail Row */}
+                          <div className="grid grid-cols-7 gap-1.5 text-xs">
+                            <div>
+                              <span className="block font-bold text-slate-700 text-[10px]">Price</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={formData.retailPrice ?? 0.00}
+                                onChange={(e) => updatePricingCalculations('retailPrice', parseFloat(e.target.value) || 0)}
+                                className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold"
+                              />
+                            </div>
+                            <div>
+                              <span className="block font-bold text-slate-700 text-[10px]">Markup</span>
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={formData.markupPercent ?? 0.00}
+                                onChange={(e) => updatePricingCalculations('markupPercent', parseFloat(e.target.value) || 0)}
+                                className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                              />
+                            </div>
+                            <div>
+                              <span className="block font-bold text-slate-700 text-[10px]">GP %</span>
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={formData.grossProfitPercent ?? 0.00}
+                                onChange={(e) => updatePricingCalculations('grossProfitPercent', parseFloat(e.target.value) || 0)}
+                                className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                              />
+                            </div>
+                            <div>
+                              <span className="block font-bold text-slate-700 text-[10px]">Price Incl Tax</span>
+                              <input
+                                type="number"
+                                readOnly
+                                value={formData.priceInclTax ?? 0.00}
+                                className="w-full px-1.5 py-0.5 border border-slate-200 rounded font-mono font-bold text-emerald-700 bg-slate-100"
+                              />
+                            </div>
+                            <div>
+                              <span className="block font-bold text-slate-700 text-[10px]">MSP</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={formData.msp ?? 0.00}
+                                onChange={(e) => setFormData({ ...formData, msp: parseFloat(e.target.value) || 0 })}
+                                className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                              />
+                            </div>
+                            <div>
+                              <span className="block font-bold text-slate-700 text-[10px]">Was Price</span>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={formData.wasPrice ?? 0.00}
+                                onChange={(e) => setFormData({ ...formData, wasPrice: parseFloat(e.target.value) || 0 })}
+                                className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono text-amber-700 font-bold"
+                              />
+                            </div>
+                            <div className="flex items-center pt-3">
+                              <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-[10px]">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.openPrice || false}
+                                  onChange={(e) => setFormData({ ...formData, openPrice: e.target.checked })}
+                                />
+                                <span>Open Price</span>
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* Wholesale Row */}
+                          <div className="pt-2 border-t border-slate-200">
+                            <span className="block font-bold text-slate-700 text-[10px] mb-1">Wholesale Pricing</span>
+                            <div className="grid grid-cols-5 gap-2 text-xs">
+                              <div>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={formData.wsPrice ?? 0.00}
+                                  onChange={(e) => setFormData({ ...formData, wsPrice: parseFloat(e.target.value) || 0 })}
+                                  className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold"
+                                />
+                              </div>
+                              <div>
+                                <input
+                                  type="number"
+                                  value={formData.wsMarkupPercent ?? 0.00}
+                                  onChange={(e) => setFormData({ ...formData, wsMarkupPercent: parseFloat(e.target.value) || 0 })}
+                                  className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                                />
+                              </div>
+                              <div>
+                                <input
+                                  type="number"
+                                  value={formData.wsGrossProfitPercent ?? 0.00}
+                                  onChange={(e) => setFormData({ ...formData, wsGrossProfitPercent: parseFloat(e.target.value) || 0 })}
+                                  className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                                />
+                              </div>
+                              <div>
+                                <input
+                                  type="number"
+                                  value={formData.wsPriceInclTax ?? 0.00}
+                                  onChange={(e) => setFormData({ ...formData, wsPriceInclTax: parseFloat(e.target.value) || 0 })}
+                                  className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold text-emerald-600"
+                                />
+                              </div>
+                              <div>
+                                <input
+                                  type="number"
+                                  value={formData.wsMsp ?? 0.00}
+                                  onChange={(e) => setFormData({ ...formData, wsMsp: parseFloat(e.target.value) || 0 })}
+                                  className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeCostingSubTab === 'Barcode Printing' && (
+                      <div className="p-3 bg-white border border-slate-300 rounded text-slate-600 text-xs">
+                        Barcode label printing template settings & barcode scale parameters.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2. PACKINGS & STOCK LINK CARD */}
+                  <div className="bg-slate-200 border border-slate-300 rounded-lg p-2.5 space-y-2 shadow-xs">
+                    <div className="flex items-center gap-1 border-b border-slate-300 pb-1">
+                      <button
+                        type="button"
+                        onClick={() => setActivePackingsSubTab('Packings')}
+                        className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                          activePackingsSubTab === 'Packings'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        📦 Packings
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActivePackingsSubTab('Stock link')}
+                        className={`px-3 py-0.5 rounded-t font-bold text-xs ${
+                          activePackingsSubTab === 'Stock link'
+                            ? 'bg-white border-t-2 border-emerald-600 text-slate-900 shadow-2xs'
+                            : 'bg-slate-300 text-slate-600 hover:bg-slate-300/80'
+                        }`}
+                      >
+                        🔗 Stock link
+                      </button>
+                    </div>
+
+                    {activePackingsSubTab === 'Packings' && (
+                      <div className="space-y-2 pt-1">
+                        {/* Sub-Form Row 1 */}
+                        <div className="flex items-center justify-between gap-2 bg-white p-2 rounded border border-slate-300">
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className="font-bold text-slate-700 text-[11px]">Barcode</span>
+                            <input type="text" className="w-28 px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                            <Barcode className="w-4 h-4 text-slate-600" />
+
+                            <span className="font-bold text-slate-700 text-[11px] ml-2">Units</span>
+                            <select className="w-20 px-1 py-0.5 border border-slate-300 rounded text-xs">
+                              <option>Unit</option>
+                              <option>Box</option>
+                              <option>Carton</option>
+                            </select>
+
+                            <span className="font-bold text-slate-700 text-[11px] ml-2">Pack Qty</span>
+                            <input type="text" className="w-16 px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+
+                            <span className="font-bold text-slate-700 text-[11px] ml-2">Cost</span>
+                            <input type="text" className="w-20 px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button type="button" className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded font-bold text-[10px]">✏️ Edit</button>
+                            <button type="button" className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded font-bold text-[10px] text-rose-700">❌ Delete</button>
+                            <button type="button" className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded font-bold text-[10px] text-blue-800">📦 Raw Mater.</button>
+                            <button type="button" onClick={handleAddPackingRow} className="px-3 py-1 bg-slate-200 hover:bg-slate-300 border border-slate-400 rounded font-bold text-[10px] text-emerald-800">➕ Add (F9)</button>
+                          </div>
+                        </div>
+
+                        {/* Sub-Form Row 2 */}
+                        <div className="grid grid-cols-6 gap-2 bg-white p-2 rounded border border-slate-300 text-xs">
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Price</span>
+                            <input type="text" defaultValue="0.0000" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Price Incl Tax</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono font-bold text-emerald-700" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">MSP</span>
+                            <input type="text" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Product Name</span>
+                            <input type="text" placeholder="eg: 1 X 12" className="w-full px-1.5 py-0.5 border border-slate-300 rounded" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Add.Description</span>
+                            <input type="text" className="w-full px-1.5 py-0.5 border border-slate-300 rounded" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[10px]">Was Price</span>
+                            <input type="text" className="w-full px-1.5 py-0.5 border border-slate-300 rounded font-mono text-amber-700" />
+                          </div>
+                        </div>
+
+                        {/* Sub-Form Row 3 */}
+                        <div className="grid grid-cols-8 gap-1.5 bg-white p-2 rounded border border-slate-300 text-xs items-center">
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">WS. Price</span>
+                            <input type="text" defaultValue="0.0000" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">WS P Tax</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">MSP</span>
+                            <input type="text" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">Mark Up</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div>
+                            <span className="block font-bold text-slate-700 text-[9px]">GP %</span>
+                            <input type="text" defaultValue="0.00" className="w-full px-1 py-0.5 border border-slate-300 rounded font-mono" />
+                          </div>
+                          <div className="col-span-3 flex items-center gap-3 pt-3">
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-800 text-[10px]">
+                              <input type="checkbox" defaultChecked />
+                              <span>Is Ecomm. Product</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-800 text-[10px]">
+                              <input type="checkbox" />
+                              <span>Stock Unit</span>
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer font-bold text-slate-800 text-[10px]">
+                              <input type="checkbox" />
+                              <span>Weighing</span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Packings Grid Table */}
+                        <div className="overflow-x-auto bg-white rounded border border-slate-300 max-h-36">
+                          <table className="w-full text-left text-[10px] border-collapse font-mono">
+                            <thead className="bg-slate-100 font-bold uppercase text-slate-700 sticky top-0 border-b border-slate-300">
+                              <tr>
+                                <th className="p-1 border-r border-slate-200">Barcode</th>
+                                <th className="p-1 border-r border-slate-200">Pack Qty</th>
+                                <th className="p-1 border-r border-slate-200">Price</th>
+                                <th className="p-1 border-r border-slate-200">Price Ind Tax</th>
+                                <th className="p-1 border-r border-slate-200">Unit Code</th>
+                                <th className="p-1 border-r border-slate-200">Pack Description</th>
+                                <th className="p-1 border-r border-slate-200">MSP</th>
+                                <th className="p-1 border-r border-slate-200">WS Price Ind Tax</th>
+                                <th className="p-1 border-r border-slate-200">WS Price</th>
+                                <th className="p-1 border-r border-slate-200">WSMSP</th>
+                                <th className="p-1 border-r border-slate-200">Was Price</th>
+                                <th className="p-1">Cost</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200">
+                              {packingsList.length === 0 ? (
+                                <tr>
+                                  <td colSpan={12} className="p-4 text-center text-slate-400 italic">
+                                    No packings mapped. Fill row above and click "➕ Add (F9)"
+                                  </td>
+                                </tr>
+                              ) : (
+                                packingsList.map((pack, idx) => (
+                                  <tr key={pack.id} className="hover:bg-slate-50">
+                                    <td className="p-1 border-r border-slate-200 font-bold text-slate-800">{pack.barcode}</td>
+                                    <td className="p-1 border-r border-slate-200 text-center font-bold">{pack.packQty}</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">{pack.price.toFixed(2)}</td>
+                                    <td className="p-1 border-r border-slate-200 text-right font-bold text-emerald-700">{pack.priceInclTax.toFixed(2)}</td>
+                                    <td className="p-1 border-r border-slate-200 font-sans">{pack.unit}</td>
+                                    <td className="p-1 border-r border-slate-200 font-sans">{pack.unit} Pack</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right">0.00</td>
+                                    <td className="p-1 border-r border-slate-200 text-right text-amber-700">0.00</td>
+                                    <td className="p-1 text-right">{pack.cost.toFixed(2)}</td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {activePackingsSubTab === 'Stock link' && (
+                      <div className="p-3 bg-white border border-slate-300 rounded text-slate-600 text-xs">
+                        Stock link and branch warehouse allocation mapping.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </form>
           </div>

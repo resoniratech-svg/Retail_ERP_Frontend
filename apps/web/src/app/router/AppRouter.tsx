@@ -28,6 +28,9 @@ import { StockRequisitionsPage } from '../../modules/stock/StockRequisitionsPage
 import { CustomersPage } from '../../modules/customers/CustomersPage';
 import { CustomerBusinessTypesPage } from '../../modules/customers/CustomerBusinessTypesPage';
 import { DeliveryAgentsPage } from '../../modules/organization/DeliveryAgentsPage';
+import { ProductionMaterialsPage } from '../../modules/inventory/ProductionMaterialsPage';
+import { RegisterTaxesPage } from '../../modules/register/TaxesPage';
+import { UnitsPage } from '../../modules/register/UnitsPage';
 import { ShiftMasterPage } from '../../modules/hr/ShiftMasterPage';
 import { ShiftAssignmentPage } from '../../modules/hr/ShiftAssignmentPage';
 import { VendorsPage } from '../../modules/vendors/VendorsPage';
@@ -182,9 +185,9 @@ export const AppRouter: React.FC = () => {
                   <Route path="/locations" element={<LocationsPage />} />
                   <Route path="/delivery-agents" element={<DeliveryAgentsPage />} />
                   <Route path="/customer-types" element={<CustomerBusinessTypesPage />} />
-                  <Route path="/production-material" element={<GenericModulePage title="Production Material" subtitle="Bakery & kitchen raw ingredients" entityName="Material" items={[{ id: '1', code: 'MAT-FLOUR', name: 'Wheat Flour 25kg Bag', amount: 45.00, status: 'ACTIVE' }]} />} />
-                  <Route path="/taxes" element={<GenericModulePage title="Tax Setup & Rates" subtitle="Qatar VAT 0% & 5% Tax Rules" entityName="Tax Rate" items={[{ id: '1', code: 'VAT-0', name: 'Qatar Zero VAT (Essential Food)', amount: 0.00, status: 'ACTIVE' }]} />} />
-                  <Route path="/units" element={<GenericModulePage title="Units of Measure" subtitle="Pcs, Kg, Box, Pack definitions" entityName="Unit" items={[{ id: '1', code: 'UOM-PCS', name: 'Pieces (Pcs)', status: 'ACTIVE' }, { id: '2', code: 'UOM-KG', name: 'Kilograms (Kg)', status: 'ACTIVE' }]} />} />
+                  <Route path="/production-material" element={<ProductionMaterialsPage />} />
+                  <Route path="/taxes" element={<RegisterTaxesPage />} />
+                  <Route path="/units" element={<UnitsPage />} />
 
                   {/* HR & Job Masters Extensions */}
                   <Route path="/allowance-categories" element={<GenericModulePage title="Allowance Categories" subtitle="Housing, Transport, & Food Allowances" entityName="Allowance Category" items={[{ id: '1', code: 'ALL-HOU', name: 'Housing Allowance (Qatar Standard)', amount: 2500.00, status: 'ACTIVE' }, { id: '2', code: 'ALL-TRN', name: 'Transport Allowance', amount: 800.00, status: 'ACTIVE' }]} />} />

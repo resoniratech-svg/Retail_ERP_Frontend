@@ -26,6 +26,8 @@ import {
   Printer,
   Search,
   CheckSquare,
+  RotateCcw,
+  XCircle,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'qatar_erp_employees';
@@ -107,37 +109,70 @@ const DEFAULT_DEPARTMENTS = [
 
 const INITIAL_EMPLOYEES: Employee[] = [
   {
+    id: 'emp-00',
+    empNo: '-',
+    fileNumber: '-',
+    username: 'Administrator',
+    firstName: 'Administrator',
+    lastName: '',
+    name: 'Administrator',
+    dept: 'Management',
+    role: 'Admin',
+    designation: 'System Administrator',
+    accountType: 'Admin',
+    currentStatus: 'On Service',
+    joinedOn: '01/01/2020',
+    dob: '01/01/1990',
+    worksAt: 'Saudi Arabia',
+    visaFrom: 'Saudi Arabia',
+    empLevel: 'A',
+    gender: 'Male',
+    country: 'Saudi Arabia',
+    bloodGroup: 'N/A',
+    phone: '+966 50 000 0000',
+    accountNo: 'SA00 0000 0000',
+    qid: '1000000000',
+    salary: 25000,
+    isActive: true,
+    casualSickLeaveDays: 14,
+    annualLeaveDays: 30,
+    basicSalary: 20000,
+    hraAllowance: 4000,
+    transportAllowance: 1000,
+    bankName: 'Al Rajhi Bank',
+  },
+  {
     id: 'emp-01',
     empNo: '123',
     fileNumber: 'rtrey',
-    username: 'Administrator',
+    username: 'Sai',
     firstName: 'Sai',
     lastName: 'ewrer',
     name: 'Sai ewrer',
-    dept: 'Retail Sales',
-    role: 'Admin',
-    designation: 'General Manager',
-    accountType: 'Admin',
+    dept: 'Sales',
+    role: 'User',
+    designation: 'Cashier',
+    accountType: 'User',
     currentStatus: 'On Service',
-    joinedOn: '2026-01-03',
-    dob: '2001-08-05',
-    worksAt: 'Qatar Doha Main',
-    visaFrom: 'Qatar',
+    joinedOn: '03/01/2026',
+    dob: '06/08/2001',
+    worksAt: 'Saudi Arabia',
+    visaFrom: 'Saudi Arabia',
     empLevel: 'A',
     gender: 'Male',
     country: 'Afghanistan',
     bloodGroup: 'N/A',
-    phone: '+974 5512 3456',
-    accountNo: 'QA55 QNBA 0000 0001 2345 67',
-    qid: '28439201923',
-    salary: 22000,
+    phone: '+966 55 123 4567',
+    accountNo: 'SA55 1234 5678',
+    qid: '2000000123',
+    salary: 8000,
     isActive: true,
     casualSickLeaveDays: 14,
     annualLeaveDays: 30,
-    basicSalary: 18000,
-    hraAllowance: 3000,
-    transportAllowance: 1000,
-    bankName: 'QNB Qatar National Bank',
+    basicSalary: 6000,
+    hraAllowance: 1500,
+    transportAllowance: 500,
+    bankName: 'NCB Bank',
   },
   {
     id: 'emp-02',
@@ -236,6 +271,7 @@ export const HRPage: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   // Modal Main Tab State matching Images 2 & 3
   const [mainModalTab, setMainModalTab] = useState<'Details' | 'HR & Payroll'>('Details');
@@ -487,152 +523,198 @@ export const HRPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 font-sans text-xs">
-      {/* 1. TOP DART POS ACTION TOOLBAR (Matching Image 1 Top) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-white flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-emerald-400" />
-          <h1 className="text-sm font-bold">User Accounts & Employee Directory - DART POS</h1>
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* 1. TOP DART POS SUB-RIBBON ACTION TOOLBAR (Matching Screenshot 100%) */}
+      <div className="bg-slate-200 border border-slate-300 rounded-xl p-1.5 text-slate-900 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => alert('📄 Printing full employee detail cards report.')}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg border border-slate-700"
+            className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
           >
-            <Printer className="w-3.5 h-3.5 text-sky-400" />
+            <Printer className="w-3.5 h-3.5 text-sky-600" />
             <span>Print Employee Detail</span>
           </button>
 
           <button
             onClick={() => alert('📥 Importing staff directory from Excel file.')}
-            className="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg border border-slate-700"
+            className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
           >
-            <Download className="w-3.5 h-3.5 text-teal-400" />
+            <Download className="w-3.5 h-3.5 text-teal-600" />
             <span>Import From Excel</span>
           </button>
 
           <button
             onClick={() => alert('⚡ Syncing staff face/fingerprint data to ZKTEco Biometric Attendance Terminal.')}
-            className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm"
+            className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-white text-slate-800 font-bold text-xs rounded border border-slate-400 shadow-2xs"
           >
-            <Fingerprint className="w-3.5 h-3.5" />
+            <Fingerprint className="w-3.5 h-3.5 text-indigo-600" />
             <span>Sync Data To Biometric Device</span>
-          </button>
-
-          <button
-            onClick={handleOpenAddModal}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Employee</span>
           </button>
         </div>
       </div>
 
-      {/* 2. SEARCH & STATS BAR */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+      {/* 2. SEARCH FILTER BAR MATCHING SCREENSHOT */}
+      <div className="bg-slate-100 p-2 rounded-xl border border-slate-300 shadow-xs flex items-center gap-2">
+        <div className="relative flex-1 max-w-md">
           <input
             type="text"
-            placeholder="Enter text to search employee code, name, country..."
+            placeholder="Enter text to search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs font-medium border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500"
+            className="w-full px-3 py-1 text-xs font-semibold border border-slate-400 rounded bg-white focus:outline-none focus:border-cyan-600"
           />
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-bold text-slate-700">
-          <span>Total Records: <strong className="text-emerald-600">{employees.length} Users</strong></span>
-          <span>Monthly Payroll: <strong className="text-indigo-600">{formatQAR(employees.reduce((sum, e) => sum + e.salary, 0))}</strong></span>
-        </div>
+        <button
+          onClick={() => alert('Filter applied')}
+          className="px-4 py-1 bg-slate-200 hover:bg-slate-300 border border-slate-400 rounded font-bold text-slate-800 text-xs shadow-2xs"
+        >
+          Find
+        </button>
+
+        <button
+          onClick={() => setSearchQuery('')}
+          className="px-4 py-1 bg-slate-200 hover:bg-slate-300 border border-slate-400 rounded font-bold text-slate-800 text-xs shadow-2xs"
+        >
+          Clear
+        </button>
       </div>
 
-      {/* 3. DART POS FULL EMPLOYEE DIRECTORY DATA TABLE (All 16 Columns from Image 1) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto max-h-[60vh]">
+      {/* 3. DART POS USER ACCOUNTS DATA TABLE WITH RIGHT VERTICAL SHORTCUT STRIP (Matching Screenshot 100%) */}
+      <div className="bg-slate-200 border border-slate-300 rounded-xl overflow-hidden shadow-sm flex">
+        {/* Left: Master Employees Table */}
+        <div className="flex-1 overflow-x-auto max-h-[60vh] bg-white">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10">
+            <thead className="bg-slate-100 border-b border-slate-300 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10 shadow-xs">
               <tr>
-                <th className="py-2.5 px-3">Employee Code</th>
-                <th className="py-2.5 px-3">User Name</th>
-                <th className="py-2.5 px-3">First Name</th>
-                <th className="py-2.5 px-3">Last Name</th>
-                <th className="py-2.5 px-3">File Number</th>
-                <th className="py-2.5 px-3 text-center">Current Status</th>
-                <th className="py-2.5 px-3">Department</th>
-                <th className="py-2.5 px-3">Designation</th>
-                <th className="py-2.5 px-3 font-mono">DOB</th>
-                <th className="py-2.5 px-3 font-mono">Joined On</th>
-                <th className="py-2.5 px-3">Works At</th>
-                <th className="py-2.5 px-3">Visa From</th>
-                <th className="py-2.5 px-3 text-center">Emp Level</th>
-                <th className="py-2.5 px-3 text-center">Gender</th>
-                <th className="py-2.5 px-3">Country</th>
-                <th className="py-2.5 px-3 text-center">Blood Group</th>
-                <th className="py-2.5 px-3 text-center sticky right-0 bg-slate-100">Actions</th>
+                <th className="py-2 px-2 border-r border-slate-200">Employee Code</th>
+                <th className="py-2 px-2 border-r border-slate-200">User Name</th>
+                <th className="py-2 px-2 border-r border-slate-200">First Name</th>
+                <th className="py-2 px-2 border-r border-slate-200">Last Name</th>
+                <th className="py-2 px-2 border-r border-slate-200">File Number</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-center">Current Status</th>
+                <th className="py-2 px-2 border-r border-slate-200">Department</th>
+                <th className="py-2 px-2 border-r border-slate-200">Designation</th>
+                <th className="py-2 px-2 border-r border-slate-200 font-mono">DOB</th>
+                <th className="py-2 px-2 border-r border-slate-200 font-mono">Joined On</th>
+                <th className="py-2 px-2 border-r border-slate-200">Works At</th>
+                <th className="py-2 px-2 border-r border-slate-200">Visa From</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-center">Emp Level</th>
+                <th className="py-2 px-2 border-r border-slate-200 text-center">Gender</th>
+                <th className="py-2 px-2 border-r border-slate-200">Country</th>
+                <th className="py-2 px-2 text-center">Blood Group</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-medium">
               {filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={17} className="py-8 text-center text-slate-500">
+                  <td colSpan={16} className="py-8 text-center text-slate-500">
                     <Users className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
                     <p className="font-bold text-sm">No Employee Records Found</p>
                   </td>
                 </tr>
               ) : (
-                filteredEmployees.map((e) => (
-                  <tr key={e.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{e.empNo}</td>
-                    <td className="py-2.5 px-3 font-bold text-slate-800">{e.username}</td>
-                    <td className="py-2.5 px-3 text-slate-900 font-semibold">{e.firstName || e.name.split(' ')[0]}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{e.lastName || e.name.split(' ')[1] || '-'}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-500">{e.fileNumber || 'FL-000'}</td>
-                    <td className="py-2.5 px-3 text-center">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          e.currentStatus === 'On Service'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {e.currentStatus || 'On Service'}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-slate-800 font-semibold">{e.dept}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{e.designation || e.role}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-500">{e.dob}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-500">{e.joinedOn}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{e.worksAt}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{e.visaFrom}</td>
-                    <td className="py-2.5 px-3 text-center font-bold text-slate-800">{e.empLevel}</td>
-                    <td className="py-2.5 px-3 text-center text-slate-700">{e.gender}</td>
-                    <td className="py-2.5 px-3 text-slate-800 font-semibold">{e.country}</td>
-                    <td className="py-2.5 px-3 text-center font-mono font-bold text-rose-700">{e.bloodGroup}</td>
-                    <td className="py-2.5 px-3 text-center sticky right-0 bg-white shadow-left">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditModal(e)}
-                          className="p-1 hover:bg-slate-100 text-blue-600 rounded"
-                          title="Edit Employee"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteEmployee(e.id)}
-                          className="p-1 hover:bg-rose-50 text-rose-600 rounded"
-                          title="Delete Employee"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                filteredEmployees.map((e) => {
+                  const isSelected = selectedEmployee?.id === e.id;
+                  return (
+                    <tr
+                      key={e.id}
+                      onClick={() => setSelectedEmployee(e)}
+                      onDoubleClick={() => handleOpenEditModal(e)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? 'bg-navy-900 bg-blue-900 text-white font-bold' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono font-bold">{e.empNo}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-bold">{e.username}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.firstName || e.name.split(' ')[0]}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.lastName || e.name.split(' ')[1] || ''}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono text-slate-600">{e.fileNumber || '-'}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-center">
+                        <span className="font-bold text-slate-800">{e.currentStatus || 'On Service'}</span>
+                      </td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.dept}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.designation || e.role}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono">{e.dob}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 font-mono">{e.joinedOn}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.worksAt}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.visaFrom}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-center font-bold">{e.empLevel}</td>
+                      <td className="py-2 px-2 border-r border-slate-200 text-center">{e.gender}</td>
+                      <td className="py-2 px-2 border-r border-slate-200">{e.country}</td>
+                      <td className="py-2 px-2 text-center font-mono font-bold">{e.bloodGroup || 'N/A'}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Right Vertical Action Shortcut Strip (Matching Target DART POS Screenshot 100%) */}
+        <div className="w-11 bg-slate-300 border-l border-slate-400 p-1 flex flex-col items-center gap-2 shrink-0 select-none shadow-inner justify-start pt-2">
+          {/* Button 1: Add User/Employee (Green Plus Circle - Ctrl+A) */}
+          <button
+            onClick={handleOpenAddModal}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs group transition-all"
+            title="Add Employee (Ctrl + A)"
+          >
+            <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-xs leading-none shadow-2xs">
+              +
+            </div>
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+A</span>
+          </button>
+
+          {/* Button 2: Edit Employee (Pencil Icon - Ctrl+E) */}
+          <button
+            onClick={() => {
+              if (!selectedEmployee) {
+                alert('Please select an employee record first to edit.');
+                return;
+              }
+              handleOpenEditModal(selectedEmployee);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Edit Selected Employee (Ctrl + E)"
+          >
+            <Edit className="w-3.5 h-3.5 text-amber-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+E</span>
+          </button>
+
+          {/* Button 3: Delete Employee (Red Cross Icon - Ctrl+D) */}
+          <button
+            onClick={() => {
+              if (!selectedEmployee) {
+                alert('Please select an employee record first to delete.');
+                return;
+              }
+              handleDeleteEmployee(selectedEmployee.id);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Delete Selected Employee (Ctrl + D)"
+          >
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+D</span>
+          </button>
+
+          {/* Button 4: Refresh List (Blue Circular Arrow Icon - Ctrl+R) */}
+          <button
+            onClick={() => setEmployees(loadStoredEmployees())}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Refresh List (Ctrl + R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+R</span>
+          </button>
+
+          {/* Button 5: Print / Search (Magnifying Glass Icon - Ctrl+P) */}
+          <button
+            onClick={() => alert('📄 Printing selected employee detail card...')}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Print / Search Employee (Ctrl + P)"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+P</span>
+          </button>
         </div>
       </div>
 

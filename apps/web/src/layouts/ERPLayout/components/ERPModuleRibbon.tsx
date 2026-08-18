@@ -25,7 +25,7 @@ export const ERPModuleRibbon: React.FC<ERPModuleRibbonProps> = ({ groups, lang, 
     }
   }, [searchParams, currentSearch, location.key]);
 
-  const isScrollable = moduleId === 'tradings';
+  const isScrollable = moduleId === 'tradings' || moduleId === 'register' || moduleId === 'inventory';
   const scrollClasses = isScrollable
     ? 'overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'
     : '';
@@ -66,6 +66,10 @@ export const ERPModuleRibbon: React.FC<ERPModuleRibbonProps> = ({ groups, lang, 
               const IconComp = (Icons as any)[act.iconName] || Icons.Box;
               const active = isActionActive(act.id, act.route);
 
+              let customIconColor = active ? 'text-emerald-800 stroke-[2.5]' : 'text-emerald-600';
+              if (act.id === 'reg-taxes') customIconColor = active ? 'text-rose-900 font-bold' : 'text-rose-600';
+              if (act.id === 'reg-units') customIconColor = active ? 'text-amber-900 font-bold' : 'text-amber-500';
+
               return (
                 <button
                   key={act.id}
@@ -88,9 +92,7 @@ export const ERPModuleRibbon: React.FC<ERPModuleRibbonProps> = ({ groups, lang, 
                   title={act.shortcut ? `Shortcut: ${act.shortcut}` : undefined}
                 >
                   <IconComp
-                    className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                      active ? 'text-emerald-800 stroke-[2.5]' : 'text-emerald-600'
-                    }`}
+                    className={`w-4 h-4 transition-transform group-hover:scale-110 ${customIconColor}`}
                   />
                   <span
                     className={`text-[10px] leading-tight mt-0.5 whitespace-nowrap ${

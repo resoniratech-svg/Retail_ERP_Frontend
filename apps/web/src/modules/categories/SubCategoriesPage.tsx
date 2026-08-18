@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button } from '@qatar-erp/ui';
-import { Plus, ListFilter, Edit, Trash2, X, Search, Layers } from 'lucide-react';
+import { Plus, ListFilter, Edit, Trash2, X, Search, Layers, RotateCcw, XCircle } from 'lucide-react';
 
 const SUBCATEGORY_STORAGE_KEY = 'qatar_erp_subcategories';
 
@@ -49,6 +49,7 @@ export const SubCategoriesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingSubCategory, setEditingSubCategory] = useState<SubCategoryItem | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategoryItem | null>(null);
 
   const [formData, setFormData] = useState({
     code: '',
@@ -177,38 +178,30 @@ export const SubCategoriesPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 font-sans text-xs">
-      {/* 1. TOP TITLE BAR (Matching Image 2 Top) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-white flex items-center justify-between shadow-sm">
+      {/* 1. TOP DART POS SUB-RIBBON ACTION TOOLBAR (Matching Screenshot 100%) */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
           <ListFilter className="w-5 h-5 text-emerald-400" />
           <h1 className="text-sm font-bold">SubCategories - DART POS</h1>
         </div>
-
-        <button
-          onClick={handleOpenAddModal}
-          className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Add SubCategory</span>
-        </button>
       </div>
 
-      {/* 2. SEARCH BAR (Matching Image 2 Search Bar) */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+      {/* 2. SEARCH FILTER BAR MATCHING SCREENSHOT */}
+      <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full md:w-96">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-2 text-slate-400" />
             <input
               type="text"
               placeholder="Enter text to search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs font-medium border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500"
+              className="w-full pl-9 pr-3 py-1 text-xs font-medium border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500"
             />
           </div>
           <button
             onClick={() => setSearchQuery('')}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-300"
+            className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-300"
           >
             Clear
           </button>
@@ -219,60 +212,119 @@ export const SubCategoriesPage: React.FC = () => {
         </span>
       </div>
 
-      {/* 3. DART POS SUBCATEGORIES DATA TABLE (All 4 Columns from Image 2) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto max-h-[60vh]">
+      {/* 3. DART POS SUBCATEGORIES DATA TABLE WITH RIGHT VERTICAL SHORTCUT STRIP (Matching Screenshot 100%) */}
+      <div className="bg-slate-200 border border-slate-300 rounded-xl overflow-hidden shadow-sm flex">
+        {/* Left: Master Table Container */}
+        <div className="flex-1 overflow-x-auto max-h-[60vh] bg-white">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10">
+            <thead className="bg-slate-100 border-b border-slate-300 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10 shadow-xs">
               <tr>
-                <th className="py-2.5 px-4 w-1/4">Department</th>
-                <th className="py-2.5 px-4 w-1/4">Sub Department</th>
-                <th className="py-2.5 px-4 w-1/4">Category</th>
-                <th className="py-2.5 px-4 w-1/4">Sub Category Name</th>
-                <th className="py-2.5 px-4 text-center sticky right-0 bg-slate-100">Actions</th>
+                <th className="py-2.5 px-4 w-1/4 border-r border-slate-200">DEPARTMENT</th>
+                <th className="py-2.5 px-4 w-1/4 border-r border-slate-200">SUB DEPARTMENT</th>
+                <th className="py-2.5 px-4 w-1/4 border-r border-slate-200">CATEGORY</th>
+                <th className="py-2.5 px-4 w-1/4">SUB CATEGORY NAME</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-medium">
               {filteredSubCategories.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-500">
+                  <td colSpan={4} className="py-8 text-center text-slate-500">
                     <ListFilter className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
                     <p className="font-bold text-sm">No SubCategories Found</p>
                   </td>
                 </tr>
               ) : (
-                filteredSubCategories.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 px-4 font-bold text-slate-900">{c.department}</td>
-                    <td className="py-2.5 px-4 text-slate-700 font-semibold">{c.subDepartment}</td>
-                    <td className="py-2.5 px-4 font-semibold text-slate-800">{c.category}</td>
-                    <td className="py-2.5 px-4 font-bold text-slate-900">
-                      <span>{c.name}</span>
-                      {c.nameAr && <span className="text-slate-400 font-arabic text-[11px] ml-2">({c.nameAr})</span>}
-                    </td>
-                    <td className="py-2.5 px-4 text-center sticky right-0 bg-white shadow-left">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditModal(c)}
-                          className="p-1 hover:bg-slate-100 text-blue-600 rounded"
-                          title="Edit SubCategory"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSubCategory(c.id)}
-                          className="p-1 hover:bg-rose-50 text-rose-600 rounded"
-                          title="Delete SubCategory"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                filteredSubCategories.map((c) => {
+                  const isSelected = selectedSubCategory?.id === c.id;
+                  return (
+                    <tr
+                      key={c.id}
+                      onClick={() => setSelectedSubCategory(c)}
+                      onDoubleClick={() => handleOpenEditModal(c)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? 'bg-navy-900 bg-blue-900 text-white font-bold' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <td className="py-2.5 px-4 font-bold text-slate-900 border-r border-slate-200">{c.department}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-700 border-r border-slate-200">{c.subDepartment}</td>
+                      <td className="py-2.5 px-4 font-semibold text-slate-800 border-r border-slate-200">{c.category}</td>
+                      <td className="py-2.5 px-4 font-bold text-slate-900">
+                        <span>{c.name}</span>
+                        {c.nameAr && <span className="text-slate-400 font-arabic text-[11px] ml-2">({c.nameAr})</span>}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Right Vertical Action Shortcut Strip (Matching Target DART POS Screenshot 100%) */}
+        <div className="w-11 bg-slate-300 border-l border-slate-400 p-1 flex flex-col items-center gap-2 shrink-0 select-none shadow-inner justify-start pt-2">
+          {/* Button 1: Add SubCategory (Green Plus Circle - Ctrl+A) */}
+          <button
+            onClick={handleOpenAddModal}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs group transition-all"
+            title="Add SubCategory (Ctrl + A)"
+          >
+            <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-xs leading-none shadow-2xs">
+              +
+            </div>
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+A</span>
+          </button>
+
+          {/* Button 2: Edit SubCategory (Pencil Icon - Ctrl+E) */}
+          <button
+            onClick={() => {
+              if (!selectedSubCategory) {
+                alert('Please select a subcategory first to edit.');
+                return;
+              }
+              handleOpenEditModal(selectedSubCategory);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Edit Selected SubCategory (Ctrl + E)"
+          >
+            <Edit className="w-3.5 h-3.5 text-amber-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+E</span>
+          </button>
+
+          {/* Button 3: Delete SubCategory (Red Cross Icon - Ctrl+D) */}
+          <button
+            onClick={() => {
+              if (!selectedSubCategory) {
+                alert('Please select a subcategory first to delete.');
+                return;
+              }
+              handleDeleteSubCategory(selectedSubCategory.id);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Delete Selected SubCategory (Ctrl + D)"
+          >
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+D</span>
+          </button>
+
+          {/* Button 4: Refresh List (Blue Circular Arrow Icon - Ctrl+R) */}
+          <button
+            onClick={() => setSubCategories(subCategories)}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Refresh List (Ctrl + R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+R</span>
+          </button>
+
+          {/* Button 5: Print / Search (Magnifying Glass Icon - Ctrl+P) */}
+          <button
+            onClick={() => alert('📄 Printing subcategories report...')}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Print / Search SubCategories (Ctrl + P)"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+P</span>
+          </button>
         </div>
       </div>
 

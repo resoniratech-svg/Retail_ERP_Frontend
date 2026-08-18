@@ -24,6 +24,8 @@ import {
   Link,
   Shield,
   FileSpreadsheet,
+  RotateCcw,
+  XCircle,
 } from 'lucide-react';
 
 const STORAGE_KEY = 'qatar_erp_vendors';
@@ -203,6 +205,7 @@ export const VendorsPage: React.FC = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [modalTab, setModalTab] = useState<'General' | 'Documents'>('General');
 
   // Statement Modal State
@@ -414,7 +417,7 @@ export const VendorsPage: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 font-sans text-xs">
       {/* 1. TOP DART POS ACTION TOOLBAR (Matching Image 1 Top) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-white flex items-center justify-between shadow-sm">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-white flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
           <Truck className="w-5 h-5 text-emerald-400" />
           <h1 className="text-sm font-bold">Vendors Master & Supplier Directory - DART POS</h1>
@@ -442,33 +445,25 @@ export const VendorsPage: React.FC = () => {
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Vendor Statement</span>
           </button>
-
-          <button
-            onClick={handleOpenAddModal}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-lg shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Vendor</span>
-          </button>
         </div>
       </div>
 
       {/* 2. SEARCH & SUMMARY BAR */}
-      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 w-full md:w-96">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-2 text-slate-400" />
             <input
               type="text"
               placeholder="Enter text to search vendor code, name, TRN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs font-medium border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500"
+              className="w-full pl-9 pr-3 py-1 text-xs font-medium border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500"
             />
           </div>
           <button
             onClick={() => setSearchQuery('')}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-300"
+            className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-300"
           >
             Clear
           </button>
@@ -480,88 +475,140 @@ export const VendorsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. DART POS MASTER VENDORS DATA TABLE (All 15 Columns from Image 1) */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto max-h-[60vh]">
+      {/* 3. DART POS MASTER VENDORS DATA TABLE WITH RIGHT VERTICAL SHORTCUT STRIP (Matching Screenshot 100%) */}
+      <div className="bg-slate-200 border border-slate-300 rounded-xl overflow-hidden shadow-sm flex">
+        {/* Left: Master Table Container */}
+        <div className="flex-1 overflow-x-auto max-h-[60vh] bg-white">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10">
+            <thead className="bg-slate-100 border-b border-slate-300 text-slate-700 uppercase font-bold text-[10px] tracking-wider sticky top-0 z-10 shadow-xs">
               <tr>
-                <th className="py-2.5 px-3">Vendor Code</th>
-                <th className="py-2.5 px-3">Group</th>
-                <th className="py-2.5 px-3">Vendor Name</th>
-                <th className="py-2.5 px-3">Type</th>
-                <th className="py-2.5 px-3 text-right">Def Profit Rate</th>
-                <th className="py-2.5 px-3">Address</th>
-                <th className="py-2.5 px-3">City</th>
-                <th className="py-2.5 px-3">State</th>
-                <th className="py-2.5 px-3">Country</th>
-                <th className="py-2.5 px-3 font-mono">TRN</th>
-                <th className="py-2.5 px-3">Phone</th>
-                <th className="py-2.5 px-3">Sales Person</th>
-                <th className="py-2.5 px-3">Mobile</th>
-                <th className="py-2.5 px-3">Email</th>
-                <th className="py-2.5 px-3 text-center">In Active</th>
-                <th className="py-2.5 px-3 text-center sticky right-0 bg-slate-100">Actions</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">VENDOR CODE</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">GROUP</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">VENDOR NAME</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">TYPE</th>
+                <th className="py-2.5 px-3 border-r border-slate-200 text-right">DEF PROFIT RATE</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">ADDRESS</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">CITY</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">STATE</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">COUNTRY</th>
+                <th className="py-2.5 px-3 border-r border-slate-200 font-mono">TRN</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">PHONE</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">SALES PERSON</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">MOBILE</th>
+                <th className="py-2.5 px-3 border-r border-slate-200">EMAIL</th>
+                <th className="py-2.5 px-3 text-center">IN ACTIVE</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-medium">
               {filteredVendors.length === 0 ? (
                 <tr>
-                  <td colSpan={16} className="py-8 text-center text-slate-500">
+                  <td colSpan={15} className="py-8 text-center text-slate-500">
                     <Truck className="w-10 h-10 mx-auto mb-2 opacity-30 text-slate-400" />
                     <p className="font-bold text-sm">No Vendors Found</p>
                   </td>
                 </tr>
               ) : (
-                filteredVendors.map((v) => (
-                  <tr key={v.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{v.code}</td>
-                    <td className="py-2.5 px-3 text-slate-700 font-semibold">{v.group}</td>
-                    <td className="py-2.5 px-3 font-bold text-slate-900">{v.name}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{v.type}</td>
-                    <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700">{v.defProfitRate || 25.00}%</td>
-                    <td className="py-2.5 px-3 text-slate-600 truncate max-w-[150px]">{v.address || '-'}</td>
-                    <td className="py-2.5 px-3 text-slate-700">{v.city || 'Doha'}</td>
-                    <td className="py-2.5 px-3 text-slate-600">{v.state || 'Ad Dawhah'}</td>
-                    <td className="py-2.5 px-3 text-slate-800 font-semibold">{v.country}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-600">{v.trn}</td>
-                    <td className="py-2.5 px-3 text-slate-700 font-mono">{v.phone}</td>
-                    <td className="py-2.5 px-3 text-slate-800 font-semibold">{v.salesPerson || '-'}</td>
-                    <td className="py-2.5 px-3 font-mono text-slate-700">{v.mobile || '-'}</td>
-                    <td className="py-2.5 px-3 text-slate-600">{v.email || '-'}</td>
-                    <td className="py-2.5 px-3 text-center">
-                      <input type="checkbox" checked={!v.isActive} readOnly className="rounded text-rose-600" />
-                    </td>
-                    <td className="py-2.5 px-3 text-center sticky right-0 bg-white shadow-left">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => setStatementVendor(v)}
-                          className="p-1 hover:bg-emerald-50 text-emerald-600 rounded"
-                          title="Vendor Statement"
-                        >
-                          <FileSpreadsheet className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenEditModal(v)}
-                          className="p-1 hover:bg-slate-100 text-blue-600 rounded"
-                          title="Edit Vendor"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteVendor(v.id)}
-                          className="p-1 hover:bg-rose-50 text-rose-600 rounded"
-                          title="Delete Vendor"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                filteredVendors.map((v) => {
+                  const isSelected = selectedVendor?.id === v.id;
+                  return (
+                    <tr
+                      key={v.id}
+                      onClick={() => setSelectedVendor(v)}
+                      onDoubleClick={() => handleOpenEditModal(v)}
+                      className={`cursor-pointer transition-colors ${
+                        isSelected ? 'bg-navy-900 bg-blue-900 text-white font-bold' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <td className="py-2 px-3 font-mono font-bold border-r border-slate-200">{v.code}</td>
+                      <td className="py-2 px-3 border-r border-slate-200">{v.group}</td>
+                      <td className="py-2 px-3 font-bold border-r border-slate-200">{v.name}</td>
+                      <td className="py-2 px-3 border-r border-slate-200">{v.type}</td>
+                      <td className="py-2 px-3 text-right font-mono font-bold text-emerald-700 border-r border-slate-200">{v.defProfitRate || 25.00}%</td>
+                      <td className="py-2 px-3 border-r border-slate-200 truncate max-w-[150px]">{v.address || '-'}</td>
+                      <td className="py-2 px-3 border-r border-slate-200">{v.city || 'Doha'}</td>
+                      <td className="py-2 px-3 border-r border-slate-200">{v.state || 'Ad Dawhah'}</td>
+                      <td className="py-2 px-3 border-r border-slate-200 font-semibold">{v.country}</td>
+                      <td className="py-2 px-3 font-mono border-r border-slate-200">{v.trn}</td>
+                      <td className="py-2 px-3 font-mono border-r border-slate-200">{v.phone}</td>
+                      <td className="py-2 px-3 border-r border-slate-200">{v.salesPerson || '-'}</td>
+                      <td className="py-2 px-3 font-mono border-r border-slate-200">{v.mobile || '-'}</td>
+                      <td className="py-2 px-3 border-r border-slate-200">{v.email || '-'}</td>
+                      <td className="py-2 px-3 text-center">
+                        <input type="checkbox" checked={!v.isActive} readOnly className="rounded text-rose-600" />
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Right Vertical Action Shortcut Strip (Matching Target DART POS Screenshot 100%) */}
+        <div className="w-11 bg-slate-300 border-l border-slate-400 p-1 flex flex-col items-center gap-2 shrink-0 select-none shadow-inner justify-start pt-2">
+          {/* Button 1: Add Vendor (Green Plus Circle - Ctrl+A) */}
+          <button
+            onClick={handleOpenAddModal}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs group transition-all"
+            title="Add Vendor (Ctrl + A)"
+          >
+            <div className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-xs leading-none shadow-2xs">
+              +
+            </div>
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+A</span>
+          </button>
+
+          {/* Button 2: Edit Vendor (Pencil Icon - Ctrl+E) */}
+          <button
+            onClick={() => {
+              if (!selectedVendor) {
+                alert('Please select a vendor first to edit.');
+                return;
+              }
+              handleOpenEditModal(selectedVendor);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Edit Selected Vendor (Ctrl + E)"
+          >
+            <Edit className="w-3.5 h-3.5 text-amber-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+E</span>
+          </button>
+
+          {/* Button 3: Delete Vendor (Red Cross Icon - Ctrl+D) */}
+          <button
+            onClick={() => {
+              if (!selectedVendor) {
+                alert('Please select a vendor first to delete.');
+                return;
+              }
+              handleDeleteVendor(selectedVendor.id);
+            }}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Delete Selected Vendor (Ctrl + D)"
+          >
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+D</span>
+          </button>
+
+          {/* Button 4: Refresh List (Blue Circular Arrow Icon - Ctrl+R) */}
+          <button
+            onClick={() => setVendors(loadStoredVendors())}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Refresh List (Ctrl + R)"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+R</span>
+          </button>
+
+          {/* Button 5: Print / Search (Magnifying Glass Icon - Ctrl+P) */}
+          <button
+            onClick={() => alert('📄 Printing vendors supplier directory...')}
+            className="w-9 h-10 bg-slate-100 hover:bg-white border border-slate-400 rounded flex flex-col items-center justify-center shadow-2xs transition-all"
+            title="Print / Search Vendors (Ctrl + P)"
+          >
+            <Search className="w-3.5 h-3.5 text-slate-700" />
+            <span className="text-[7px] text-slate-600 font-mono font-bold mt-0.5">Ctrl+P</span>
+          </button>
         </div>
       </div>
 

@@ -32,10 +32,10 @@ export const ERP_TOP_MODULES: TopModuleItem[] = [
     defaultRoute: '/pos',
     ribbonGroups: [
       {
-        title: 'POS Terminal',
-        titleAr: 'جهاز النقطة',
+        title: 'POS Sales',
+        titleAr: 'مبيعات النقطة',
         actions: [
-          { id: 'pos-main', label: 'POS Terminal', labelAr: 'شاشة النقطة', iconName: 'ShoppingBag', route: '/pos', shortcut: 'F2' },
+          { id: 'pos-main', label: 'Sales', labelAr: 'المبيعات', iconName: 'ShoppingBag', route: '/pos', shortcut: 'F2' },
           { id: 'pos-config', label: 'Configuration', labelAr: 'الإعدادات', iconName: 'Sliders', route: '/control-panel' },
           { id: 'pos-dayclose', label: 'Day Close', labelAr: 'إغلاق اليوم', iconName: 'Lock', route: '/day-close' },
         ],

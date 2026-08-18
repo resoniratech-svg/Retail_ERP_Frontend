@@ -1,0 +1,34 @@
+{
+  "name": "@apps/desktop",
+  "version": "1.4.2",
+  "private": true,
+  "description": "Qatar Retail ERP Desktop Executable Launcher",
+  "author": "Qatar Retail ERP Team",
+  "main": "main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false WIN_CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win dir -c.win.sign=null"
+  },
+  "build": {
+    "appId": "com.qatarerp.desktop",
+    "productName": "Qatar Retail ERP",
+    "win": {
+      "target": "dir",
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false,
+      "signingHashAlgorithms": []
+    },
+    "cscLink": null,
+    "forceCodeSigning": false,
+    "files": [
+      "main.js",
+      "preload.js",
+      "../web/dist/**/*"
+    ]
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  }
+}

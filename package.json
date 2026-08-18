@@ -6,12 +6,15 @@
   "packageManager": "pnpm@9.7.0",
   "scripts": {
     "dev": "turbo dev",
+    "dev:desktop": "pnpm --filter @apps/desktop dev",
     "build": "turbo build",
+    "build:desktop": "pnpm build && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false pnpm --filter @apps/desktop build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "vitest run"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "turbo": "^2.0.12",
     "typescript": "^5.5.4",
     "prettier": "^3.3.3",

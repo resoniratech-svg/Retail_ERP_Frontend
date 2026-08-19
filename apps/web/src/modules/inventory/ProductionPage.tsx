@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '@qatar-erp/ui';
-import { Search, Plus, Eye, Trash2 } from 'lucide-react';
+import { Search, Plus, Eye, Trash2, Save, CheckCircle, X, CornerUpLeft } from 'lucide-react';
 import { productsService } from '@qatar-erp/api';
 
 const STORAGE_KEY = 'retail_erp_productions';
@@ -189,169 +189,261 @@ export const ProductionPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Production</h1>
-          <p className="text-sm text-slate-500">Execute and track production activities.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" onClick={openNewForm}>
-            <Plus className="w-4 h-4 mr-2 inline" /> New Production
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col h-full bg-slate-50 overflow-hidden relative min-h-[600px]">
+      {!isFormModalOpen && !isViewModalOpen && (
+        <div className="flex flex-col h-full gap-2 p-2">
+          <div className="flex flex-col border border-slate-300 rounded-sm bg-[#f1f5f9] shadow-sm">
+            {/* Top Action Bar */}
+            <div className="flex flex-wrap items-center justify-between p-1 border-b border-slate-300 bg-white">
+              <div className="flex items-center">
+                <button className="flex items-center gap-1 px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[11px] text-slate-700 font-bold">
+                  <span>Produced | Consumed Product Details</span>
+                </button>
+                <button className="flex items-center gap-1 px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[11px] text-slate-700 font-bold">
+                  <span className="text-blue-800 font-extrabold text-lg leading-none mt-[-4px]">↶</span>
+                  <span>UnPost</span>
+                </button>
+                <button className="flex items-center gap-1 px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[11px] text-slate-700 font-bold">
+                  <span>Print Production</span>
+                </button>
+                <button className="flex items-center gap-1 px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[11px] text-slate-700 font-bold">
+                  <span>Production Daily Config</span>
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2 pr-2">
+                <Button variant="primary" className="py-1 px-2 text-xs h-7 flex items-center gap-1 font-bold bg-emerald-600 hover:bg-emerald-700 border-emerald-700 text-white rounded-sm" onClick={openNewForm}>
+                  <Plus className="w-3.5 h-3.5" /> New Production
+                </Button>
+              </div>
+            </div>
 
-      <Card className="p-4 flex gap-4 bg-slate-50/50">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search production..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300"
-          />
-        </div>
-        <Select 
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          options={[
-            { value: 'ALL', label: 'All Statuses' },
-            { value: 'DRAFT', label: 'Draft' },
-            { value: 'IN_PROGRESS', label: 'In Progress' },
-            { value: 'COMPLETED', label: 'Completed' },
-            { value: 'CANCELLED', label: 'Cancelled' }
-          ]}
-        />
-      </Card>
+            {/* Title Bar */}
+            <div className="bg-[#e2e8f0] border-b border-slate-300 py-1 px-3 text-[12px] font-bold text-slate-800 flex justify-center">
+              Production
+            </div>
 
-      <Card className="p-0 overflow-x-auto shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 uppercase text-[11px] font-semibold text-slate-700 border-b">
-            <tr>
-              <th className="p-4">Production #</th>
-              <th className="p-4">Date</th>
-              <th className="p-4">Plan #</th>
-              <th className="p-4">Product</th>
-              <th className="p-4 text-center">Planned Qty</th>
-              <th className="p-4 text-center">Produced Qty</th>
-              <th className="p-4">Warehouse</th>
-              <th className="p-4 text-center">Status</th>
-              <th className="p-4 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {filteredRecords.map((w) => (
-              <tr key={w.id} className="hover:bg-slate-50">
-                <td className="p-4 font-mono font-bold text-xs">{w.productionNo}</td>
-                <td className="p-4 text-xs">{w.productionDate}</td>
-                <td className="p-4 text-xs font-mono">{w.productionPlanNo || '-'}</td>
-                <td className="p-4 text-slate-700 text-xs font-medium">{w.productSku} - {w.productName}</td>
-                <td className="p-4 text-center text-slate-500">{w.plannedQuantity}</td>
-                <td className="p-4 text-center font-bold text-slate-800">{w.producedQuantity}</td>
-                <td className="p-4 text-xs">{w.warehouseName}</td>
-                <td className="p-4 text-center">{getStatusBadge(w.status)}</td>
-                <td className="p-4 text-center">
-                  <Button variant="ghost" size="sm" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }}>
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {filteredRecords.length === 0 && (
-              <tr><td colSpan={9} className="p-8 text-center text-slate-500">No records found.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+            {/* Search Row */}
+            <div className="flex items-center gap-2 p-1.5 bg-[#f8fafc] border-b border-slate-300">
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Enter text to search..." 
+                  className="w-48 px-2 py-0.5 text-[11px] border border-slate-300 bg-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button className="absolute right-0 top-0 h-full px-1 border-l border-slate-300 hover:bg-slate-100 flex items-center justify-center">
+                  <span className="w-0 h-0 border-l-[3px] border-r-[3px] border-t-[4px] border-transparent border-t-slate-600"></span>
+                </button>
+              </div>
+              <button className="px-3 py-0.5 text-[11px] bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black hover:bg-slate-200">
+                Find
+              </button>
+              <button className="px-3 py-0.5 text-[11px] bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black hover:bg-slate-200" onClick={() => setSearchTerm('')}>
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <Card className="p-0 overflow-hidden shadow-sm flex-1">
+            <div className="w-full h-full overflow-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap min-w-max">
+                <thead className="bg-slate-100 uppercase text-[11px] font-semibold text-slate-700 border-b sticky top-0 z-10">
+                  <tr>
+                    <th className="p-4 border-r border-slate-200 font-bold">REF NO</th>
+                    <th className="p-4 border-r border-slate-200 font-bold">DATE</th>
+                    <th className="p-4 border-r border-slate-200 font-bold">NOTE</th>
+                    <th className="p-4 border-r border-slate-200 font-bold">IN CHARGE</th>
+                    <th className="p-4 border-r border-slate-200 font-bold">LOCATION</th>
+                    <th className="p-4 text-center font-bold">POSTED</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {filteredRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-500 text-xs">No records found.</td>
+                    </tr>
+                  ) : (
+                    filteredRecords.map((w) => (
+                      <tr key={w.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }}>
+                        <td className="p-4 font-mono font-bold text-xs">{w.productionNo}</td>
+                        <td className="p-4 text-xs">{w.productionDate}</td>
+                        <td className="p-4 text-xs">{w.remarks || ''}</td>
+                        <td className="p-4 text-xs text-slate-700">{w.createdBy}</td>
+                        <td className="p-4 text-xs font-medium">{w.warehouseName}</td>
+                        <td className="p-4 text-center">
+                          <input type="checkbox" checked={w.status === 'COMPLETED'} readOnly className="mt-0.5" />
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+          
+          <div className="flex flex-col px-2 py-1 bg-[#f0f4f8] text-[10px] text-slate-600 shrink-0 border border-slate-300">
+            <div className="flex items-center gap-2">
+              <button className="hover:text-blue-600">|◀</button>
+              <button className="hover:text-blue-600">◀</button>
+              <span>Production {filteredRecords.length > 0 ? '1' : '0'} of {filteredRecords.length}</span>
+              <button className="hover:text-blue-600">▶</button>
+              <button className="hover:text-blue-600">▶|</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isFormModalOpen && (
-        <Modal isOpen onClose={() => setIsFormModalOpen(false)} title="New Production Execution" className="max-w-[900px]">
-          <div className="p-6">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="col-span-1">
-                <label className="block text-xs font-semibold mb-1">Production Date</label>
-                <Input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} />
+        <Modal isOpen onClose={() => setIsFormModalOpen(false)} title="" className="max-w-[1000px] w-full p-0 flex flex-col bg-[#e6e8eb] shadow-2xl border border-slate-400">
+          <div className="flex flex-col h-[550px] font-sans">
+            <div className="flex items-center justify-between px-2 py-1 bg-gradient-to-b from-[#f5f6f8] to-[#e6e8eb] border-b border-slate-300 shadow-[inset_0_1px_0_#fff]">
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-bold text-slate-800">New Production</span>
               </div>
-              <div className="col-span-1">
-                <label className="block text-xs font-semibold mb-1">Production Plan # (Optional)</label>
-                <Input type="text" value={formPlanNo} onChange={(e) => setFormPlanNo(e.target.value)} placeholder="e.g. PPL-2026-0001" />
-              </div>
-              <div className="col-span-1">
-                <label className="block text-xs font-semibold mb-1">Warehouse</label>
-                <Select value={formWarehouse} onChange={(e) => setFormWarehouse(e.target.value)} options={[{ value: '', label: 'Select...' }, ...WAREHOUSES.map(w => ({ value: w.id, label: w.name }))]} />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-slate-50 border rounded-lg items-end">
-              <div className="col-span-1">
-                <label className="block text-xs font-semibold mb-1 text-blue-700">Finished Product</label>
-                <Select value={formProduct} onChange={(e) => setFormProduct(e.target.value)} options={[{ value: '', label: 'Select Product...' }, ...products.map((p: any) => ({ value: p.id, label: `${p.sku} - ${p.name}` }))]} />
-              </div>
-              <div className="col-span-1">
-                <label className="block text-xs font-semibold mb-1 text-slate-500">Planned Qty</label>
-                <Input type="number" min="0" value={formPlannedQty || ''} onChange={(e) => setFormPlannedQty(parseInt(e.target.value) || 0)} />
-              </div>
-              <div className="col-span-1">
-                <label className="block text-xs font-semibold mb-1 text-emerald-700">Actual Produced Qty</label>
-                <Input type="number" min="0" value={formProducedQty || ''} onChange={(e) => setFormProducedQty(parseInt(e.target.value) || 0)} />
+              <div className="flex items-center gap-1">
+                <button className="hover:bg-slate-300 p-0.5 rounded" onClick={() => setIsFormModalOpen(false)}>
+                  <X className="w-4 h-4 text-slate-700" />
+                </button>
               </div>
             </div>
 
-            <div className="mb-4">
-               <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-sm">Material Consumption</h3>
-                  <Select 
-                    value="" 
-                    onChange={(e) => { if(e.target.value) addMaterial(e.target.value); }}
-                    options={[{ value: '', label: '+ Add Material' }, ...products.map((p: any) => ({ value: p.id, label: `${p.sku} - ${p.name}` }))]}
-                  />
-               </div>
-               <table className="w-full text-left text-sm border rounded">
-                  <thead className="bg-slate-100 text-xs">
-                     <tr>
-                        <th className="p-2">Material</th>
-                        <th className="p-2 w-24">Req. Qty</th>
-                        <th className="p-2 w-24">Cons. Qty</th>
-                        <th className="p-2">Remarks</th>
-                        <th className="p-2 w-10"></th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     {formMaterials.map((m, i) => (
-                        <tr key={m.id} className="border-t">
-                           <td className="p-2 text-xs">{m.productSku} - {m.productName}</td>
-                           <td className="p-2">
-                              <Input type="number" min="0" value={m.requiredQuantity || ''} onChange={(e) => setFormMaterials(formMaterials.map((fm, fi) => fi === i ? { ...fm, requiredQuantity: parseInt(e.target.value) || 0 } : fm))} />
-                           </td>
-                           <td className="p-2">
-                              <Input type="number" min="0" value={m.consumedQuantity || ''} onChange={(e) => setFormMaterials(formMaterials.map((fm, fi) => fi === i ? { ...fm, consumedQuantity: parseInt(e.target.value) || 0 } : fm))} />
-                           </td>
-                           <td className="p-2">
-                              <Input type="text" value={m.remarks} onChange={(e) => setFormMaterials(formMaterials.map((fm, fi) => fi === i ? { ...fm, remarks: e.target.value } : fm))} />
-                           </td>
-                           <td className="p-2">
-                              <Button variant="ghost" size="sm" onClick={() => setFormMaterials(formMaterials.filter((_, fi) => fi !== i))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
-                           </td>
-                        </tr>
-                     ))}
-                     {formMaterials.length === 0 && (
-                        <tr><td colSpan={5} className="p-4 text-center text-xs text-slate-500">No materials added.</td></tr>
-                     )}
-                  </tbody>
-               </table>
+            <div className="flex items-center gap-2 p-1 bg-[#f0f4f8] border-b border-slate-300">
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(false)}>
+                <Save className="w-3.5 h-3.5 text-blue-600" /> Save
+              </button>
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(false)}>
+                <Save className="w-3.5 h-3.5 text-blue-600" /> Save & New
+              </button>
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(true)}>
+                <Save className="w-3.5 h-3.5 text-blue-600" /> Save & Close
+              </button>
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(true)}>
+                <CheckCircle className="w-3.5 h-3.5 text-yellow-500" /> Post
+              </button>
             </div>
 
-            <div className="mb-4">
-                <label className="block text-xs font-semibold mb-1">Production Remarks</label>
-                <Input value={formRemarks} onChange={(e) => setFormRemarks(e.target.value)} placeholder="Additional notes..." />
-            </div>
+            <div className="flex-1 flex flex-col p-2 bg-[#f0f4f8]">
+              <div className="flex gap-16 mb-2 pl-1">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] text-slate-700 w-16">Date</label>
+                    <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-48 text-xs h-[22px] border border-slate-300 px-1 bg-white" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] text-slate-700 w-16">Location</label>
+                    <select value={formWarehouse} onChange={(e) => setFormWarehouse(e.target.value)} className="w-48 text-xs h-[22px] border border-slate-300 px-1 bg-white text-slate-600">
+                      <option value="">Select Location...</option>
+                      {WAREHOUSES.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] text-slate-700 w-16">In Charge</label>
+                    <select className="w-48 text-xs h-[22px] border border-slate-300 px-1 bg-white text-slate-600">
+                      <option value="Administrator">Administrator</option>
+                    </select>
+                  </div>
+                </div>
 
-            <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setIsFormModalOpen(false)}>Cancel</Button>
-              <Button variant="outline" onClick={() => handleSaveForm(false)}>Save Draft</Button>
-              <Button variant="primary" onClick={() => handleSaveForm(true)}>Start Production</Button>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] text-slate-700 w-16">Packed By</label>
+                    <select className="w-48 text-xs h-[22px] border border-slate-300 px-1 bg-white text-slate-600">
+                      <option value="Administrator">Administrator</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[11px] text-slate-700 w-16">Plan No</label>
+                    <input type="text" value={formPlanNo} onChange={(e) => setFormPlanNo(e.target.value)} className="w-24 text-xs h-[22px] border border-slate-300 px-1 bg-white" />
+                    <button className="px-3 h-[22px] bg-[#f0f4f8] border border-slate-400 text-[11px] text-slate-800 shadow-[inset_1px_1px_0px_#fff] hover:bg-slate-200">Search</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 min-h-[200px] bg-white border border-slate-300 rounded-sm relative flex flex-col mt-2">
+                <div className="flex-1 overflow-auto flex flex-col relative">
+                  <table className="w-full h-full text-left text-[11px] whitespace-nowrap min-w-max border-collapse">
+                    <thead className="bg-[#f8fafc] text-slate-700 border-b border-slate-300 sticky top-0 z-10 shadow-sm font-normal">
+                      <tr>
+                        <th className="p-1 px-2 border-r border-slate-200 text-center w-8 font-normal">*</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-center">SlNo</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">Code</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">Barcode</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">ItemName</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-center">Unit</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-center">UOM</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Labour Cost</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Production Cost</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Qty</th>
+                        <th className="p-1 px-2 border-slate-200 w-8 text-center"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="hover:bg-slate-50 h-7 border-b border-slate-200">
+                        <td className="p-1 border-r border-slate-200 text-center font-bold text-slate-800">▶</td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300 text-right" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300 text-right" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300 text-right" placeholder="" />
+                        </td>
+                        <td className="p-1 text-center">
+                          <button className="text-red-500 hover:text-red-700">
+                            <X className="w-4 h-4 mx-auto" strokeWidth={3} />
+                          </button>
+                        </td>
+                      </tr>
+                      <tr className="h-full">
+                        <td colSpan={11}></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="flex flex-col px-2 py-1 bg-[#f0f4f8] text-[10px] text-slate-600 shrink-0 border-t border-slate-300 flex-row justify-between">
+                  <div className="flex items-center gap-2">
+                    <button className="hover:text-blue-600">|◀</button>
+                    <button className="hover:text-blue-600">◀</button>
+                    <span>Products 0 of 0</span>
+                    <button className="hover:text-blue-600">▶</button>
+                    <button className="hover:text-blue-600">▶|</button>
+                  </div>
+                  <div className="flex items-center gap-2 pr-6">
+                    <div className="border border-slate-300 bg-white px-2 py-0.5 w-24 text-right">0.000000000</div>
+                    <div className="border border-slate-300 bg-white px-2 py-0.5 w-24 text-right">0.000000000</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 mt-2 pl-1">
+                <label className="text-[11px] text-slate-700 w-10 mt-1">Note</label>
+                <textarea className="w-80 h-[40px] text-xs border border-slate-300 p-1 bg-white resize-none" value={formRemarks} onChange={(e) => setFormRemarks(e.target.value)}></textarea>
+                <button className="text-blue-700 hover:underline text-[11px] font-medium mt-1 ml-2">
+                  [F4] - View Consumed Materials
+                </button>
+              </div>
             </div>
           </div>
         </Modal>

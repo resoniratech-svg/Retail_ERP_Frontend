@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '@qatar-erp/ui';
-import { Plus, Search, Eye, Edit, Trash2, Power, ArrowRight, CheckSquare } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Power, ArrowRight, CheckSquare, Save, X, UploadCloud, Printer } from 'lucide-react';
 import { productsService } from '@qatar-erp/api';
 import { Product, Warehouse } from '@qatar-erp/types';
 
@@ -389,279 +389,373 @@ export const StockTakingPage: React.FC = () => {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
       {!isFormModalOpen && (
         <div className="flex flex-col h-full gap-2">
-          {/* Desktop App Style Action Toolbar */}
-          <div className="flex items-center gap-4 px-3 py-1.5 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 shadow-sm text-[12px] text-slate-700 dark:text-slate-300">
-            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-              <Power className="w-4 h-4 text-blue-600 rotate-180" /> Unpost
-            </button>
-            <div className="ml-auto">
-              <Button variant="primary" onClick={handleOpenNew} className="h-6 text-[11px] px-2 py-0 bg-emerald-600 hover:bg-emerald-700 border-none">
-                <Plus className="w-3 h-3 mr-1 inline" /> New Stock Taking
-              </Button>
+          <div className="flex flex-col border border-slate-300 dark:border-slate-700 rounded-sm bg-[#f1f5f9] dark:bg-slate-800 shadow-sm">
+            {/* Top Action Bar */}
+            <div className="flex flex-wrap items-center justify-between p-1 border-b border-slate-300 dark:border-slate-700">
+              <div className="flex items-center">
+                <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+                  <Save className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Save Layout</span>
+                </button>
+                <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+                  <Power className="w-3.5 h-3.5 text-slate-600 rotate-180" />
+                  <span>Unpost</span>
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2 pr-2">
+                <Button variant="primary" className="py-1 px-2 text-xs h-7 flex items-center gap-1 font-bold" onClick={handleOpenNew}>
+                  <Plus className="w-3.5 h-3.5" /> New Stock Taking
+                </Button>
+              </div>
+            </div>
+
+            {/* Serial Search Row */}
+            <div className="flex items-center gap-3 p-1.5 bg-[#e2e8f0] dark:bg-slate-900 border-b border-slate-300">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-slate-700 font-medium ml-1">Serial Search</span>
+                <input type="text" className="w-48 px-2 py-0.5 text-xs border border-slate-300 rounded bg-white" />
+                <button className="flex items-center gap-1 px-2 py-0.5 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50">
+                  <Search className="w-3 h-3 text-blue-500" /> Search
+                </button>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-[11px] text-slate-700">Records</span>
+                <input type="text" value="0" readOnly className="w-16 px-2 py-0.5 text-xs border border-slate-300 rounded bg-slate-100 text-center" />
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-[11px] text-slate-700">List Type</span>
+                <select className="px-2 py-0.5 text-xs border border-slate-300 rounded bg-white w-32">
+                  <option>All</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Header */}
+            <div className="bg-slate-200 text-slate-700 text-center text-[11px] font-bold py-1 border-b border-slate-300">
+              StockTakings
+            </div>
+
+            {/* Search Bar Row */}
+            <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-900 border-b border-slate-300">
+              <input
+                type="text"
+                placeholder="Enter text to search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64 px-2 py-1 text-xs border border-slate-300 rounded bg-white focus:outline-none focus:border-primary-500 ml-1"
+              />
+              <button className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium">
+                Find
+              </button>
+              <button 
+                className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium"
+                onClick={() => setSearchTerm('')}
+              >
+                Clear
+              </button>
             </div>
           </div>
 
-          <div className="bg-slate-200 dark:bg-slate-800 text-center py-1 text-[12px] font-bold text-slate-700 dark:text-slate-300 border-b border-slate-300 dark:border-slate-700 shadow-sm">
-            StockTakings
-          </div>
-
-          <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1 flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Enter text to search..."
-              className="w-64 border border-slate-300 dark:border-slate-600 px-2 py-1 bg-white dark:bg-slate-950 text-[11px] shadow-sm rounded-sm focus:outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button className="px-4 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm text-slate-700 dark:text-slate-300">
-              Find
-            </button>
-            <button 
-              className="px-4 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm text-slate-700 dark:text-slate-300"
-              onClick={() => setSearchTerm('')}
-            >
-              Clear
-            </button>
-          </div>
-
-          <div className="flex-1 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-700 shadow-sm overflow-auto">
-            <table className="w-full text-left whitespace-nowrap border-collapse text-slate-700 dark:text-slate-300 table-fixed">
-              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 shadow-sm text-slate-800 dark:text-slate-200 uppercase text-[9px] font-bold">
-                <tr>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Ref No</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Date</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700 text-right">Amount</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700 text-center w-24">Posted</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Location</th>
-                  <th className="px-2 py-2 text-center w-16">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50 text-[10px]">
-                {filteredRecords.map((st) => (
-                  <tr key={st.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20">
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{st.stockTakeNo}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{st.countDate}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate text-right font-medium">{st.totalVarianceValue.toFixed(2)}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate text-center">
-                      {st.status === 'COMPLETED' || st.status === 'APPROVED' ? <CheckSquare className="w-3 h-3 text-emerald-600 inline-block" /> : ''}
-                    </td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{st.warehouseName}</td>
-                    <td className="px-2 py-1.5 text-center">
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(st)} className="h-5 px-2 py-0">
-                        <Eye className="w-3 h-3" />
-                      </Button>
-                    </td>
+          <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-300 rounded-sm relative">
+            <div className="flex-1 overflow-auto flex flex-col relative">
+              <table className="w-full h-full text-left text-[11px] whitespace-nowrap min-w-max">
+                <thead className="bg-slate-100 uppercase font-semibold text-slate-700 border-b border-slate-200 sticky top-0 z-10">
+                  <tr>
+                    <th className="p-4">Ref No</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4 text-right">Amount</th>
+                    <th className="p-4 text-center">Posted</th>
+                    <th className="p-4">Location</th>
+                    <th className="p-4 text-center">Actions</th>
                   </tr>
-                ))}
-                {filteredRecords.length === 0 && (
-                  <tr><td colSpan={6} className="p-4 text-center text-slate-500">No stock taking records found.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 border border-slate-300 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
-            <div className="flex items-center gap-1">
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">|&lt;&lt;</button>
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&lt;</button>
-              <span className="px-2">StockTakings 0 of 0</span>
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&gt;</button>
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&gt;&gt;|</button>
-            </div>
-            <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 px-8 py-0.5 min-w-[120px] text-right font-bold text-slate-800 dark:text-slate-200">
-              {filteredRecords.reduce((sum, st) => sum + st.totalVarianceValue, 0).toFixed(2)}
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {filteredRecords.map((st) => (
+                    <tr key={st.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="p-4 font-mono font-bold text-xs">{st.stockTakeNo}</td>
+                      <td className="p-4 text-xs">{st.countDate}</td>
+                      <td className="p-4 text-right text-slate-600 text-xs">{st.totalVarianceValue.toFixed(2)}</td>
+                      <td className="p-4 text-center text-xs">
+                        {st.status === 'COMPLETED' || st.status === 'APPROVED' ? <CheckSquare className="w-4 h-4 text-emerald-600 inline-block" /> : ''}
+                      </td>
+                      <td className="p-4 text-xs text-slate-600">{st.warehouseName}</td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" onClick={() => handleEdit(st)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredRecords.length === 0 && (
+                    <tr><td colSpan={6} className="p-8 text-center text-slate-500 text-xs">No stock takes found.</td></tr>
+                  )}
+                  {/* Filler row to push footer to bottom */}
+                  <tr className="h-full">
+                    <td colSpan={6}></td>
+                  </tr>
+                </tbody>
+                <tfoot className="sticky bottom-0 bg-slate-100 dark:bg-slate-800 border-t border-slate-300 z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+                  <tr>
+                    <td colSpan={2}></td>
+                    <td className="p-1 align-middle text-right">
+                      <input 
+                        type="text" 
+                        value={filteredRecords.reduce((sum, st) => sum + st.totalVarianceValue, 0).toFixed(2)} 
+                        readOnly 
+                        className="w-full min-w-[70px] max-w-[120px] ml-auto px-2 py-1 text-xs text-right border border-slate-300 rounded bg-white font-bold text-slate-800" 
+                      />
+                    </td>
+                    <td colSpan={3}></td>
+                  </tr>
+                </tfoot>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- ADD / EDIT MODAL --- */}
+      {/* --- ADD / EDIT FORM (EMBEDDED) --- */}
       {isFormModalOpen && (
-        <Modal
-          isOpen={isFormModalOpen}
-          onClose={() => setIsFormModalOpen(false)}
-          title={formData.id ? `Edit Stock Take: ${formData.stockTakeNo}` : "New Stock Take"}
-          className="max-w-[1200px]"
-        >
-          <div className="w-full p-4 md:p-6 overflow-y-auto max-h-[75vh] [&::-webkit-scrollbar]:hidden">
-            {formError && (
-              <div className="mb-4 p-3 bg-rose-50 text-rose-600 text-sm rounded-md font-medium border border-rose-200">
-                {formError}
-              </div>
-            )}
+        <div className="relative flex-1 bg-[#f0f4f8] flex flex-col border border-slate-300 dark:border-slate-800 shadow-sm animate-in fade-in duration-200">
+          
+          {/* Header */}
+          <div className="px-2 py-1 border-b border-slate-300 flex items-center justify-between shrink-0 bg-white">
+            <div className="flex items-center text-[12px] font-semibold text-slate-800">
+              {formData.id ? `Edit Stock Taking: ${formData.stockTakeNo}` : "New StockTaking"}
+            </div>
+            <button onClick={() => setIsFormModalOpen(false)} className="p-0.5 hover:bg-slate-200 text-slate-500 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Top Action Bar */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-[#f1f5f9] border-b border-slate-300">
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => handleSaveForm('DRAFT')}>
+              <Save className="w-4 h-4 text-blue-600 mb-0.5" />
+              <span>Save & New</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => handleSaveForm('IN_PROGRESS')}>
+              <Save className="w-4 h-4 text-green-600 mb-0.5" />
+              <span>Save & Close</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700">
+              <UploadCloud className="w-4 h-4 text-orange-500 mb-0.5" />
+              <span>Post</span>
+            </button>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-2 bg-[#f0f4f8] flex flex-col gap-2 [&::-webkit-scrollbar]:hidden">
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="space-y-6 lg:col-span-1 border-r border-slate-100 dark:border-slate-800 pr-0 lg:pr-6">
-                <div>
-                  <h3 className="font-bold text-sm text-slate-800 border-b pb-2 mb-4">Header Details</h3>
-                  <div className="space-y-4">
-                    <Input label="Stock Take No" value={formData.stockTakeNo} disabled />
-                    
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Warehouse *</span>
-                      <Select 
-                        value={formData.warehouseId || ''}
-                        onChange={(e) => setFormData({...formData, warehouseId: e.target.value})}
-                        options={[
-                          { value: '', label: '-- Select Warehouse --' },
-                          ...warehouses.map(w => ({ value: w.id, label: w.name }))
-                        ]}
-                      />
-                    </div>
-
-                    <Input type="date" label="Count Date *" value={formData.countDate} onChange={(e) => setFormData({...formData, countDate: e.target.value})} />
-
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Count Type</span>
-                      <Select 
-                        value={formData.countType || 'Full Stock Take'}
-                        onChange={(e) => setFormData({...formData, countType: e.target.value})}
-                        options={[
-                          { value: 'Full Stock Take', label: 'Full Stock Take' },
-                          { value: 'Partial Stock Take', label: 'Partial Stock Take' }
-                        ]}
-                      />
-                    </div>
-
-                    <Input label="Reference" value={formData.reference} onChange={(e) => setFormData({...formData, reference: e.target.value})} />
-                    <Input label="Notes" value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} />
-                    <Input label="Counted By" value={formData.countedBy} disabled />
-                  </div>
-                </div>
+            {/* Details Section */}
+            <div className="bg-[#f0f4f8] border-b border-slate-300 pb-2">
+              <div className="flex items-center gap-4 text-[11px] font-bold text-slate-800 mb-2 pl-1">
+                <span>Ref #: {formData.id ? formData.stockTakeNo : "New"}</span>
               </div>
               
-              <div className="lg:col-span-2 space-y-4">
-                <h3 className="font-bold text-sm text-slate-800 border-b pb-2 mb-4">Stock Count Items</h3>
-                
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-wrap gap-4 items-end mb-4">
-                  <div className="flex-1 min-w-[200px]">
-                    <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Product</span>
-                    <Select 
-                      value={newItem.productId || ''}
-                      onChange={(e) => handleProductSelect(e.target.value)}
-                      options={[
-                        { value: '', label: '-- Select Product --' },
-                        ...products.map(p => ({ value: p.id, label: p.name }))
-                      ]}
+              <div className="flex flex-col gap-2 pl-1">
+                {/* Row 1 */}
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Barcode</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Code</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[260px]">
+                    <label className="text-[11px] font-medium text-slate-700">Item Name</label>
+                    <div className="flex gap-1">
+                      <select 
+                        className="flex-1 text-xs h-6 border border-slate-300 px-1 bg-white text-slate-600"
+                        value={newItem.productId || ''}
+                        onChange={(e) => handleProductSelect(e.target.value)}
+                      >
+                        <option value="">[Select an Item]</option>
+                        {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                      <Button variant="outline" className="h-6 w-6 p-0 shrink-0 border-slate-300 bg-white"><Plus className="w-3 h-3 text-blue-500" /></Button>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">Unit</label>
+                    <input type="text" value={newItem.unit || ''} readOnly className="w-full text-xs h-6 border border-slate-300 px-2 bg-slate-50" />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">Quantity</label>
+                    <input 
+                      type="number" 
+                      value={newItem.physicalQty?.toString() || ''} 
+                      onChange={(e) => handlePhysicalQtyChange(Number(e.target.value))} 
+                      className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" 
                     />
                   </div>
-                  
-                  {newItem.productId && (
-                    <>
-                      <div className="w-24">
-                        <Input label="Sys Qty" value={newItem.systemQty?.toString()} disabled />
-                      </div>
-                      <div className="w-24">
-                        <Input 
-                          type="number"
-                          label="Phys Qty" 
-                          value={newItem.physicalQty?.toString() || ''} 
-                          onChange={(e) => handlePhysicalQtyChange(Number(e.target.value))} 
-                        />
-                      </div>
-                      
-                      {newItem.varianceQty !== undefined && newItem.varianceQty !== 0 && (
-                        <div className="w-36">
-                          <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Reason</span>
-                          <Select 
-                            value={newItem.reason || ''}
-                            onChange={(e) => setNewItem({...newItem, reason: e.target.value})}
-                            options={[
-                              { value: '', label: 'Select Reason' },
-                              { value: 'Damaged', label: 'Damaged' },
-                              { value: 'Missing', label: 'Missing' },
-                              { value: 'Counting Error', label: 'Counting Error' },
-                              { value: 'Expired', label: 'Expired' },
-                              { value: 'Unrecorded Receipt', label: 'Unrecorded Receipt' },
-                              { value: 'Unrecorded Transfer', label: 'Unrecorded Transfer' },
-                              { value: 'Other', label: 'Other' }
-                            ]}
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                  
-                  <div className="w-full md:w-auto mt-2 md:mt-0">
-                    <Button variant="primary" onClick={handleAddItem} className="w-full">Add Item</Button>
+                  <div className="flex flex-col gap-1 w-[160px]">
+                    <label className="text-[11px] font-medium text-slate-700">Rack</label>
+                    <select className="w-full text-xs h-6 border border-slate-300 px-1 bg-white text-slate-600">
+                      <option>[Select a Rack]</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Serial #</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Batch #</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1 items-start mt-4">
+                    <Button variant="outline" className="h-6 text-[10px] px-2 py-0 border-slate-300 bg-white" onClick={handleAddItem}><Plus className="w-3 h-3 text-green-600 mr-1" /> Add (F1)</Button>
                   </div>
                 </div>
 
-                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-x-auto">
-                  <table className="w-full text-xs text-left whitespace-nowrap">
-                    <thead className="bg-slate-100 dark:bg-slate-800">
-                      <tr>
-                        <th className="p-3">SKU</th>
-                        <th className="p-3">Product</th>
-                        <th className="p-3 text-right">Sys Qty</th>
-                        <th className="p-3 text-right">Phys Qty</th>
-                        <th className="p-3 text-right">Var Qty</th>
-                        <th className="p-3 text-right">Unit Cost</th>
-                        <th className="p-3 text-right">Var Value</th>
-                        <th className="p-3">Reason</th>
-                        <th className="p-3 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {formData.items && formData.items.length > 0 ? formData.items.map(item => (
-                        <tr key={item.id}>
-                          <td className="p-3 font-mono">{item.sku}</td>
-                          <td className="p-3 font-medium">{item.productName}</td>
-                          <td className="p-3 text-right">{item.systemQty}</td>
-                          <td className="p-3 text-right font-bold text-slate-800">{item.physicalQty}</td>
-                          <td className="p-3 text-right font-bold">
-                            <span className={item.varianceQty < 0 ? "text-rose-600" : item.varianceQty > 0 ? "text-emerald-600" : ""}>
-                              {item.varianceQty > 0 ? `+${item.varianceQty}` : item.varianceQty}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right">${item.unitCost.toFixed(2)}</td>
-                          <td className="p-3 text-right font-bold">
-                            <span className={item.varianceValue < 0 ? "text-rose-600" : item.varianceValue > 0 ? "text-emerald-600" : ""}>
-                              ${item.varianceValue.toFixed(2)}
-                            </span>
-                          </td>
-                          <td className="p-3 text-slate-600">{item.reason || '-'}</td>
-                          <td className="p-3 text-center">
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-rose-500" onClick={() => handleRemoveItem(item.id)}>
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </td>
-                        </tr>
-                      )) : (
-                        <tr><td colSpan={9} className="p-6 text-center text-slate-500">No items added.</td></tr>
-                      )}
-                    </tbody>
-                    {formData.items && formData.items.length > 0 && (
-                      <tfoot className="bg-slate-50 dark:bg-slate-800 border-t border-slate-200 font-bold text-slate-700">
-                        <tr>
-                          <td colSpan={2} className="p-3 text-right">Totals:</td>
-                          <td className="p-3 text-right">{calculateTotals(formData.items).totalSystemQty}</td>
-                          <td className="p-3 text-right">{calculateTotals(formData.items).totalPhysicalQty}</td>
-                          <td className="p-3 text-right">{calculateTotals(formData.items).totalVarianceQty}</td>
-                          <td></td>
-                          <td className="p-3 text-right">
-                            <span className={calculateTotals(formData.items).totalVarianceValue < 0 ? "text-rose-600" : calculateTotals(formData.items).totalVarianceValue > 0 ? "text-emerald-600" : ""}>
-                              ${calculateTotals(formData.items).totalVarianceValue.toFixed(2)}
-                            </span>
-                          </td>
-                          <td colSpan={2}></td>
-                        </tr>
-                      </tfoot>
-                    )}
-                  </table>
+                {/* Row 2 */}
+                <div className="flex items-center gap-4 mt-1">
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Date</label>
+                    <input type="date" className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" value={formData.countDate} onChange={(e) => setFormData({...formData, countDate: e.target.value})} />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Location</label>
+                    <select 
+                      className="w-full text-xs h-6 border border-slate-300 px-1 bg-white text-slate-600"
+                      value={formData.warehouseId || ''}
+                      onChange={(e) => setFormData({...formData, warehouseId: e.target.value})}
+                    >
+                      <option value="">[Select Warehouse]</option>
+                      {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">UOM</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-slate-50" readOnly />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">Cost</label>
+                    <input type="text" value={newItem.unitCost || ''} readOnly className="w-full text-xs h-6 border border-slate-300 px-2 bg-slate-50" />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">Price</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-slate-50" readOnly />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">Tax(%)</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-slate-50" readOnly />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[100px]">
+                    <label className="text-[11px] font-medium text-slate-700">Price Incl Tax</label>
+                    <input type="text" className="w-full text-xs h-6 border border-slate-300 px-2 bg-slate-50" readOnly />
+                  </div>
+                  <div className="flex flex-col gap-1 w-[120px]">
+                    <label className="text-[11px] font-medium text-slate-700">Exp Date</label>
+                    <input type="date" className="w-full text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1 items-start mt-4">
+                    <Button variant="outline" className="h-6 text-[10px] px-2 py-0 border-slate-300 bg-white text-rose-500 hover:text-rose-600"><X className="w-3 h-3 text-rose-500 mr-1" /> Remove</Button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end gap-3 border-t pt-4">
-              <Button variant="outline" onClick={() => setIsFormModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" className="bg-slate-600 hover:bg-slate-700" onClick={() => handleSaveForm('DRAFT')}>Save Draft</Button>
-              <Button variant="primary" onClick={() => handleSaveForm(formData.status === 'IN_PROGRESS' ? 'IN_PROGRESS' : 'DRAFT')}>
-                {formData.status === 'IN_PROGRESS' ? 'Save Progress' : 'Start Count'}
-              </Button>
+            {/* Table Block */}
+            <div className="bg-white border border-slate-300 shadow-sm flex flex-col flex-1 min-h-[250px] relative">
+              <div className="flex-1 overflow-auto flex flex-col relative">
+                <table className="w-full h-full text-left text-[11px] whitespace-nowrap min-w-max border-collapse">
+                  <thead className="bg-[#f0f4f8] font-semibold text-slate-600 border-b border-slate-300 uppercase sticky top-0 z-10">
+                    <tr>
+                      <th className="p-1.5 border-r border-slate-300 w-24 bg-[#f0f4f8]">Code</th>
+                      <th className="p-1.5 border-r border-slate-300 w-32 bg-[#f0f4f8]">Barcode</th>
+                      <th className="p-1.5 border-r border-slate-300 min-w-[200px] bg-[#f0f4f8]">Product</th>
+                      <th className="p-1.5 border-r border-slate-300 w-16 bg-[#f0f4f8]">UOM</th>
+                      <th className="p-1.5 border-r border-slate-300 w-16 text-right bg-[#f0f4f8]">Qty</th>
+                      <th className="p-1.5 border-r border-slate-300 w-16 text-right bg-[#f0f4f8]">Cost</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 text-right bg-[#f0f4f8]">Amount</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 bg-[#f0f4f8]">Serial No</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 bg-[#f0f4f8]">Batch No</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 bg-[#f0f4f8]">Expiry Date</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 text-right bg-[#f0f4f8]">System Stock</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 bg-[#f0f4f8]">Rack</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 text-right bg-[#f0f4f8]">Stock Value</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 text-right bg-[#f0f4f8]">Qty Diff</th>
+                      <th className="p-1.5 border-r border-slate-300 w-24 text-right bg-[#f0f4f8]">Diff Value</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {formData.items && formData.items.length > 0 ? formData.items.map(item => (
+                      <tr key={item.id} className="hover:bg-blue-50 bg-white group relative">
+                        <td className="p-1.5 border-r border-slate-200">{item.sku}</td>
+                        <td className="p-1.5 border-r border-slate-200"></td>
+                        <td className="p-1.5 border-r border-slate-200">{item.productName}</td>
+                        <td className="p-1.5 border-r border-slate-200">{item.unit}</td>
+                        <td className="p-1.5 border-r border-slate-200 text-right font-bold text-slate-800">{item.physicalQty}</td>
+                        <td className="p-1.5 border-r border-slate-200 text-right">{item.unitCost.toFixed(2)}</td>
+                        <td className="p-1.5 border-r border-slate-200 text-right">{(item.physicalQty * item.unitCost).toFixed(2)}</td>
+                        <td className="p-1.5 border-r border-slate-200"></td>
+                        <td className="p-1.5 border-r border-slate-200"></td>
+                        <td className="p-1.5 border-r border-slate-200"></td>
+                        <td className="p-1.5 border-r border-slate-200 text-right">{item.systemQty}</td>
+                        <td className="p-1.5 border-r border-slate-200"></td>
+                        <td className="p-1.5 border-r border-slate-200 text-right">{(item.systemQty * item.unitCost).toFixed(2)}</td>
+                        <td className="p-1.5 border-r border-slate-200 text-right font-bold">
+                          <span className={item.varianceQty < 0 ? "text-rose-600" : item.varianceQty > 0 ? "text-emerald-600" : ""}>
+                            {item.varianceQty > 0 ? `+${item.varianceQty}` : item.varianceQty}
+                          </span>
+                        </td>
+                        <td className="p-1.5 border-r border-slate-200 text-right font-bold">
+                          <span className={item.varianceValue < 0 ? "text-rose-600" : item.varianceValue > 0 ? "text-emerald-600" : ""}>
+                            {item.varianceValue.toFixed(2)}
+                          </span>
+                          <button onClick={() => handleRemoveItem(item.id)} className="absolute right-2 top-1.5 hidden group-hover:flex items-center justify-center text-red-500 hover:text-red-700 bg-white shadow-sm border border-slate-200 rounded w-5 h-5">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </td>
+                      </tr>
+                    )) : null}
+                    <tr className="h-full">
+                      <td colSpan={15}></td>
+                    </tr>
+                  </tbody>
+                  <tfoot className="sticky bottom-0 bg-slate-100 border-t border-slate-300 z-10 shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+                    <tr>
+                      <td colSpan={6}></td>
+                      <td className="p-1 align-middle text-right border-r border-slate-300">
+                        <input 
+                          type="text" 
+                          value={formData.items?.reduce((sum, item) => sum + (item.physicalQty * item.unitCost), 0).toFixed(2) || "0.00"} 
+                          readOnly 
+                          className="w-full min-w-[70px] max-w-[100px] ml-auto px-2 py-1 text-[11px] text-right border border-slate-300 rounded-sm bg-white font-bold text-slate-800" 
+                        />
+                      </td>
+                      <td colSpan={5}></td>
+                      <td className="p-1 align-middle text-right border-r border-slate-300">
+                        <input 
+                          type="text" 
+                          value={formData.items?.reduce((sum, item) => sum + (item.systemQty * item.unitCost), 0).toFixed(2) || "0.00"} 
+                          readOnly 
+                          className="w-full min-w-[70px] max-w-[100px] ml-auto px-2 py-1 text-[11px] text-right border border-slate-300 rounded-sm bg-white font-bold text-slate-800" 
+                        />
+                      </td>
+                      <td colSpan={1}></td>
+                      <td className="p-1 align-middle text-right">
+                        <input 
+                          type="text" 
+                          value={calculateTotals(formData.items || []).totalVarianceValue.toFixed(2)} 
+                          readOnly 
+                          className="w-full min-w-[70px] max-w-[100px] ml-auto px-2 py-1 text-[11px] text-right border border-slate-300 rounded-sm bg-white font-bold text-slate-800" 
+                        />
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
+
           </div>
-        </Modal>
+        </div>
       )}
 
       {/* --- VIEW MODAL --- */}

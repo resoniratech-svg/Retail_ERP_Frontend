@@ -158,238 +158,259 @@ export const ConsignmentReturnPage: React.FC = () => {
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
       {!isFormModalOpen && (
         <div className="flex flex-col h-full gap-2">
-          {/* Desktop App Style Action Toolbar */}
-          <div className="flex items-center gap-4 px-3 py-1.5 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 shadow-sm text-[12px] text-slate-700 dark:text-slate-300">
-            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-              <Save className="w-4 h-4 text-blue-600" /> Save Layout
-            </button>
-            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-              <Printer className="w-4 h-4 text-slate-500" /> Print
-            </button>
-            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
-              <Download className="w-4 h-4 text-blue-500" /> Print Digital
-            </button>
-            <div className="ml-auto">
-              <Button variant="primary" onClick={openNewForm} className="h-6 text-[11px] px-2 py-0 bg-emerald-600 hover:bg-emerald-700 border-none">
-                <Plus className="w-3 h-3 mr-1 inline" /> New Return
-              </Button>
+          <div className="flex flex-col border border-slate-300 dark:border-slate-700 rounded-sm bg-[#f1f5f9] dark:bg-slate-800 shadow-sm">
+            {/* Top Action Bar */}
+            <div className="flex flex-wrap items-center justify-between p-1 border-b border-slate-300 dark:border-slate-700">
+              <div className="flex items-center">
+                <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+                  <Save className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Save Layout</span>
+                </button>
+                <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+                  <Printer className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Print</span>
+                </button>
+                <button className="flex items-center gap-1 px-3 py-1 text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-300">
+                  <Download className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Print Digital</span>
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2 pr-2">
+                <Button variant="primary" className="py-1 px-2 text-xs h-7 flex items-center gap-1 font-bold" onClick={openNewForm}>
+                  <Plus className="w-3.5 h-3.5" /> New Return
+                </Button>
+              </div>
             </div>
-          </div>
 
-          <div className="bg-slate-200 dark:bg-slate-800 text-center py-1 text-[12px] font-bold text-slate-700 dark:text-slate-300 border-b border-slate-300 dark:border-slate-700 shadow-sm">
-            ConsignmentReturns
-          </div>
-
-          <div className="bg-slate-50 dark:bg-slate-800/50 px-2 py-1 flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Enter text to search..."
-              className="w-64 border border-slate-300 dark:border-slate-600 px-2 py-1 bg-white dark:bg-slate-950 text-[11px] shadow-sm rounded-sm focus:outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button className="px-4 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm text-slate-700 dark:text-slate-300">
-              Find
-            </button>
-            <button 
-              className="px-4 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-sm text-[11px] font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm text-slate-700 dark:text-slate-300"
-              onClick={() => setSearchTerm('')}
-            >
-              Clear
-            </button>
-          </div>
-
-          <div className="flex-1 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-700 shadow-sm overflow-auto">
-            <table className="w-full text-left whitespace-nowrap border-collapse text-slate-700 dark:text-slate-300 table-fixed">
-              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 shadow-sm text-slate-800 dark:text-slate-200 uppercase text-[9px] font-bold">
-                <tr>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Ref No</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Date</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Consignment Return No</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Vendor Name</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Location</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Other Ref No</th>
-                  <th className="px-2 py-2 border-r border-slate-300 dark:border-slate-700">Notes</th>
-                  <th className="px-2 py-2 text-center w-16">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50 text-[10px]">
-                {filteredRecords.map((w) => (
-                  <tr key={w.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20">
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{w.id}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{w.returnDate}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{w.returnNo}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{w.vendorName}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">Saudi Arabia</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{w.consignmentNo}</td>
-                    <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700/50 truncate">{w.notes}</td>
-                    <td className="px-2 py-1.5 text-center">
-                      <Button variant="ghost" size="sm" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }} className="h-5 px-2 py-0">
-                        <Eye className="w-3 h-3" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-                {filteredRecords.length === 0 && (
-                  <tr><td colSpan={8} className="p-4 text-center text-slate-500">No consignment return records found.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 border border-slate-300 dark:border-slate-700 flex items-center text-[11px] text-slate-600 dark:text-slate-400">
-            <div className="flex items-center gap-1">
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">|&lt;&lt;</button>
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&lt;</button>
-              <span className="px-2">ConsignmentReturn 0 of 0</span>
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&gt;</button>
-              <button className="px-1 hover:text-slate-900 dark:hover:text-white">&gt;&gt;|</button>
+            {/* Serial Search Row */}
+            <div className="flex items-center gap-3 p-1.5 bg-[#e2e8f0] dark:bg-slate-900 border-b border-slate-300">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-slate-700 font-medium ml-1">Serial Search</span>
+                <input type="text" className="w-48 px-2 py-0.5 text-xs border border-slate-300 rounded bg-white" />
+                <button className="flex items-center gap-1 px-2 py-0.5 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50">
+                  <Search className="w-3 h-3 text-blue-500" /> Search
+                </button>
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-[11px] text-slate-700">Records</span>
+                <input type="text" value="0" readOnly className="w-16 px-2 py-0.5 text-xs border border-slate-300 rounded bg-slate-100 text-center" />
+              </div>
+              <div className="flex items-center gap-2 ml-4">
+                <span className="text-[11px] text-slate-700">List Type</span>
+                <select className="px-2 py-0.5 text-xs border border-slate-300 rounded bg-white w-32">
+                  <option>All</option>
+                </select>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* New Consignment Overlay Ribbon */}
-      {isFormModalOpen && (
-        <div className="absolute inset-0 bg-slate-100 dark:bg-slate-900 z-50 flex flex-col">
-          {/* GRN Style Top Action Toolbar */}
-          <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 px-3 py-2 shadow-sm text-[12px] font-medium">
-            <button onClick={() => handleSaveForm('DRAFT')} className="flex items-center gap-1.5 hover:text-blue-600 transition-colors text-slate-700 dark:text-slate-300">
-              <Save className="w-4 h-4 text-blue-600" /> Save
-            </button>
-            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors text-slate-700 dark:text-slate-300">
-              <Save className="w-4 h-4 text-emerald-600" /> Save & New
-            </button>
-            <button onClick={() => handleSaveForm('APPROVED')} className="flex items-center gap-1.5 hover:text-blue-600 transition-colors text-slate-700 dark:text-slate-300">
-              <Save className="w-4 h-4 text-green-600" /> Save & Close
-            </button>
-            <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-            <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors text-slate-700 dark:text-slate-300">
-              <UploadCloud className="w-4 h-4 text-orange-500" /> Post <span className="text-[10px] text-slate-400 font-normal ml-1">Ctrl + P</span>
-            </button>
-            
-            <div className="ml-auto flex items-center pr-2">
-              <button onClick={() => setIsFormModalOpen(false)} className="flex items-center justify-center hover:bg-rose-500 hover:text-white w-6 h-6 rounded border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 transition-colors bg-white dark:bg-slate-800 shadow-sm" title="Close">
-                <X className="w-4 h-4" />
+            {/* Header */}
+            <div className="bg-slate-200 text-slate-700 text-center text-[11px] font-bold py-1 border-b border-slate-300">
+              ConsignmentReturns
+            </div>
+
+            {/* Search Bar Row */}
+            <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-900 border-b border-slate-300">
+              <input
+                type="text"
+                placeholder="Enter text to search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64 px-2 py-1 text-xs border border-slate-300 rounded bg-white focus:outline-none focus:border-primary-500 ml-1"
+              />
+              <button className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium">
+                Find
+              </button>
+              <button 
+                className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium"
+                onClick={() => setSearchTerm('')}
+              >
+                Clear
               </button>
             </div>
           </div>
 
-          {/* Consignment Details Header */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-300 dark:border-slate-700">
-            <div className="px-3 py-1.5 font-bold text-slate-800 dark:text-slate-200 text-[12px]">
-              ConsignmentReturn Details <span className="ml-2 font-normal">Ref#: New</span>
+          <Card className="p-0 overflow-hidden shadow-sm flex-1">
+            <div className="w-full h-full overflow-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap min-w-max">
+                <thead className="bg-slate-100 uppercase text-[11px] font-semibold text-slate-700 border-b sticky top-0 z-10">
+                  <tr>
+                    <th className="p-4">Ref No</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4">Consignment Return No</th>
+                    <th className="p-4">Vendor Name</th>
+                    <th className="p-4">Location</th>
+                    <th className="p-4">Other Ref No</th>
+                    <th className="p-4">Notes</th>
+                    <th className="p-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {filteredRecords.map((w) => (
+                    <tr key={w.id} className="hover:bg-slate-50">
+                      <td className="p-4 font-mono font-bold text-xs">{w.id}</td>
+                      <td className="p-4">{w.returnDate}</td>
+                      <td className="p-4">{w.returnNo}</td>
+                      <td className="p-4 font-medium">{w.vendorName}</td>
+                      <td className="p-4 text-xs text-slate-600">Saudi Arabia</td>
+                      <td className="p-4">{w.consignmentNo}</td>
+                      <td className="p-4">{w.notes}</td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredRecords.length === 0 && (
+                    <tr><td colSpan={8} className="p-8 text-center text-slate-500">No consignment return records found.</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-            <div className="px-3 pb-3 flex flex-col gap-2 text-[12px] text-slate-800 dark:text-slate-200 font-medium">
-              {/* Row 1 */}
-              <div className="flex gap-4">
-                <div className="flex flex-col gap-1 w-[180px]">
-                  <span>Consignment Return Ref#</span>
-                  <input type="text" className="border border-slate-300 dark:border-slate-600 px-1.5 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[24px] rounded-sm focus:outline-none focus:border-blue-500 text-[12px] font-normal" />
-                </div>
-                <div className="flex flex-col gap-1 w-[120px]">
-                  <span>Date</span>
-                  <input type="date" defaultValue={returnDate} className="border border-slate-300 dark:border-slate-600 px-1.5 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[24px] rounded-sm focus:outline-none focus:border-blue-500 text-[12px] font-normal" />
-                </div>
-                <div className="flex flex-col gap-1 w-[200px]">
-                  <span>Vendor</span>
-                  <div className="flex gap-1">
-                    <select className="flex-1 border border-slate-300 dark:border-slate-600 px-1.5 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[24px] rounded-sm focus:outline-none focus:border-blue-500 text-[12px] font-normal text-slate-500">
+          </Card>
+        </div>
+      )}
+
+      {/* --- ADD / EDIT FORM (EMBEDDED) --- */}
+      {isFormModalOpen && (
+        <div className="relative flex-1 bg-[#f0f4f8] flex flex-col border border-slate-300 dark:border-slate-800 shadow-sm animate-in fade-in duration-200">
+          
+          {/* Header */}
+          <div className="px-2 py-1 border-b border-slate-300 flex items-center justify-between shrink-0 bg-white">
+            <div className="flex items-center text-[12px] font-semibold text-slate-800">
+              New ConsignmentReturn - DART POS
+            </div>
+            <button onClick={() => setIsFormModalOpen(false)} className="p-0.5 hover:bg-slate-200 text-slate-500 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Top Action Bar */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-[#f1f5f9] border-b border-slate-300">
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => handleSaveForm('DRAFT')}>
+              <Save className="w-4 h-4 text-blue-600 mb-0.5" />
+              <span>Save</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => handleSaveForm('DRAFT')}>
+              <Save className="w-4 h-4 text-emerald-600 mb-0.5" />
+              <span>Save & New</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => handleSaveForm('APPROVED')}>
+              <Save className="w-4 h-4 text-green-600 mb-0.5" />
+              <span>Save & Close</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700">
+              <UploadCloud className="w-4 h-4 text-orange-500 mb-0.5" />
+              <span>Post</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700">
+              <Trash2 className="w-4 h-4 text-red-500 mb-0.5" />
+              <span>Remove</span>
+            </button>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700">
+              <Printer className="w-4 h-4 text-blue-500 mb-0.5" />
+              <span>Save & Print</span>
+            </button>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-2 bg-[#f0f4f8] flex flex-col gap-2 [&::-webkit-scrollbar]:hidden">
+            
+            {/* Details Section */}
+            <div className="bg-[#f0f4f8] border-b border-slate-300 pb-2">
+              <div className="flex items-center gap-4 text-[11px] font-bold text-slate-800 mb-2 pl-1">
+                <span>ConsignmentReturn Details</span>
+                <span className="font-normal text-slate-600">Ref#: New</span>
+              </div>
+              
+              <div className="flex flex-col gap-2 pl-1">
+                {/* Row 1 */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1 w-[260px]">
+                    <label className="text-[11px] font-medium text-slate-700 w-32">Consignment Return Ref#</label>
+                    <input type="text" className="flex-1 text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
+                  <div className="flex items-center gap-1 w-[180px]">
+                    <label className="text-[11px] font-medium text-slate-700 w-12 pl-2">Date</label>
+                    <input type="date" className="flex-1 text-xs h-6 border border-slate-300 px-2 bg-white" defaultValue={returnDate} />
+                  </div>
+                  <div className="flex items-center gap-1 w-[260px]">
+                    <label className="text-[11px] font-medium text-slate-700 w-16 pl-2">Vendor</label>
+                    <select className="flex-1 text-xs h-6 border border-slate-300 px-1 bg-white text-slate-600">
                       <option>[Select a Vendor]</option>
                     </select>
-                    <div className="w-[24px] h-[24px] bg-blue-50 dark:bg-blue-900/30 border border-blue-400 dark:border-blue-700 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-[16px] leading-none cursor-pointer hover:bg-blue-100 shrink-0">+</div>
-                    <span className="text-slate-500 font-medium self-center text-[10px]">F4</span>
+                    <Button variant="outline" className="h-6 w-6 p-0 shrink-0 border-slate-300 bg-white"><Plus className="w-3 h-3 text-blue-500" /></Button>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 w-[160px]">
-                  <span>Other Ref#</span>
-                  <input type="text" className="border border-slate-300 dark:border-slate-600 px-1.5 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[24px] rounded-sm focus:outline-none focus:border-blue-500 text-[12px] font-normal" />
-                </div>
-                <div className="flex items-end pb-[1px] pl-4">
-                  <button className="flex items-center justify-center gap-1.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 h-[24px] rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors font-medium">
-                    <Save className="w-3.5 h-3.5 text-slate-500" /> Save
-                  </button>
-                </div>
-                
-                <div className="ml-auto flex items-end gap-2 pb-[1px] pr-2">
-                  <button className="flex items-center justify-center gap-1.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 h-[24px] rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors font-medium">
-                    <Trash2 className="w-3.5 h-3.5 text-red-500" /> 
-                    Remove <span className="text-[9px] text-slate-400 font-normal ml-1">F2</span>
-                  </button>
-                  <button className="flex items-center justify-center gap-1.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 h-[24px] rounded-sm shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors font-medium">
-                    <Printer className="w-3.5 h-3.5 text-blue-500" /> 
-                    Save & Print <span className="text-[9px] text-slate-400 font-normal ml-1">F1</span>
-                  </button>
-                </div>
-              </div>
 
-              {/* Row 2 */}
-              <div className="flex gap-4">
-                <div className="flex flex-col gap-1 w-[276px]">
-                  <span>Location</span>
-                  <select className="border border-slate-300 dark:border-slate-600 px-1.5 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[24px] rounded-sm focus:outline-none focus:border-blue-500 text-[12px] font-normal">
-                    <option>Saudi Arabia</option>
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1 w-[200px]">
-                  <span>ConsignmentReturn Terms</span>
-                  <select className="border border-slate-300 dark:border-slate-600 px-1.5 py-0.5 bg-white dark:bg-slate-950 shadow-sm h-[24px] rounded-sm focus:outline-none focus:border-blue-500 text-[12px] font-normal text-slate-500">
-                    <option>Choose Term</option>
-                  </select>
+                {/* Row 2 */}
+                <div className="flex items-center gap-4 mt-1">
+                  <div className="flex items-center gap-1 w-[260px]">
+                    <label className="text-[11px] font-medium text-slate-700 w-32">Location</label>
+                    <select className="flex-1 text-xs h-6 border border-slate-300 px-1 bg-white">
+                      <option>Saudi Arabia</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-1 w-[180px]">
+                    <label className="text-[11px] font-medium text-slate-700 w-12 pl-2">Terms</label>
+                    <select className="flex-1 text-xs h-6 border border-slate-300 px-1 bg-white text-slate-600">
+                      <option>Choose Term</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-1 w-[260px]">
+                    <label className="text-[11px] font-medium text-slate-700 w-16 pl-2">Other Ref#</label>
+                    <input type="text" className="flex-1 text-xs h-6 border border-slate-300 px-2 bg-white" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Main Table */}
-          <div className="flex-1 overflow-auto bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 shadow-sm flex flex-col relative">
-            <table className="w-full text-left text-[11px] whitespace-nowrap border-collapse text-slate-700 dark:text-slate-300">
-              <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 shadow-sm text-slate-800 dark:text-slate-200">
-                <tr>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-10 text-center"></th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-24">Code</th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-32">Barcode</th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 min-w-[200px]">Product</th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16">Unit</th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16">UOM</th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-16">Qty</th>
-                  <th className="font-normal px-2 py-1.5 border-r border-slate-300 dark:border-slate-700 w-48">Remarks</th>
-                  <th className="font-normal px-2 py-1.5"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                <tr className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 text-center text-slate-400">*</td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5 border-r border-slate-200 dark:border-slate-700"></td>
-                  <td className="px-2 py-1.5"></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer Area */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-2 h-24 flex items-start text-[11px] text-slate-700 dark:text-slate-300 gap-6">
-            <div className="flex flex-col gap-1 w-64">
-              <span>Notes</span>
-              <textarea className="w-full border border-slate-300 dark:border-slate-600 p-1 bg-white dark:bg-slate-950 shadow-sm rounded-sm focus:outline-none focus:border-blue-500 h-[50px] resize-none"></textarea>
-            </div>
-            
-            <div className="flex items-center gap-2 mt-4 ml-8">
-              <span className="text-slate-500">Product Search Mode</span>
-              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-sm px-2 py-0.5 shadow-sm">
-                <span className="text-slate-600 font-medium">Contains</span>
-                <div className="w-6 h-3 bg-slate-200 dark:bg-slate-700 rounded-full relative shadow-inner border border-slate-300 dark:border-slate-600">
-                   <div className="w-2.5 h-2.5 bg-white border border-slate-400 absolute left-[1px] top-[1px] shadow-sm rounded-sm"></div>
-                </div>
-                <span className="text-slate-400">Start With</span>
+            {/* Table Block */}
+            <div className="bg-white border border-slate-300 shadow-sm flex flex-col flex-1 min-h-[250px]">
+              <div className="overflow-x-auto flex-1">
+                <table className="w-full text-left text-[11px] whitespace-nowrap min-w-max border-collapse">
+                  <thead className="bg-[#f0f4f8] font-semibold text-slate-600 border-b border-slate-300 uppercase">
+                    <tr>
+                      <th className="p-1.5 border-r border-slate-300 w-24">Code</th>
+                      <th className="p-1.5 border-r border-slate-300 w-32">Barcode</th>
+                      <th className="p-1.5 border-r border-slate-300 min-w-[200px]">Product</th>
+                      <th className="p-1.5 border-r border-slate-300 w-16">Unit</th>
+                      <th className="p-1.5 border-r border-slate-300 w-16">UOM</th>
+                      <th className="p-1.5 border-r border-slate-300 w-16 text-right">Qty</th>
+                      <th className="p-1.5 border-r border-slate-300">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    <tr className="hover:bg-blue-50 bg-white">
+                      <td className="p-1.5 border-r border-slate-200 text-center text-slate-400">*</td>
+                      <td className="p-1.5 border-r border-slate-200"></td>
+                      <td className="p-1.5 border-r border-slate-200"></td>
+                      <td className="p-1.5 border-r border-slate-200"></td>
+                      <td className="p-1.5 border-r border-slate-200"></td>
+                      <td className="p-1.5 border-r border-slate-200"></td>
+                      <td className="p-1.5 border-r border-slate-200"></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
+
+            {/* Bottom Block */}
+            <div className="flex gap-2 shrink-0 h-24">
+              <div className="w-[320px] bg-white border border-slate-300 rounded-sm shadow-sm flex flex-col">
+                <div className="flex bg-[#f0f4f8] border-b border-slate-300 text-[10px]">
+                  <button className="px-2 py-1 font-semibold text-slate-700 bg-white border-r border-slate-300 border-t-2 border-t-blue-500">Notes</button>
+                </div>
+                <div className="flex-1 p-2 flex flex-col">
+                  <textarea className="w-full h-full border border-slate-300 p-1 text-xs resize-none"></textarea>
+                </div>
+              </div>
+              <div className="flex-1"></div>
+            </div>
+
           </div>
         </div>
       )}

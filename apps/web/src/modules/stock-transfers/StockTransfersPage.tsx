@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '@qatar-erp/ui';
-import { Plus, Search, Eye, Edit, Trash2, Power, CheckCircle, Truck, Inbox, XCircle, Settings2 } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Power, CheckCircle, Truck, Inbox, XCircle, Settings2, ArrowRight, Save, X } from 'lucide-react';
 import { productsService } from '@qatar-erp/api';
 import { Product, Warehouse } from '@qatar-erp/types';
 
@@ -338,273 +338,364 @@ export const StockTransfersPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Inter-Warehouse Stock Transfers</h1>
-          <p className="text-sm text-slate-500">Request, approve, dispatch, and receive stock transfers.</p>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
+      {!isViewModalOpen && !isFormModalOpen && !isReceiveModalOpen && (
+        <div className="flex flex-col h-full gap-2">
+          <div className="flex flex-col border border-slate-300 dark:border-slate-700 rounded-sm bg-[#f1f5f9] dark:bg-slate-800 shadow-sm">
+            {/* Top Action Bar */}
+            <div className="flex flex-wrap items-center justify-between p-1 border-b border-slate-300 dark:border-slate-700">
+              <div className="flex items-center">
+                <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={handleOpenNew}>
+                  <ArrowRight className="w-4 h-4 text-blue-600 mb-0.5 rotate-180" />
+                  <span>Unpost<br/><span className="text-[9px] text-slate-400">&nbsp;</span></span>
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-2 pr-2">
+                <Button variant="primary" className="py-1 px-2 text-xs h-7 flex items-center gap-1 font-bold bg-emerald-600 hover:bg-emerald-700" onClick={handleOpenNew}>
+                  <Plus className="w-3.5 h-3.5" /> New Stock Transfer
+                </Button>
+              </div>
+            </div>
+
+            {/* Title Bar */}
+            <div className="bg-[#e2e8f0] border-b border-slate-300 text-center py-1 text-[12px] font-bold text-slate-800 shrink-0">
+              Stock Transfers
+            </div>
+
+            {/* Search/Filter Bar */}
+            <div className="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-900 border-b border-slate-300 shrink-0">
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  placeholder="Enter text to search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64 px-2 py-1 text-xs border border-slate-300 rounded bg-white focus:outline-none focus:border-primary-500 ml-1"
+                />
+                <select className="px-2 py-1 text-xs border border-slate-300 rounded bg-white w-32">
+                  <option value=""></option>
+                </select>
+              </div>
+              <button className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium">
+                Find
+              </button>
+              <button 
+                className="px-4 py-1 text-xs bg-white border border-slate-300 rounded hover:bg-slate-50 shadow-sm text-slate-700 font-medium" 
+                onClick={() => setSearchTerm('')}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
+          {/* Main Grid Area */}
+          <Card className="p-0 overflow-hidden shadow-sm flex-1 mb-2 border border-slate-300 flex flex-col mx-2">
+            <div className="w-full h-full overflow-auto bg-white [&::-webkit-scrollbar]:hidden">
+              <table className="w-full text-left text-sm whitespace-nowrap min-w-max">
+                <thead className="bg-slate-100 uppercase text-[11px] font-semibold text-slate-700 border-b sticky top-0 z-10">
+                  <tr>
+                    <th className="p-4">REF NO</th>
+                    <th className="p-4">FULL REF NO</th>
+                    <th className="p-4">TRANSFERRING DATE</th>
+                    <th className="p-4">FROM</th>
+                    <th className="p-4">TO</th>
+                    <th className="p-4">STATUS</th>
+                    <th className="p-4">AMOUNT</th>
+                    <th className="p-4">TRANSFERED USER</th>
+                    <th className="p-4">RECEIVED USER</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredTransfers.length > 0 ? filteredTransfers.map((t, idx) => (
+                    <tr key={t.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => { setActiveTransfer(t); setIsViewModalOpen(true); }}>
+                      <td className="p-4 text-blue-600 cursor-pointer" onClick={(e) => { e.stopPropagation(); handleEdit(t); }}>{t.transferNo}</td>
+                      <td className="p-4">{t.transferNo}</td>
+                      <td className="p-4">{t.requestDate}</td>
+                      <td className="p-4">{t.sourceWarehouseName}</td>
+                      <td className="p-4">{t.destWarehouseName}</td>
+                      <td className="p-4">{t.status}</td>
+                      <td className="p-4">0.00</td>
+                      <td className="p-4">{t.requestedBy}</td>
+                      <td className="p-4">{t.receivedBy || ''}</td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={9} className="p-8 text-center text-slate-500 italic">No records found.</td>
+                    </tr>
+                  )}
+                  <tr className="h-full">
+                    <td colSpan={9}></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Bottom Status Bar */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-[#e2e8f0] border-t border-slate-300 text-[11px] text-slate-700 shrink-0 mt-[-8px]">
+            <button className="px-1.5 hover:bg-slate-300 rounded font-bold">|&lt;&lt;</button>
+            <button className="px-1.5 hover:bg-slate-300 rounded font-bold">&lt;&lt;</button>
+            <span className="mx-1">StockTransfers 0 of {filteredTransfers.length || 0}</span>
+            <button className="px-1.5 hover:bg-slate-300 rounded font-bold">&gt;&gt;</button>
+            <button className="px-1.5 hover:bg-slate-300 rounded font-bold">&gt;&gt;|</button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" className="flex items-center gap-2 font-bold" onClick={handleOpenNew}>
-            <Plus className="w-4 h-4" /> New Transfer Request
-          </Button>
-        </div>
-      </div>
+      )}
 
-      <Card className="p-4 flex flex-wrap items-center justify-start gap-4 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search transfer no, warehouse, user..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
-          />
-        </div>
-        <div className="w-full md:w-48">
-          <Select 
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            options={[
-              { value: 'ALL', label: 'All Statuses' },
-              { value: 'DRAFT', label: 'Draft' },
-              { value: 'PENDING_APPROVAL', label: 'Pending Approval' },
-              { value: 'APPROVED', label: 'Approved' },
-              { value: 'DISPATCHED', label: 'Dispatched' },
-              { value: 'PARTIALLY_RECEIVED', label: 'Partially Received' },
-              { value: 'RECEIVED', label: 'Received' },
-              { value: 'CANCELLED', label: 'Cancelled' }
-            ]}
-          />
-        </div>
-      </Card>
-
-      <Card className="p-0 overflow-x-auto shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 dark:bg-slate-800 uppercase text-[11px] font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-            <tr>
-              <th className="p-4 whitespace-nowrap">Transfer #</th>
-              <th className="p-4 whitespace-nowrap">Source Warehouse</th>
-              <th className="p-4 whitespace-nowrap">Destination Warehouse</th>
-              <th className="p-4 whitespace-nowrap">Requested By</th>
-              <th className="p-4 text-right whitespace-nowrap">SKU Count</th>
-              <th className="p-4 text-center whitespace-nowrap">Status</th>
-              <th className="p-4 text-center whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
-            {filteredTransfers.length > 0 ? filteredTransfers.map((t) => (
-              <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <td className="p-4 font-mono font-bold text-xs">{t.transferNo}</td>
-                <td className="p-4 font-medium">{t.sourceWarehouseName}</td>
-                <td className="p-4 font-medium">{t.destWarehouseName}</td>
-                <td className="p-4 text-xs text-slate-600 dark:text-slate-400">{t.requestedBy}<br/><span className="text-[10px] text-slate-400">{t.requestDate}</span></td>
-                <td className="p-4 text-right font-bold">{t.items.length}</td>
-                <td className="p-4 text-center">{getStatusBadge(t.status)}</td>
-                <td className="p-4">
-                  <div className="flex items-center justify-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" onClick={() => { setActiveTransfer(t); setIsViewModalOpen(true); }} title="View Details">
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    
-                    {t.status === 'DRAFT' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" onClick={() => handleEdit(t)} title="Edit">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {t.status === 'DRAFT' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-rose-500 hover:text-rose-600" onClick={() => handleDelete(t)} title="Delete">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {t.status === 'PENDING_APPROVAL' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-emerald-500 hover:text-emerald-600" onClick={() => handleStatusChange(t, 'APPROVED')} title="Approve">
-                        <CheckCircle className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {t.status === 'PENDING_APPROVAL' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-rose-500 hover:text-rose-600" onClick={() => handleStatusChange(t, 'REJECTED')} title="Reject">
-                        <XCircle className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {t.status === 'APPROVED' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-amber-500 hover:text-amber-600" onClick={() => handleStatusChange(t, 'DISPATCHED')} title="Dispatch">
-                        <Truck className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {(t.status === 'DISPATCHED' || t.status === 'PARTIALLY_RECEIVED') && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-indigo-500 hover:text-indigo-600" onClick={() => handleOpenReceive(t)} title="Receive">
-                        <Inbox className="w-4 h-4" />
-                      </Button>
-                    )}
-
-                    {(t.status === 'APPROVED' || t.status === 'DRAFT') && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600" onClick={() => handleStatusChange(t, 'CANCELLED')} title="Cancel">
-                        <Power className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )) : (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-500">
-                  No stock transfers found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
-
-      {/* --- ADD / EDIT MODAL --- */}
+      {/* --- ADD / EDIT FORM --- */}
       {isFormModalOpen && (
-        <Modal
-          isOpen={isFormModalOpen}
-          onClose={() => setIsFormModalOpen(false)}
-          title={formData.id ? `Edit Transfer: ${formData.transferNo}` : "New Transfer Request"}
-          className="max-w-[1200px]"
-        >
-          <div className="w-full p-4 md:p-6 overflow-y-auto max-h-[75vh] [&::-webkit-scrollbar]:hidden">
+        <div className="relative flex-1 bg-[#f0f4f8] flex flex-col border border-slate-300 dark:border-slate-800 shadow-sm animate-in fade-in duration-200">
+          
+          {/* Header */}
+          <div className="px-2 py-1 border-b border-slate-300 flex items-center justify-between shrink-0 bg-white">
+            <div className="flex items-center text-[12px] font-semibold text-slate-800">
+              New Stock Transfer
+            </div>
+            <button onClick={() => setIsFormModalOpen(false)} className="p-0.5 hover:bg-slate-200 text-slate-500 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Top Action Bar */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-[#f1f5f9] border-b border-slate-300 shadow-sm shrink-0">
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => { setFormError(''); handleSaveForm('DRAFT'); }}>
+              <Save className="w-4 h-4 text-blue-600 mb-0.5" />
+              <span>Save & New<br/><span className="text-[9px] text-slate-400">Ctrl + N</span></span>
+            </button>
+            <div className="w-[1px] h-8 bg-slate-300 mx-1"></div>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => { setFormError(''); handleSaveForm('DRAFT'); setIsFormModalOpen(false); }}>
+              <Save className="w-4 h-4 text-blue-600 mb-0.5" />
+              <span>Save & Close<br/><span className="text-[9px] text-slate-400">Ctrl + L</span></span>
+            </button>
+            <div className="w-[1px] h-8 bg-slate-300 mx-1"></div>
+            <button className="flex flex-col items-center px-3 py-1 hover:bg-slate-200 border border-transparent hover:border-slate-300 rounded-sm text-[10px] text-slate-700" onClick={() => handleSaveForm('PENDING_APPROVAL')}>
+              <CheckCircle className="w-4 h-4 text-orange-600 mb-0.5" />
+              <span>Proceed For<br/>Delivery<span className="text-[9px] text-slate-400 ml-1">P</span></span>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden bg-[#f0f4f8]">
+            {/* Title Bar */}
+            <div className="bg-[#e2e8f0] border-b border-slate-300 py-1 px-3 text-[12px] font-bold text-slate-800 flex items-center gap-4">
+              <span>Stock Transfer</span>
+              <span>Ref#: {formData.transferNo || 'New'}</span>
+            </div>
+
+            {/* Error Banner */}
             {formError && (
-              <div className="mb-4 p-3 bg-rose-50 text-rose-600 text-sm rounded-md font-medium border border-rose-200">
+              <div className="mx-3 mt-3 p-2 bg-rose-50 text-rose-600 text-xs rounded border border-rose-200">
                 {formError}
               </div>
             )}
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column: Basic Info */}
-              <div className="space-y-6 lg:col-span-1 border-r border-slate-100 dark:border-slate-800 pr-0 lg:pr-6">
-                <div>
-                  <h3 className="font-bold text-sm text-slate-800 border-b pb-2 mb-4">Transfer Details</h3>
-                  <div className="space-y-4">
-                    <Input label="Transfer No" value={formData.transferNo} disabled />
-                    
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Source Warehouse *</span>
-                      <Select 
-                        value={formData.sourceWarehouseId || ''}
-                        onChange={(e) => setFormData({...formData, sourceWarehouseId: e.target.value})}
-                        options={[
-                          { value: '', label: '-- Select Source --' },
-                          ...warehouses.map(w => ({ value: w.id, label: w.name }))
-                        ]}
-                      />
-                    </div>
 
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Destination Warehouse *</span>
-                      <Select 
-                        value={formData.destWarehouseId || ''}
-                        onChange={(e) => setFormData({...formData, destWarehouseId: e.target.value})}
-                        options={[
-                          { value: '', label: '-- Select Destination --' },
-                          ...warehouses.map(w => ({ value: w.id, label: w.name }))
-                        ]}
-                      />
-                    </div>
+            {/* Header Form */}
+            <div className="p-3 bg-[#f8fafc] border-b border-slate-300 text-[11px] flex flex-col gap-2">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <label className="w-12 text-right">From</label>
+                  <select 
+                    className="w-48 h-6 border border-slate-300 bg-white px-1"
+                    value={formData.sourceWarehouseId || ''}
+                    onChange={(e) => setFormData({...formData, sourceWarehouseId: e.target.value})}
+                  >
+                    <option value="">[Select a Location]</option>
+                    {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </select>
+                </div>
 
-                    <div>
-                      <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Priority</span>
-                      <Select 
-                        value={formData.priority || 'MEDIUM'}
-                        onChange={(e) => setFormData({...formData, priority: e.target.value as any})}
-                        options={[
-                          { value: 'LOW', label: 'Low' },
-                          { value: 'MEDIUM', label: 'Medium' },
-                          { value: 'HIGH', label: 'High' },
-                          { value: 'URGENT', label: 'Urgent' }
-                        ]}
-                      />
-                    </div>
+                <div className="flex items-center gap-2">
+                  <label className="w-8 text-right">To</label>
+                  <select 
+                    className="w-48 h-6 border border-slate-300 bg-white px-1"
+                    value={formData.destWarehouseId || ''}
+                    onChange={(e) => setFormData({...formData, destWarehouseId: e.target.value})}
+                  >
+                    <option value="">[Select a Location]</option>
+                    {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </select>
+                </div>
 
-                    <Input label="Remarks" value={formData.remarks} onChange={(e) => setFormData({...formData, remarks: e.target.value})} />
+                <div className="flex items-center gap-2">
+                  <label className="text-right">Transferring Date</label>
+                  <input type="date" className="h-6 w-32 border border-slate-300 px-1 bg-white" value={formData.requestDate || ''} onChange={(e) => setFormData({...formData, requestDate: e.target.value})} />
+                </div>
+                
+                <div className="flex items-center gap-4 ml-8">
+                  <div className="flex items-center gap-2 font-bold">
+                    <span>Status</span>
+                    <span>{formData.status === 'DRAFT' || !formData.id ? 'Open' : formData.status}</span>
                   </div>
                 </div>
               </div>
-              
-              {/* Right Column: Items */}
-              <div className="lg:col-span-2 space-y-4">
-                <h3 className="font-bold text-sm text-slate-800 border-b pb-2 mb-4">Transfer Items</h3>
-                
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-wrap gap-4 items-end mb-4">
-                  <div className="flex-1 min-w-[200px]">
-                    <span className="text-slate-500 block mb-1.5 text-xs font-semibold uppercase">Product</span>
-                    <Select 
-                      value={newItem.productId || ''}
-                      onChange={(e) => setNewItem({...newItem, productId: e.target.value})}
-                      options={[
-                        { value: '', label: '-- Select Product --' },
-                        ...products.map(p => ({ value: p.id, label: `${p.name} (Stock: ${p.stockQuantity})` }))
-                      ]}
-                    />
-                  </div>
-                  <div className="w-32">
-                    <Input 
-                      type="number"
-                      label="Quantity" 
-                      value={newItem.transferQty?.toString() || ''} 
-                      onChange={(e) => setNewItem({...newItem, transferQty: Number(e.target.value)})} 
-                    />
-                  </div>
-                  <div className="w-full md:w-auto mt-2 md:mt-0">
-                    <Button variant="primary" onClick={handleAddItem} className="w-full">Add Item</Button>
-                  </div>
-                </div>
 
-                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-100 dark:bg-slate-800">
-                      <tr>
-                        <th className="p-3">Product</th>
-                        <th className="p-3">SKU</th>
-                        <th className="p-3 text-right">Available</th>
-                        <th className="p-3 text-right">Qty</th>
-                        <th className="p-3 text-center">Unit</th>
-                        <th className="p-3 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {formData.items && formData.items.length > 0 ? formData.items.map(item => (
-                        <tr key={item.id}>
-                          <td className="p-3 font-medium">{item.productName}</td>
-                          <td className="p-3 text-xs text-slate-500">{item.sku}</td>
-                          <td className="p-3 text-right text-slate-500">{item.availableStock}</td>
-                          <td className="p-3 text-right font-bold">{item.transferQty}</td>
-                          <td className="p-3 text-center">{item.unit}</td>
-                          <td className="p-3 text-center">
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-rose-500" onClick={() => handleRemoveItem(item.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      )) : (
-                        <tr><td colSpan={6} className="p-6 text-center text-slate-500">No items added.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
+              <div className="flex items-start gap-6 mt-1">
+                <div className="flex gap-2 w-[800px]">
+                  <label className="w-12 text-right pt-1">Notes</label>
+                  <textarea 
+                    className="flex-1 h-12 border border-slate-300 px-2 py-1 bg-white resize-none"
+                    value={formData.remarks || ''}
+                    onChange={(e) => setFormData({...formData, remarks: e.target.value})}
+                  />
                 </div>
-
-                {/* Validation Note */}
-                <div className="bg-blue-50 text-blue-800 p-3 rounded text-xs border border-blue-100 mt-4">
-                  <strong>Note on Validation:</strong> Item availability checks global stock (`productsService`) as warehouse-specific inventory isn't centrally maintained in localStorage yet.
+                <div className="flex flex-col gap-2 ml-4">
+                  <label className="flex items-center gap-2 font-bold cursor-pointer">
+                    <input type="checkbox" defaultChecked /> Alert For Same Product
+                  </label>
+                  <div className="flex items-center gap-4 font-bold mt-2">
+                    <span>Total Transferring Cost</span>
+                    <span>0.00</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end gap-3 border-t pt-4">
-              <Button variant="outline" onClick={() => setIsFormModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" className="bg-slate-600 hover:bg-slate-700" onClick={() => handleSaveForm('DRAFT')}>Save as Draft</Button>
-              <Button variant="primary" onClick={() => handleSaveForm('PENDING_APPROVAL')}>Submit Request</Button>
+            {/* Product Details Header */}
+            <div className="bg-[#e2e8f0] border-b border-slate-300 py-1 px-3 text-[12px] font-bold text-slate-800">
+              Product Details
+            </div>
+
+            {/* Product Input Row */}
+            <div className="bg-[#f8fafc] border-b border-slate-300 p-2 text-[11px]">
+              <div className="flex items-end gap-2 mb-2">
+                <div className="flex flex-col gap-1 w-24">
+                  <label>Code</label>
+                  <input type="text" className="h-6 border border-slate-300 px-1 text-[11px]" />
+                </div>
+                <div className="flex flex-col gap-1 w-32">
+                  <label>Barcode</label>
+                  <input type="text" className="h-6 border border-slate-300 px-1 text-[11px]" />
+                </div>
+                <div className="flex flex-col gap-1 flex-1">
+                  <label>Item Name</label>
+                  <select 
+                    className="h-6 border border-slate-300 px-1 bg-white text-[11px]"
+                    value={newItem.productId || ''}
+                    onChange={(e) => {
+                      const prod = products.find(p => p.id === e.target.value);
+                      if (prod) {
+                        setNewItem({
+                          ...newItem,
+                          productId: prod.id,
+                          productName: prod.name,
+                          sku: prod.sku,
+                          unit: 'PCS',
+                          transferQty: 1
+                        });
+                      }
+                    }}
+                  >
+                    <option value=""></option>
+                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1 w-20">
+                  <label>Unit</label>
+                  <input type="text" className="h-6 border border-slate-300 px-1 bg-slate-100 text-[11px]" value={newItem.unit || '[Unit]'} readOnly />
+                </div>
+                <div className="flex flex-col gap-1 w-16">
+                  <label>UOM</label>
+                  <input type="text" className="h-6 border border-slate-300 px-1 text-[11px]" value="1" readOnly />
+                </div>
+                <div className="flex flex-col gap-1 w-24">
+                  <label>Trnsf. Qty</label>
+                  <input type="number" className="h-6 border border-slate-300 px-1 text-right text-[11px]" value={newItem.transferQty || ''} onChange={(e) => setNewItem({...newItem, transferQty: Number(e.target.value)})} />
+                </div>
+                <div className="flex flex-col gap-1 w-24">
+                  <label>Curr. Cost</label>
+                  <input type="text" className="h-6 border border-slate-300 px-1 bg-slate-100 text-[11px]" readOnly />
+                </div>
+                <div className="flex flex-col gap-1 w-24">
+                  <label>Price Incl Tax</label>
+                  <input type="text" className="h-6 border border-slate-300 px-1 bg-slate-100 text-[11px]" readOnly />
+                </div>
+                <div className="flex items-center gap-1 mb-0.5">
+                  <button className="flex items-center justify-center gap-1 h-6 px-3 bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black font-medium hover:bg-slate-200" onClick={handleAddItem}>
+                    <Plus className="w-3 h-3 text-green-600" /> Add <span className="text-[9px] text-slate-500 ml-1 mt-0.5">F1</span>
+                  </button>
+                  <button className="flex items-center justify-center gap-1 h-6 px-3 bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black font-medium hover:bg-slate-200" onClick={() => setNewItem({})}>
+                    <XCircle className="w-3 h-3 text-red-600" /> Remove <span className="text-[9px] text-slate-500 ml-1 mt-0.5">F2</span>
+                  </button>
+                  <button className="flex items-center justify-center gap-1 h-6 px-3 bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black font-medium hover:bg-slate-200">
+                    <Edit className="w-3 h-3 text-green-600" /> Edit <span className="text-[9px] text-slate-500 ml-1 mt-0.5">F3</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1 cursor-pointer hover:bg-slate-200 p-1 rounded">
+                    <div className="w-4 h-4 border border-slate-400 bg-white flex items-center justify-center text-[10px]">E</div>
+                    <span className="text-slate-500">Ctrl + L to Focus List</span>
+                  </div>
+                  <button className="flex items-center gap-2 h-6 px-3 bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black hover:bg-slate-200">
+                    <Truck className="w-3 h-3 text-blue-800" /> PDT <span className="text-[9px] text-slate-500 mt-0.5">F7</span>
+                  </button>
+                  <input type="text" className="h-6 w-64 border border-slate-300 px-2 text-[11px]" placeholder="Additional Descriptions" />
+                </div>
+                <button className="flex items-center gap-2 h-6 px-4 bg-[#f0f4f8] border border-slate-400 shadow-[inset_1px_1px_0px_#fff] text-black hover:bg-slate-200">
+                  <div className="w-3 h-3 border border-green-600 bg-green-100 flex items-center justify-center"><ArrowRight className="w-2 h-2 text-green-600 rotate-90" /></div> Import from File
+                </button>
+              </div>
+            </div>
+
+            {/* Grid Area */}
+            <div className="bg-white min-h-[300px]">
+              <table className="w-full text-left text-[11px] whitespace-nowrap border-collapse">
+                <thead className="bg-[#f0f4f8] text-slate-700 border-b border-slate-300">
+                  <tr>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">SlNo</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Code</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Barcode</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Product</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Unit</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">UOM</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Cost</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Transferring Qty</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Transferring A...</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Receiving Qty</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Receiving Amo...</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Remarks</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Additional Des...</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Price Incl Tax</th>
+                    <th className="p-1 px-2 border-r border-slate-200 font-normal">Additional Remarks</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {formData.items && formData.items.length > 0 ? formData.items.map((item, index) => (
+                    <tr key={item.id} className="hover:bg-blue-50 cursor-pointer">
+                      <td className="p-1 px-2 border-r border-slate-200">{index + 1}</td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-slate-500">{item.sku}</td>
+                      <td className="p-1 px-2 border-r border-slate-200">{item.sku}</td>
+                      <td className="p-1 px-2 border-r border-slate-200 font-medium">{item.productName}</td>
+                      <td className="p-1 px-2 border-r border-slate-200">{item.unit}</td>
+                      <td className="p-1 px-2 border-r border-slate-200">1</td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-right">0.00</td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-right font-bold">{item.transferQty}</td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-right">0.00</td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-right">0</td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-right">0.00</td>
+                      <td className="p-1 px-2 border-r border-slate-200"></td>
+                      <td className="p-1 px-2 border-r border-slate-200"></td>
+                      <td className="p-1 px-2 border-r border-slate-200 text-right">0.00</td>
+                      <td className="p-1 px-2 border-r border-slate-200 flex justify-between items-center group">
+                        <span></span>
+                        <button className="hidden group-hover:block text-rose-500 ml-2" onClick={() => handleRemoveItem(item.id)}>
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={15} className="p-4 text-center text-slate-500 italic">No products added.</td>
+                    </tr>
+                  )}
+                  <tr className="h-full"><td colSpan={15}></td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
-        </Modal>
+        </div>
       )}
 
       {/* --- VIEW MODAL --- */}

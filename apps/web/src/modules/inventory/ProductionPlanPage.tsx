@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Modal, Input, Select } from '@qatar-erp/ui';
-import { Search, Plus, Eye, Trash2 } from 'lucide-react';
+import { Search, Plus, Eye, Trash2, Save, CheckCircle, X, XCircle } from 'lucide-react';
 import { productsService } from '@qatar-erp/api';
 
 const STORAGE_KEY = 'retail_erp_production_plans';
@@ -195,170 +195,233 @@ export const ProductionPlanPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Production Plans</h1>
-          <p className="text-sm text-slate-500">Plan products, quantities, materials, and schedules.</p>
+    <div className="flex flex-col gap-4 bg-slate-50 min-h-screen">
+      <div className="flex items-center gap-4 py-2 px-3">
+        <button className="flex items-center gap-1 text-slate-700 hover:text-blue-600 text-xs font-bold">
+          <span className="text-blue-600 font-extrabold text-lg leading-none mt-[-4px]">↶</span> UnPost
+        </button>
+        <button className="text-slate-700 hover:text-blue-600 text-xs font-bold">
+          Show Consumption Details
+        </button>
+      </div>
+
+      <div className="bg-white border border-slate-300 rounded-sm shadow-sm flex flex-col min-h-[450px] mx-2">
+        <div className="bg-[#f0f4f8] border-b border-slate-300 flex items-center justify-between px-2 py-1.5">
+           <div className="flex-1"></div>
+           <div className="font-bold text-[12px] text-slate-800">Production Plan</div>
+           <div className="flex-1 flex justify-end">
+              <Button variant="primary" size="sm" className="h-6 text-[11px] px-3 bg-teal-600 hover:bg-teal-700" onClick={openNewForm}>
+                 + New Plan
+              </Button>
+           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" onClick={openNewForm}>
-            <Plus className="w-4 h-4 mr-2 inline" /> New Plan
-          </Button>
+
+        <div className="flex items-center gap-2 p-2 border-b border-slate-200">
+           <div className="flex items-center border border-slate-300 bg-white rounded-sm">
+             <input 
+               type="text" 
+               placeholder="Enter text to search..." 
+               className="text-[11px] p-1 w-48 outline-none" 
+               value={searchTerm}
+               onChange={(e) => setSearchTerm(e.target.value)}
+             />
+             <button className="px-2 border-l border-slate-300 hover:bg-slate-50 text-[11px] text-slate-500">▼</button>
+           </div>
+           <button className="px-3 py-1 border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold rounded-sm text-slate-700">Find</button>
+           <button className="px-3 py-1 border border-slate-300 bg-white hover:bg-slate-50 text-[11px] font-bold rounded-sm text-slate-700" onClick={() => setSearchTerm('')}>Clear</button>
+        </div>
+
+        <div className="flex-1 overflow-auto flex flex-col">
+          <table className="w-full text-left text-[11px] whitespace-nowrap min-w-max">
+            <thead className="text-slate-600 border-b border-slate-300 font-bold uppercase text-[10px]">
+              <tr>
+                <th className="p-3">REF NO</th>
+                <th className="p-3">ENTRY DATE</th>
+                <th className="p-3">REQUEST DATE</th>
+                <th className="p-3">LOCATION</th>
+                <th className="p-3">CREATED BY</th>
+                <th className="p-3">CREATED ON</th>
+                <th className="p-3">APPROVED BY</th>
+                <th className="p-3">APPOVED ON</th>
+                <th className="p-3 text-center">STATUS</th>
+                <th className="p-3">REQUEST POSTED</th>
+                <th className="p-3 text-center">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRecords.map((w) => (
+                <tr key={w.id} className="hover:bg-slate-50 h-8 border-b border-slate-100">
+                  <td className="p-3 font-mono font-bold text-blue-600 cursor-pointer hover:underline" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }}>{w.planNo}</td>
+                  <td className="p-3">{w.planDate}</td>
+                  <td className="p-3">{w.startDate}</td>
+                  <td className="p-3">{w.warehouseName}</td>
+                  <td className="p-3">{w.createdBy}</td>
+                  <td className="p-3">{new Date(w.createdDate).toLocaleDateString()}</td>
+                  <td className="p-3"></td>
+                  <td className="p-3"></td>
+                  <td className="p-3 text-center">{getStatusBadge(w.status)}</td>
+                  <td className="p-3"></td>
+                  <td className="p-3 text-center">
+                    <Button variant="ghost" size="sm" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }}>
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {filteredRecords.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-slate-400 text-xs italic">
+                    No records found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <Card className="p-4 flex gap-4 bg-slate-50/50">
-        <div className="relative flex-1 md:max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search plans..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300"
-          />
-        </div>
-        <Select 
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          options={[
-            { value: 'ALL', label: 'All Statuses' },
-            { value: 'DRAFT', label: 'Draft' },
-            { value: 'APPROVED', label: 'Approved' },
-            { value: 'IN_PROGRESS', label: 'In Progress' },
-            { value: 'COMPLETED', label: 'Completed' },
-            { value: 'CANCELLED', label: 'Cancelled' }
-          ]}
-        />
-      </Card>
-
-      <Card className="p-0 overflow-x-auto shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 uppercase text-[11px] font-semibold text-slate-700 border-b">
-            <tr>
-              <th className="p-4">Plan #</th>
-              <th className="p-4">Date</th>
-              <th className="p-4">Product</th>
-              <th className="p-4 text-center">Plan Qty</th>
-              <th className="p-4">Warehouse</th>
-              <th className="p-4">Schedule</th>
-              <th className="p-4 text-center">Status</th>
-              <th className="p-4 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200">
-            {filteredRecords.map((w) => (
-              <tr key={w.id} className="hover:bg-slate-50">
-                <td className="p-4 font-mono font-bold text-xs">{w.planNo}</td>
-                <td className="p-4 text-xs">{w.planDate}</td>
-                <td className="p-4 text-slate-700 text-xs font-medium">{w.productSku} - {w.productName}</td>
-                <td className="p-4 text-center font-bold text-slate-700">{w.plannedQuantity}</td>
-                <td className="p-4 text-xs">{w.warehouseName}</td>
-                <td className="p-4 text-xs font-mono">{w.startDate} to {w.endDate}</td>
-                <td className="p-4 text-center">{getStatusBadge(w.status)}</td>
-                <td className="p-4 text-center">
-                  <Button variant="ghost" size="sm" onClick={() => { setActiveRecord(w); setIsViewModalOpen(true); }}>
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {filteredRecords.length === 0 && (
-              <tr><td colSpan={8} className="p-8 text-center text-slate-500">No records found.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
-
       {isFormModalOpen && (
-        <Modal isOpen onClose={() => setIsFormModalOpen(false)} title="New Production Plan" className="max-w-[900px]">
-          <div className="p-6">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="col-span-2">
-                <label className="block text-xs font-semibold mb-1">Warehouse</label>
-                <Select value={formWarehouse} onChange={(e) => setFormWarehouse(e.target.value)} options={[{ value: '', label: 'Select...' }, ...WAREHOUSES.map(w => ({ value: w.id, label: w.name }))]} />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold mb-1">Plan Date</label>
-                <Input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} />
-              </div>
+        <Modal isOpen onClose={() => setIsFormModalOpen(false)} title="New Production Request" className="max-w-[1000px] w-full p-0 flex flex-col bg-[#e6e8eb] shadow-2xl border border-slate-400">
+          <div className="flex flex-col h-[550px] font-sans">
+            <div className="flex items-center gap-2 p-1 bg-[#f0f4f8] border-b border-slate-300">
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(false)}>
+                <Save className="w-3.5 h-3.5 text-blue-600" /> Save & New
+              </button>
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(true)}>
+                <Save className="w-3.5 h-3.5 text-blue-600" /> Save & Close
+              </button>
+              <button className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-300 rounded hover:bg-blue-50 text-[11px] font-medium text-slate-700 shadow-sm" onClick={() => handleSaveForm(true)}>
+                <CheckCircle className="w-3.5 h-3.5 text-yellow-500" /> Post
+              </button>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-slate-50 border rounded-lg">
-              <div>
-                <label className="block text-xs font-semibold mb-1 text-blue-700">Finished Product</label>
-                <Select value={formProduct} onChange={(e) => setFormProduct(e.target.value)} options={[{ value: '', label: 'Select Product...' }, ...products.map((p: any) => ({ value: p.id, label: `${p.sku} - ${p.name}` }))]} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Planned Qty</label>
-                    <Input type="number" min="1" value={formQty || ''} onChange={(e) => setFormQty(parseInt(e.target.value) || 0)} />
+
+            <div className="flex-1 flex flex-col p-2 bg-[#f0f4f8]">
+              <div className="bg-white border border-slate-300 rounded-sm shadow-sm p-3 mb-2">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <label className="text-[12px] font-bold text-slate-800">Ref No :</label>
+                      <span className="text-[12px] font-bold text-slate-800">New</span>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Priority</label>
-                    <Select value={formPriority} onChange={(e) => setFormPriority(e.target.value)} options={[{ value: 'Low', label: 'Low' }, { value: 'Medium', label: 'Medium' }, { value: 'High', label: 'High' }]} />
+                </div>
+
+                <div className="grid grid-cols-3 gap-6 pl-1">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-[11px] font-medium text-slate-700 w-24 text-right">Entry Date</label>
+                      <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} className="flex-1 text-xs h-6 border border-slate-300 px-2 bg-white" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[11px] font-medium text-slate-700 w-24 text-right">Request Date</label>
+                      <input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="flex-1 text-xs h-6 border border-slate-300 px-2 bg-white" />
+                    </div>
                   </div>
+
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-[11px] font-medium text-slate-700 w-16 text-right">Location</label>
+                      <select value={formWarehouse} onChange={(e) => setFormWarehouse(e.target.value)} className="flex-1 text-xs h-6 border border-slate-300 px-1 bg-white text-slate-600">
+                        <option value="">Select Location...</option>
+                        {WAREHOUSES.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="w-16"></div>
+                      <input type="checkbox" id="show-limit" className="w-3 h-3 border-slate-300" />
+                      <label htmlFor="show-limit" className="text-[11px] text-slate-700 cursor-pointer">Show daily production limit upon selection</label>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 justify-between">
+                    <div className="flex items-center gap-2 h-6 pl-4">
+                      <label className="text-[11px] font-medium text-slate-700">Status :</label>
+                      <span className="text-[11px] font-bold text-slate-800">New</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-auto">
+                      <button className="h-6 px-4 text-[11px] font-normal bg-[#f0f4f8] border border-slate-400 text-slate-800 ml-auto shadow-[inset_1px_1px_0px_#fff] hover:bg-slate-200">
+                        Show Consumption Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-               <div>
-                  <label className="block text-xs font-semibold mb-1">Start Date</label>
-                  <Input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} />
-               </div>
-               <div>
-                  <label className="block text-xs font-semibold mb-1">End Date</label>
-                  <Input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} />
-               </div>
-            </div>
-
-            <div className="mb-4">
-               <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-bold text-sm">Material Requirements</h3>
-                  <Select 
-                    value="" 
-                    onChange={(e) => { if(e.target.value) addMaterial(e.target.value); }}
-                    options={[{ value: '', label: '+ Add Material' }, ...products.map((p: any) => ({ value: p.id, label: `${p.sku} - ${p.name}` }))]}
-                  />
-               </div>
-               <table className="w-full text-left text-sm border rounded">
-                  <thead className="bg-slate-100 text-xs">
-                     <tr>
-                        <th className="p-2">Material</th>
-                        <th className="p-2 w-24">Req. Qty</th>
-                        <th className="p-2 w-24 text-center">Available</th>
-                        <th className="p-2">Remarks</th>
-                        <th className="p-2 w-10"></th>
-                     </tr>
-                  </thead>
-                  <tbody>
-                     {formMaterials.map((m, i) => (
-                        <tr key={m.id} className="border-t">
-                           <td className="p-2 text-xs">{m.productSku} - {m.productName}</td>
-                           <td className="p-2">
-                              <Input type="number" min="1" value={m.requiredQuantity || ''} onChange={(e) => setFormMaterials(formMaterials.map((fm, fi) => fi === i ? { ...fm, requiredQuantity: parseInt(e.target.value) || 0 } : fm))} />
-                           </td>
-                           <td className="p-2 text-center text-xs font-mono">{m.availableQuantity}</td>
-                           <td className="p-2">
-                              <Input type="text" value={m.remarks} onChange={(e) => setFormMaterials(formMaterials.map((fm, fi) => fi === i ? { ...fm, remarks: e.target.value } : fm))} />
-                           </td>
-                           <td className="p-2">
-                              <Button variant="ghost" size="sm" onClick={() => setFormMaterials(formMaterials.filter((_, fi) => fi !== i))}><Trash2 className="w-4 h-4 text-red-500" /></Button>
-                           </td>
-                        </tr>
-                     ))}
-                     {formMaterials.length === 0 && (
-                        <tr><td colSpan={5} className="p-4 text-center text-xs text-slate-500">No materials added.</td></tr>
-                     )}
-                  </tbody>
-               </table>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <Button variant="outline" onClick={() => setIsFormModalOpen(false)}>Cancel</Button>
-              <Button variant="outline" onClick={() => handleSaveForm(false)}>Save Draft</Button>
-              <Button variant="primary" onClick={() => handleSaveForm(true)}>Approve Plan</Button>
+              <div className="flex-1 min-h-[250px] bg-white border border-slate-300 rounded-sm relative flex flex-col">
+                <div className="flex-1 overflow-auto flex flex-col relative">
+                  <table className="w-full h-full text-left text-[11px] whitespace-nowrap min-w-max border-collapse">
+                    <thead className="bg-[#f8fafc] text-slate-700 border-b border-slate-300 sticky top-0 z-10 shadow-sm font-normal">
+                      <tr>
+                        <th className="p-1 px-2 border-r border-slate-200 text-center w-8 font-normal">*</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-center">SlNo</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">Code</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">Barcode</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">ItemName</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-center">Unit</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-center">UOM</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal">Additional Cost</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Requested Qty</th>
+                        <th className="p-1 px-2 border-r border-slate-200 font-normal text-right">Plan Qty</th>
+                        <th className="p-1 px-2 border-slate-200 w-8"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="hover:bg-slate-50 h-7 border-b border-slate-200">
+                        <td className="p-1 border-r border-slate-200 text-center font-bold text-slate-800">▶</td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300 text-right" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300 text-right" placeholder="" />
+                        </td>
+                        <td className="p-0 border-r border-slate-200">
+                          <input type="text" className="w-full bg-transparent outline-none h-6 px-2 focus:bg-white focus:ring-1 focus:ring-slate-300 text-right" placeholder="" />
+                        </td>
+                        <td className="p-1 text-center">
+                          <button className="text-red-500 hover:text-red-700">
+                            <X className="w-3.5 h-3.5 mx-auto" />
+                          </button>
+                        </td>
+                      </tr>
+                      <tr className="h-full">
+                        <td colSpan={11}></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="flex flex-col px-2 py-1 bg-[#f0f4f8] text-[10px] text-slate-600 shrink-0 border-t border-slate-300">
+                  <div className="flex items-center gap-2">
+                    <button className="hover:text-blue-600">|◀</button>
+                    <button className="hover:text-blue-600">◀</button>
+                    <span>Products 1 of 1</span>
+                    <button className="hover:text-blue-600">▶</button>
+                    <button className="hover:text-blue-600">▶|</button>
+                    <span className="ml-2 font-bold cursor-pointer hover:text-blue-600">+</span>
+                    <span className="ml-1 font-bold cursor-pointer hover:text-blue-600">-</span>
+                    <span className="ml-1 font-bold cursor-pointer hover:text-blue-600">✓</span>
+                    <span className="ml-1 font-bold text-red-500 cursor-pointer hover:text-red-700">✗</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </Modal>
